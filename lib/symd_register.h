@@ -129,7 +129,7 @@ namespace internal
         union
         {
             typename UnderlyingRegister<T>::Type _reg;
-            float _ptrToData[SYMD_LEN];
+            T _ptrToData[SYMD_LEN];
         };
 
         // Constructs uninitialized register
@@ -526,12 +526,7 @@ namespace internal
             }
         }
 
-
-        /////////////////////////////////////////////////////////////////////////////////////
-        // Logical operators
-        /////////////////////////////////////////////////////////////////////////////////////
-
-        SymdRegister operator!() const
+        SymdRegister operator~() const
         {
             if constexpr (std::is_same_v<T, float>)
             {
@@ -575,6 +570,16 @@ namespace internal
 #endif
                 };
             }
+        }
+
+
+        /////////////////////////////////////////////////////////////////////////////////////
+        // Logical operators
+        /////////////////////////////////////////////////////////////////////////////////////
+
+        SymdRegister operator!()
+        {
+            return ~(*this);
         }
 
 
@@ -993,6 +998,11 @@ namespace internal
                 vst1q_f64(dst + 2, _reg[1]);
 #endif
             }
+        }
+
+        T operator[](size_t ind) const
+        {
+            return _ptrToData[ind];
         }
 
 

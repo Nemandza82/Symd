@@ -1,7 +1,9 @@
+#define CATCH_CONFIG_MAIN
+#include "tests/catch.h"
 #include <iostream>
 #include "lib/symd.h"
 
-namespace symd
+/*namespace symd
 {
     namespace internal
     {
@@ -34,11 +36,4 @@ namespace symd
 
         input.size();
     }
-}
-
-int main()
-{
-    symd::internal::test();
-
-    symd::test_map();
-}
+}*/
