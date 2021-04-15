@@ -1,7 +1,6 @@
 #define CATCH_CONFIG_MAIN
 #include "tests/catch.h"
 #include <iostream>
-#include "lib/symd.h"
 
 /*namespace symd
 {
