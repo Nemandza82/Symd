@@ -45,7 +45,7 @@ namespace symd
         }
     };
 
-    namespace internal
+    namespace __internal__
     {
         /////////////////////////////////////////////////////////////////////////////////////////////////
         // Access the data
@@ -113,17 +113,21 @@ namespace symd
         }
 
         template <typename T>
-        T* getDataPtr(std::vector<T, std::allocator<int>>& vec, size_t row, size_t col)
+        T* getDataPtr(std::vector<T, std::allocator<T>>& vec, size_t row, size_t col)
         {
-            assert(row < vec.size());
-            return vec.data() + row;
+            assert(row == 0);
+            assert(col < vec.size());
+
+            return vec.data() + col;
         }
 
         template <typename T>
-        const T* getDataPtr(const std::vector<T, std::allocator<int>>& vec, size_t row, size_t col)
+        const T* getDataPtr(const std::vector<T, std::allocator<T>>& vec, size_t row, size_t col)
         {
-            assert(row < vec.size());
-            return vec.data() + row;
+            assert(row == 0);
+            assert(col < vec.size());
+
+            return vec.data() + col;
         }
-    } // internal
+    }
 }

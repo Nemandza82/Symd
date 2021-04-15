@@ -4,8 +4,9 @@
 
 namespace symd
 {
-namespace internal
+namespace __internal__
 {
+    // Inclusive region
     struct Region
     {
         size_t startRow;

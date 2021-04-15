@@ -1,7 +1,7 @@
 #include "tests/catch.h"
 #include "lib/symd_register.h"
 
-using namespace symd::internal;
+using namespace symd::__internal__;
 
 namespace tests
 {
