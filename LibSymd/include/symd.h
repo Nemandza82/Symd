@@ -7,7 +7,8 @@
 #include "internal/region.h"
 #include "views.h"
 #include "internal/multi_output.h"
-
+#include "internal/data_view.h"
+#include "internal/stencil_view.h"
 
 
 namespace symd
@@ -25,7 +26,6 @@ namespace symd
         {
             return Region(getWidth(firstInput), getHeight(firstInput));
         }
-
     }
 
     /// <summary>
@@ -86,8 +86,8 @@ namespace symd
 
         std::for_each(std::execution::par_unseq, regions.begin(), regions.end(), [&](__internal__::Region& region)
             {
-                auto subRes = subView(result, region);
-                map_single_core(subRes, operation, subView(std::forward<Inputs>(inputs), region)...);
+                auto subRes = views::sub_view(result, region);
+                map_single_core(subRes, operation, views::sub_view(std::forward<Inputs>(inputs), region)...);
             });
     }
 }

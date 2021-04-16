@@ -238,4 +238,15 @@ namespace tests
         std::cout << "Mapping YUV444 planar to RGB planar - Loop             : " << durationLoop.count() << " ms" << std::endl;
         std::cout << "Mapping YUV444 planar to RGB planar - symd_single_core : " << duration.count() << " ms" << std::endl << std::endl;
     }
+
+    TEST_CASE("Mapping - Basic Stencil")
+    {
+        std::vector<float> input = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 };
+        std::vector<float> output(input.size());
+
+        /*symd::map_single_core(output, [](const auto& x)
+            {
+                return 2.f * x;
+            }, symd::views::stencil(input, 3, 1));*/
+    }
 }

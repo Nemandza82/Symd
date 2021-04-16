@@ -7,18 +7,19 @@
 namespace symd::__internal__
 {
     template <typename... Results>
-    size_t getWidth(std::tuple<Results...>& res)
+    size_t getWidth(const std::tuple<Results...>& res)
     {
         return getWidth(std::get<0>(res));
     }
 
     template <typename... Results>
-    size_t getHeight(std::tuple<Results...>& res)
+    size_t getHeight(const std::tuple<Results...>& res)
     {
         return getHeight(std::get<0>(res));
     }
 
-    /*template <typename T1, typename T2, size_t... I>
+    /*
+    template <typename T1, typename T2, size_t... I>
     void transformTuple(T1&& s, T2& t, const Region& region, std::index_sequence<I...>)
     {
         (void)std::initializer_list<int>

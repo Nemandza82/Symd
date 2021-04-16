@@ -86,9 +86,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="include\internal\data_view.h" />
     <ClInclude Include="include\internal\intrinsic_extensions_gcc.h" />
     <ClInclude Include="include\internal\multi_output.h" />
     <ClInclude Include="include\internal\region.h" />
+    <ClInclude Include="include\internal\stencil_view.h" />
     <ClInclude Include="include\symd.h" />
     <ClInclude Include="include\internal\symd_register.h" />
     <ClInclude Include="include\views.h" />
