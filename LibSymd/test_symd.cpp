@@ -18,12 +18,18 @@ namespace tests
 #endif
 
     template <typename T>
+    static void requireEqual(const T* data, const std::vector<T>& ref)
+    {
+        for (size_t i = 0; i < ref.size(); i++)
+            REQUIRE(data[i] == ref[i]);
+    }
+
+    template <typename T>
     static void requireEqual(const std::vector<T>& data, const std::vector<T>& ref)
     {
         REQUIRE(data.size() == ref.size());
 
-        for (size_t i = 0; i < data.size(); i++)
-            REQUIRE(data[i] == ref[i]);
+        requireEqual(data.data(), ref);
     }
 
     template <typename F>
@@ -75,28 +81,32 @@ namespace tests
 
     TEST_CASE("Mapping 2 - min")
     {
-        std::vector<int> input = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-        std::vector<int> output(input.size());
+        std::vector<int> input = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 };
+
+        // Symd can work with spans
+        std::span<int> span(&input[2], 11);
+        std::vector<int> output(span.size());
 
         symd::map_single_core(output, [](auto x)
             {
-                return std::min(2 * x, 6);
-            }, input);
+                return std::min(x, 7);
+            }, span);
 
-        requireEqual(output, { 2, 4, 6, 6, 6, 6, 6, 6, 6 });
+        requireEqual(output, { 3, 4, 5, 6, 7, 7, 7, 7, 7, 7, 7 });
     }
 
     TEST_CASE("Mapping 2 - abs")
     {
-        std::vector<int> input = { 1, -2, 3, -4, 5, -6, -7, 8, -9 };
-        std::vector<int> output(input.size());
+        // Symd can work with std::array
+        std::array<int, 9> input = { 1, -2, 3, -4, 5, -6, -7, 8, -9 };
+        std::array<int, 9> output;
 
         symd::map_single_core(output, [](auto x)
             {
                 return std::abs(2 * x);
             }, input);
 
-        requireEqual(output, { 2, 4, 6, 8, 10, 12, 14, 16, 18 });
+        requireEqual(output.data(), { 2, 4, 6, 8, 10, 12, 14, 16, 18 });
     }
 
     TEST_CASE("Mapping 2 - convert")

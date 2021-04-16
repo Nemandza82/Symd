@@ -1,5 +1,7 @@
 #pragma once
 #include <vector>
+#include <array>
+#include <span>
 #include <assert.h>
 
 
@@ -101,33 +103,103 @@ namespace symd
         /////////////////////////////////////////////////////////////////////////////////////////////////
 
         template <typename T>
-        size_t getWidth(const std::vector<T>& vec)
+        size_t getWidth(const std::vector<T>& x)
         {
-            return vec.size();
+            return x.size();
         }
 
         template <typename T>
-        size_t getHeight(const std::vector<T>& vec)
+        size_t getHeight(const std::vector<T>& x)
         {
             return 1;
         }
 
         template <typename T>
-        T* getDataPtr(std::vector<T, std::allocator<T>>& vec, size_t row, size_t col)
+        T* getDataPtr(std::vector<T, std::allocator<T>>& x, size_t row, size_t col)
         {
             assert(row == 0);
-            assert(col < vec.size());
+            assert(col < x.size());
 
-            return vec.data() + col;
+            return x.data() + col;
         }
 
         template <typename T>
-        const T* getDataPtr(const std::vector<T, std::allocator<T>>& vec, size_t row, size_t col)
+        const T* getDataPtr(const std::vector<T, std::allocator<T>>& x, size_t row, size_t col)
         {
             assert(row == 0);
-            assert(col < vec.size());
+            assert(col < x.size());
 
-            return vec.data() + col;
+            return x.data() + col;
+        }
+
+
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+        // Overloads for std::array
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+
+        template <typename T, std::size_t N>
+        size_t getWidth(const std::array<T, N>& x)
+        {
+            return N;
+        }
+
+        template <typename T, std::size_t N>
+        size_t getHeight(const std::array<T, N>& x)
+        {
+            return 1;
+        }
+
+        template <typename T, std::size_t N>
+        T* getDataPtr(std::array<T, N>& x, size_t row, size_t col)
+        {
+            assert(row == 0);
+            assert(col < x.size());
+
+            return x.data() + col;
+        }
+
+        template <typename T, std::size_t N>
+        const T* getDataPtr(const std::array<T, N>& x, size_t row, size_t col)
+        {
+            assert(row == 0);
+            assert(col < x.size());
+
+            return x.data() + col;
+        }
+
+
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+        // Overloads for std::span
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+
+        template <typename T, std::size_t N>
+        size_t getWidth(const std::span<T, N>& x)
+        {
+            return N;
+        }
+
+        template <typename T, std::size_t N>
+        size_t getHeight(const std::span<T, N>& x)
+        {
+            return 1;
+        }
+
+        template <typename T, std::size_t N>
+        T* getDataPtr(std::span<T, N>& x, size_t row, size_t col)
+        {
+            assert(row == 0);
+            assert(col < x.size());
+
+            return x.data() + col;
+        }
+
+        template <typename T, std::size_t N>
+        const T* getDataPtr(const std::span<T, N>& x, size_t row, size_t col)
+        {
+            assert(row == 0);
+            assert(col < x.size());
+
+            return x.data() + col;
         }
     }
 }

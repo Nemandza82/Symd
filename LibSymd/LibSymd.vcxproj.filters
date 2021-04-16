@@ -5,7 +5,6 @@
     <ClCompile Include="test_symd_register.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\views.h" />
     <ClInclude Include="include\internal\intrinsic_extensions_gcc.h">
       <Filter>include</Filter>
     </ClInclude>
@@ -16,6 +15,9 @@
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="include\internal\symd_register.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\views.h">
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>
