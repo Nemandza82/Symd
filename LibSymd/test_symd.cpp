@@ -14,7 +14,7 @@ namespace tests
 #ifdef _DEBUG
     constexpr int NUM_ITER = 1;
 #else
-    constexpr int NUM_ITER = 10;
+    constexpr int NUM_ITER = 100;
 #endif
 
     template <typename T>
