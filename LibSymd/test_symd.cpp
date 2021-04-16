@@ -158,9 +158,9 @@ namespace tests
             }
         );
 
-        std::cout << "Simple loop duration: " << durationLoop.count() << " ms" << std::endl;
-        std::cout << "Symd map single core duration: " << durationSymdSingleCore.count() << " ms" << std::endl;
-        std::cout << "Symd map duration: " << durationSymd.count() << " ms" << std::endl;
+        std::cout << "Simple processing - Loop             : " << durationLoop.count() << " ms" << std::endl;
+        std::cout << "Simple processing - symd_single_core : " << durationSymdSingleCore.count() << " ms" << std::endl;
+        std::cout << "Simple processing - symd_multi_core  : " << durationSymd.count() << " ms" << std::endl << std::endl;
     }
 
     TEST_CASE("Mapping 2 - multi out")
@@ -183,7 +183,25 @@ namespace tests
         requireEqual(out2, { 3.f, 6.f, 9.f, 12.f, 15.f, 18.f, 21.f, 24.f, 27.f });
     }
 
-    TEST_CASE("Mapping YUV444 planar to RGB planar")
+    template <typename Y, typename U, typename V>
+    auto yuvToRgbKernel(const Y& y, const U& u, const V& v)
+    {
+        auto yt = y - 16.f;
+        auto ut = u - 128.f;
+        auto vt = v - 128.f;
+
+        auto r = yt * 1.164f + vt * 1.596f;
+        auto g = yt * 1.164f - ut * 0.392f - vt * 0.813f;
+        auto b = yt * 1.164f + ut * 2.017f;
+
+        r = std::max(std::min(r, 255.f), 0.0f);
+        g = std::max(std::min(g, 255.f), 0.0f);
+        b = std::max(std::min(b, 255.f), 0.0f);
+
+        return std::array{ r, g, b };
+    }
+
+    TEST_CASE("YUV444 planar to RGB planar")
     {
         std::vector<float> Y(1920 * 1080);
         std::vector<float> U(1920 * 1080);
@@ -195,27 +213,29 @@ namespace tests
 
         auto outTuple = std::tie(R, G, B);
 
-        auto durationLoop = executionTimeMs([&]()
+        auto duration = executionTimeMs([&]()
             {
                 symd::map_single_core(outTuple, [](auto y, auto u, auto v)
                     {
-                        auto yt = y - 16.f;
-                        auto ut = u - 128.f;
-                        auto vt = v - 128.f;
-
-                        auto r = yt * 1.164f + vt * 1.596f;
-                        auto g = yt * 1.164f - ut * 0.392f - vt * 0.813f;
-                        auto b = yt * 1.164f + ut * 2.017f;
-
-                        r = std::max(std::min(r, 255.f), 0.0f);
-                        g = std::max(std::min(g, 255.f), 0.0f);
-                        b = std::max(std::min(b, 255.f), 0.0f);
-
-                        return std::array{ r, g, b };
+                        return yuvToRgbKernel(y, u, v);
                     }, Y, U, V);
             }
         );
 
-        std::cout << "Mapping YUV444 planar to RGB planar: " << durationLoop.count() << " ms" << std::endl;
+        auto durationLoop = executionTimeMs([&]()
+            {
+                for (int i = 0; i < Y.size(); i++)
+                {
+                    auto rgb = yuvToRgbKernel(Y[i], U[i], V[i]);
+
+                    R[i] = rgb[0];
+                    G[i] = rgb[1];
+                    B[i] = rgb[2];
+                }
+            }
+        );
+
+        std::cout << "Mapping YUV444 planar to RGB planar - Loop             : " << durationLoop.count() << " ms" << std::endl;
+        std::cout << "Mapping YUV444 planar to RGB planar - symd_single_core : " << duration.count() << " ms" << std::endl << std::endl;
     }
 }
