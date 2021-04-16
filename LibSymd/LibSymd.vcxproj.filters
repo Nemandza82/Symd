@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="test_symd.cpp" />
+    <ClCompile Include="test_symd_register.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\views.h" />
+    <ClInclude Include="include\internal\intrinsic_extensions_gcc.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internal\region.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\symd.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internal\symd_register.h">
+      <Filter>include</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="include">
+      <UniqueIdentifier>{dde8789c-235d-4346-834a-3655ec7b9c9f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

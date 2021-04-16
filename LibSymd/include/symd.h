@@ -1,7 +1,7 @@
 #pragma once
-#include "symd_register.h"
+#include "internal/symd_register.h"
 #include <functional>
-#include "region.h"
+#include "internal/region.h"
 #include "views.h"
 
 
