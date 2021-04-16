@@ -122,15 +122,24 @@ namespace tests
         //symd::map_single_core(input, [](){ return 1; });
 
         // Pass computation to measure time function. It fill execute it multiple times to measure time correctly.
-        auto duration = executionTimeMs([&]()
+        auto durationSymd = executionTimeMs([&]()
             {
-                symd::map_single_core(output, [](auto x)
+                symd::map_single_core(output, [](const auto& x)
                     {
-                        return x;
+                        return 2.f * x;
                     }, input);
             }
         );
 
-        std::cout << duration.count() << " ms";
+        // Measure time for simple for loop
+        auto durationLoop = executionTimeMs([&]()
+            {
+                for (size_t i = 0; i < input.size(); i++)
+                    output[i] = 2.f * input[i];
+            }
+        );
+
+        std::cout << "Simple loop duration: " << durationLoop.count() << " ms" << std::endl;
+        std::cout << "Symd map duration: " << durationSymd.count() << " ms" << std::endl;
     }
 }
