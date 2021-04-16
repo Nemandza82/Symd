@@ -8,9 +8,6 @@
     <ClInclude Include="include\symd.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="include\views.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="include\internal\intrinsic_extensions_gcc.h">
       <Filter>include\internal</Filter>
     </ClInclude>
@@ -27,6 +24,9 @@
       <Filter>include\internal</Filter>
     </ClInclude>
     <ClInclude Include="include\internal\data_view.h">
+      <Filter>include\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internal\basic_views.h">
       <Filter>include\internal</Filter>
     </ClInclude>
   </ItemGroup>

@@ -3,7 +3,9 @@
 #include <array>
 #include <span>
 #include <assert.h>
-#include "internal/data_view.h"
+#include "data_view.h"
+#include "symd_register.h"
+#include "region.h"
 
 
 namespace symd::__internal__

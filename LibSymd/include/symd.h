@@ -3,11 +3,8 @@
 #include <future>
 #include <algorithm>
 #include <functional>
-#include "internal/symd_register.h"
-#include "internal/region.h"
-#include "views.h"
+#include "internal/basic_views.h"
 #include "internal/multi_output.h"
-#include "internal/data_view.h"
 #include "internal/stencil_view.h"
 
 
