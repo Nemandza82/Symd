@@ -1,5 +1,5 @@
-#include "tests/catch.h"
-#include "lib/symd_register.h"
+#include "catch.h"
+#include "include/symd_register.h"
 
 using namespace symd::__internal__;
 

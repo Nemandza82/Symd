@@ -1,7 +1,7 @@
 #define CATCH_CONFIG_MAIN
-#include "tests/catch.h"
+#include "catch.h"
 #include <iostream>
-#include "lib/symd.h"
+#include "include/symd.h"
 #include <chrono>
 
 

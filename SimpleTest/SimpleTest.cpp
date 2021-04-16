@@ -2,10 +2,10 @@
 //
 
 #include <iostream>
-#include "../lib/symd.h"
+#include "../LibSymd/include/symd.h"
 
 
-void main()
+int main()
 {
     std::vector<int> input = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
     std::vector<int> output(input.size());
@@ -14,4 +14,6 @@ void main()
 
     for (auto x : output)
         std::cout << x << ", ";
+
+    return 0;
 }

@@ -14,7 +14,7 @@
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{303685aa-d1f5-4cd3-be5e-402b52f3b2b8}</ProjectGuid>
-    <RootNamespace>Symd</RootNamespace>
+    <RootNamespace>LibSymd</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -45,9 +45,13 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(ProjectDir)\bin\$(Configuration)-$(Platform)\</OutDir>
+    <IntDir>obj\$(Configuration)-$(Platform)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(ProjectDir)\bin\$(Configuration)-$(Platform)\</OutDir>
+    <IntDir>obj\$(Configuration)-$(Platform)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -81,11 +85,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="lib\intrinsic_extensions_gcc.h" />
-    <ClInclude Include="lib\region.h" />
-    <ClInclude Include="lib\symd.h" />
-    <ClInclude Include="lib\symd_register.h" />
-    <ClInclude Include="lib\views.h" />
+    <ClInclude Include="include\intrinsic_extensions_gcc.h" />
+    <ClInclude Include="include\region.h" />
+    <ClInclude Include="include\symd.h" />
+    <ClInclude Include="include\symd_register.h" />
+    <ClInclude Include="include\views.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="test_symd.cpp" />
