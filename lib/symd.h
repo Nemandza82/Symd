@@ -22,24 +22,24 @@ namespace symd
         }
 
         template <typename Input>
-        auto accessData(Input input, size_t row, size_t col)
+        auto fetchData(const Input& input, size_t row, size_t col)
         {
             auto ptr = getDataPtr(input, row, col);
             return *ptr;
         }
 
         template <typename Input>
-        auto accessDataVec(Input input, size_t row, size_t col)
+        auto fetchVecData(const Input& input, size_t row, size_t col)
         {
             auto* ptr = getDataPtr(input, row, col);
 
             return SymdRegister<std::decay_t<decltype(*ptr)>>(ptr);
         }
 
-        template <typename Input>
-        auto saveData(Input input, size_t row, size_t col)
+        template <typename Output>
+        auto saveData(Output& out, size_t row, size_t col)
         {
-            return *getDataPtr(input, row, col);
+            return *getDataPtr(out, row, col);
         }
     }
 
@@ -55,10 +55,12 @@ namespace symd
     template <typename Output, typename Operation, typename... Inputs>
     void map_single_core(Output& result, Operation&& operation, Inputs&&... inputs)
     {
-        auto width = __internal__::applyToFirstInput([](auto x) { return __internal__::getWidth(x); }, inputs...);
-        auto heigth = __internal__::applyToFirstInput([](auto x) { return __internal__::getHeight(x); }, inputs...);
+        //auto width = __internal__::applyToFirstInput([](auto x) { return __internal__::getWidth(x); }, inputs...);
+        //auto heigth = __internal__::applyToFirstInput([](auto x) { return __internal__::getHeight(x); }, inputs...);
+        auto width =  __internal__::getWidth(result);
+        auto heigth = __internal__::getHeight(result);
 
-        __internal__::Region safeRegion = __internal__::safeRegion(inputs...);
+        __internal__::Region safeRegion = __internal__::Region(width, heigth);
 
         for (size_t i = 0; i < heigth; ++i)
         {
@@ -70,20 +72,20 @@ namespace symd
             {
                 for (j = 0; j < safeRegion.startCol; ++j, ++dstPtr)
                 {
-                    auto pix = operation(__internal__::accessData(inputs, i, j)...);
+                    auto pix = operation(__internal__::fetchData(inputs, i, j)...);
                     *dstPtr = pix;
                 }
 
-                for (; j + __internal__::SYMD_LEN - 1 <= safeRegion.endCol; j += __internal__::SYMD_LEN, dstPtr += __internal__::SYMD_LEN)
+                for (; (j + __internal__::SYMD_LEN - 1) <= safeRegion.endCol; j += __internal__::SYMD_LEN, dstPtr += __internal__::SYMD_LEN)
                 {
-                    auto vecRes = operation(__internal__::accessDataVec(inputs, i, j)...);
+                    auto vecRes = operation(__internal__::fetchVecData(inputs, i, j)...);
                     vecRes.store(dstPtr);
                 }
             }
 
             for (; j <= safeRegion.endCol; ++j, ++dstPtr)
             {
-                auto pix = operation(__internal__::accessData(inputs, i, j)...);
+                auto pix = operation(__internal__::fetchData(inputs, i, j)...);
                 *dstPtr = pix;
             }
         }

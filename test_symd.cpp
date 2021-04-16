@@ -2,6 +2,7 @@
 #include "tests/catch.h"
 #include <iostream>
 #include "lib/symd.h"
+#include <chrono>
 
 
 namespace tests
@@ -10,6 +11,12 @@ namespace tests
     // Helpers
     ////////////////////////////////////////////////////////////////////////////////////////////
 
+#ifdef _DEBUG
+    constexpr int NUM_ITER = 1;
+#else
+    constexpr int NUM_ITER = 10;
+#endif
+
     template <typename T>
     static void requireEqual(const std::vector<T>& data, const std::vector<T>& ref)
     {
@@ -17,6 +24,24 @@ namespace tests
 
         for (size_t i = 0; i < data.size(); i++)
             REQUIRE(data[i] == ref[i]);
+    }
+
+    template <typename F>
+    static auto executionTimeMs(F&& func)
+    {
+        auto t1 = std::chrono::high_resolution_clock::now();
+
+        for (int i = 0; i < NUM_ITER; i++)
+        {
+            func();
+        }
+
+        auto t2 = std::chrono::high_resolution_clock::now();
+
+        std::chrono::duration<double, std::milli> duration = t2 - t1;
+        duration = duration / NUM_ITER;
+
+        return duration;
     }
 
 
@@ -85,5 +110,27 @@ namespace tests
             }, input);
 
         requireEqual(output, { 2.f, 4.f, 6.f, 8.f, 10.f, 12.f, 14.f, 16.f, 18.f });
+    }
+
+    // Measure execution time
+    TEST_CASE("Mapping 2 - exec time 1")
+    {
+        std::vector<float> input(2000000);
+        std::vector<float> output(input.size());
+
+        // initialize input
+        //symd::map_single_core(input, [](){ return 1; });
+
+        // Pass computation to measure time function. It fill execute it multiple times to measure time correctly.
+        auto duration = executionTimeMs([&]()
+            {
+                symd::map_single_core(output, [](auto x)
+                    {
+                        return x;
+                    }, input);
+            }
+        );
+
+        std::cout << duration.count() << " ms";
     }
 }
