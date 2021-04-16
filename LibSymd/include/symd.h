@@ -2,10 +2,11 @@
 #include <execution>
 #include <future>
 #include <algorithm>
-#include "internal/symd_register.h"
 #include <functional>
+#include "internal/symd_register.h"
 #include "internal/region.h"
 #include "views.h"
+#include "internal/multi_output.h"
 
 
 
@@ -25,26 +26,6 @@ namespace symd
             return Region(getWidth(firstInput), getHeight(firstInput));
         }
 
-        template <typename Input>
-        auto fetchData(const Input& input, size_t row, size_t col)
-        {
-            auto ptr = getDataPtr(input, row, col);
-            return *ptr;
-        }
-
-        template <typename Input>
-        auto fetchVecData(const Input& input, size_t row, size_t col)
-        {
-            auto* ptr = getDataPtr(input, row, col);
-
-            return SymdRegister<std::decay_t<decltype(*ptr)>>(ptr);
-        }
-
-        template <typename Output>
-        auto saveData(Output& out, size_t row, size_t col)
-        {
-            return *getDataPtr(out, row, col);
-        }
     }
 
     /// <summary>
@@ -69,28 +50,27 @@ namespace symd
         for (size_t i = 0; i < heigth; ++i)
         {
             size_t j = 0;
-            auto* dstPtr = __internal__::getDataPtr(result, i, j);
 
             // Here we are in safe region so we are doing vector operations
             if (i >= safeRegion.startRow && i <= safeRegion.endRow)
             {
-                for (j = 0; j < safeRegion.startCol; ++j, ++dstPtr)
+                for (j = 0; j < safeRegion.startCol; ++j)
                 {
                     auto pix = operation(__internal__::fetchData(inputs, i, j)...);
-                    *dstPtr = pix;
+                    __internal__::saveData(result, pix, i, j);
                 }
 
-                for (; (j + __internal__::SYMD_LEN - 1) <= safeRegion.endCol; j += __internal__::SYMD_LEN, dstPtr += __internal__::SYMD_LEN)
+                for (; (j + __internal__::SYMD_LEN - 1) <= safeRegion.endCol; j += __internal__::SYMD_LEN)
                 {
                     auto vecRes = operation(__internal__::fetchVecData(inputs, i, j)...);
-                    vecRes.store(dstPtr);
+                    __internal__::saveVecData(result, vecRes, i, j);
                 }
             }
 
-            for (; j <= safeRegion.endCol; ++j, ++dstPtr)
+            for (; j <= safeRegion.endCol; ++j)
             {
                 auto pix = operation(__internal__::fetchData(inputs, i, j)...);
-                *dstPtr = pix;
+                __internal__::saveData(result, pix, i, j);
             }
         }
     }
@@ -104,7 +84,7 @@ namespace symd
         std::vector<__internal__::Region> regions;
         __internal__::Region(width, heigth).split(regions);
 
-        std::for_each(std::execution::par, regions.begin(), regions.end(), [&](__internal__::Region& region)
+        std::for_each(std::execution::par_unseq, regions.begin(), regions.end(), [&](__internal__::Region& region)
             {
                 auto subRes = subView(result, region);
                 map_single_core(subRes, operation, subView(std::forward<Inputs>(inputs), region)...);

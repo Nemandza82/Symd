@@ -232,6 +232,41 @@ namespace symd
 
             return x.data() + col;
         }
+
+
+        ////////////////////////////////////////////////////////////////////////////////
+        // Fetch and save methods
+        ////////////////////////////////////////////////////////////////////////////////
+
+        template <typename Input>
+        auto fetchData(const Input& input, size_t row, size_t col)
+        {
+            auto ptr = getDataPtr(input, row, col);
+            return *ptr;
+        }
+
+        template <typename Input>
+        auto fetchVecData(const Input& input, size_t row, size_t col)
+        {
+            auto* ptr = getDataPtr(input, row, col);
+
+            return SymdRegister<std::decay_t<decltype(*ptr)>>(ptr);
+        }
+
+
+        template <typename Output, typename X>
+        auto saveData(Output& out, const X& x, size_t row, size_t col)
+        {
+            auto* ptr = getDataPtr(out, row, col);
+            *ptr = x;
+        }
+
+        template <typename Output, typename X>
+        auto saveVecData(Output& out, const SymdRegister<X>& x, size_t row, size_t col)
+        {
+            auto* ptr = getDataPtr(out, row, col);
+            x.store(ptr);
+        }
     }
 
     template<typename T>
