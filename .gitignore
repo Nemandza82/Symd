@@ -1,3 +1,6 @@
 .vs
+bin
+obj
 x64
-Symd.vcxproj.user
+LibSymd.vcxproj.user
+SimpleTest.vcxproj.user
