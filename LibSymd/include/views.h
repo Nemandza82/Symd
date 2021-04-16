@@ -47,6 +47,7 @@ namespace symd
         }
     };
 
+
     namespace __internal__
     {
         /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -66,6 +67,18 @@ namespace symd
         }
 
         template <typename T>
+        size_t getPitch(const data_view<T, 1>& x)
+        {
+            return getWidth(x);
+        }
+
+        template <typename T>
+        size_t getPitch(const data_view<T, 2>& x)
+        {
+            return getWidth(x.pitch);
+        }
+
+        template <typename T>
         T* getDataPtr(data_view<T, 1>& dw, size_t row, size_t col)
         {
             assert(row < dw.width);
@@ -82,19 +95,19 @@ namespace symd
         template <typename T>
         T* getDataPtr(data_view<T, 2>& dw, size_t row, size_t col)
         {
-            aassert(row < dw.width);
-            assert(col < dw.height);
+            assert(row < dw.height);
+            assert(col < dw.width);
 
-            return dw.data + col * dw.pitch + row;
+            return dw.data + row * dw.pitch + col;
         }
 
         template <typename T>
         const T* getDataPtr(const data_view<T, 2>& dw, size_t row, size_t col)
         {
-            aassert(row < dw.width);
-            assert(col < dw.height);
+            assert(row < dw.height);
+            assert(col < dw.width);
 
-            return dw.data + col * dw.pitch + row;
+            return dw.data + row * dw.pitch + col;
         }
 
 
@@ -112,6 +125,12 @@ namespace symd
         size_t getHeight(const std::vector<T>& x)
         {
             return 1;
+        }
+
+        template <typename T>
+        size_t getPitch(const std::vector<T>& x)
+        {
+            return getWidth(x);
         }
 
         template <typename T>
@@ -150,6 +169,12 @@ namespace symd
         }
 
         template <typename T, std::size_t N>
+        size_t getPitch(const std::array<T, N>& x)
+        {
+            return getWidth(x);
+        }
+
+        template <typename T, std::size_t N>
         T* getDataPtr(std::array<T, N>& x, size_t row, size_t col)
         {
             assert(row == 0);
@@ -175,13 +200,19 @@ namespace symd
         template <typename T, std::size_t N>
         size_t getWidth(const std::span<T, N>& x)
         {
-            return N;
+            return x.size();
         }
 
         template <typename T, std::size_t N>
         size_t getHeight(const std::span<T, N>& x)
         {
             return 1;
+        }
+
+        template <typename T, std::size_t N>
+        size_t getPitch(const std::span<T, N>& x)
+        {
+            return getWidth(x);
         }
 
         template <typename T, std::size_t N>
@@ -201,5 +232,14 @@ namespace symd
 
             return x.data() + col;
         }
+    }
+
+    template<typename T>
+    auto subView(T& view, const __internal__::Region& region)
+    {
+        auto* dataPtr = __internal__::getDataPtr(view, region.startRow, region.startCol);
+        size_t pitch = __internal__::getPitch(view);
+
+        return data_view<std::decay_t<decltype(*dataPtr)>, 2>(dataPtr, region.width(), region.height(), pitch);
     }
 }

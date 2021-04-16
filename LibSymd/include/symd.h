@@ -1,8 +1,11 @@
 #pragma once
+#include <future>
+#include <algorithm>
 #include "internal/symd_register.h"
 #include <functional>
 #include "internal/region.h"
 #include "views.h"
+
 
 
 namespace symd
@@ -91,9 +94,41 @@ namespace symd
         }
     }
 
-    template <typename Output, typename Operation, typename... Inputs>
-    void map(Output& result, Operation&& operation, Inputs&&... inputs)
+    namespace __internal__
     {
+        template <typename Func>
+        int parallel_compute(const Region& region, const Func& func)
+        {
+            std::vector<Region> regions;
+            region.split(regions);
+
+            std::vector<std::future<int>> futures;
+
+            for (const Region& r : regions)
+            {
+                auto handle1 = std::async(std::launch::async, func, r);
+                futures.push_back(std::move(handle1));
+            }
+
+            for (auto& future : futures)
+                future.wait();
+
+            return 0;
+        }
+    }
+
+    template <typename Result, typename Operation, typename... Inputs>
+    void map(Result& result, Operation&& operation, Inputs&&... inputs)
+    {
+       auto width = __internal__::getWidth(result);
+        auto heigth = __internal__::getHeight(result);
+
+        __internal__::parallel_compute(__internal__::Region(width, heigth), [&](const __internal__::Region& region)
+            {
+                auto subRes = subView(result, region);
+                map_single_core(subRes, operation, subView(std::forward<Inputs>(inputs), region)...);
+                return 0;
+            });
 
     }
 }
