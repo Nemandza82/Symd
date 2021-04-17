@@ -1303,6 +1303,12 @@ namespace symd
         }
 
         template <typename T>
+        SymdRegister<T> operator==(const SymdRegister<T>& x, T y)
+        {
+            return x == SymdRegister<T>(y);
+        }
+
+        template <typename T>
         SymdRegister<T> operator!=(T first, const SymdRegister<T>& sec)
         {
             return SymdRegister<T>(first) != sec;
