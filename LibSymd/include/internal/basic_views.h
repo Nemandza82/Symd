@@ -166,6 +166,24 @@ namespace symd::__internal__
         auto* ptr = getDataPtr(out, row, col);
         x.store(ptr);
     }
+/*
+    template <typename Input>
+    size_t safeBorderX(const Input& input)
+    {
+        return 0;
+    }
+
+    template <typename T>
+    int safeBorderX(const Stencil<T>& input)
+    {
+        return input._stencilWidth / 2;
+    }
+
+    template <typename Input>
+    int safeBorderY(const Input& input)
+    {
+        return 0;
+    }*/
 }
 
 namespace symd::views

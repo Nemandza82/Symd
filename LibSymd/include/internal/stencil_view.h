@@ -21,6 +21,22 @@ namespace symd::views
 
 namespace symd::__internal__
 {
+    static size_t foldCoords(__int64 x, size_t low, size_t high)
+    {
+        if (x < (__int64)low)
+        {
+            return size_t(2 * low + std::abs(x));
+        }
+        else if (x >= (__int64)high)
+        {
+            return size_t(2 * high - std::abs(x));
+        }
+        else
+        {
+            return size_t(x);
+        }
+    }
+
     /// <summary>
     /// Object to access stencil around specified data location (row, col)
     /// </summary>
@@ -33,22 +49,6 @@ namespace symd::__internal__
 
         size_t _underlyingWidth;
         size_t _underlyingHeight;
-
-        size_t foldCoords(__int64 x, size_t low, size_t high)
-        {
-            if (x < low)
-            {
-                return size_t(2 * low + std::abs(x));
-            }
-            else if (x >= high)
-            {
-                return size_t(2 * high - std::abs(x));
-            }
-            else
-            {
-                return size_t(x);
-            }
-        }
 
     public:
         using UnderlyingDataType = std::decay_t<decltype(fetchData(_underlyingView, 0, 0))>;
@@ -81,7 +81,7 @@ namespace symd::__internal__
     public:
         using UnderlyingDataType = std::decay_t<decltype(fetchData(_underlyingView, 0, 0))>;
 
-        StencilVec(const View& view, int row, int col)
+        StencilVec(const View& view, size_t row, size_t col)
             : _underlyingView(view)
             , _row(row)
             , _col(col)
