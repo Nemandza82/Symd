@@ -3,6 +3,7 @@
 #include <iostream>
 #include "include/symd.h"
 #include <chrono>
+#include <algorithm>
 
 
 namespace tests
@@ -237,6 +238,84 @@ namespace tests
 
         std::cout << "Mapping YUV444 planar to RGB planar - Loop             : " << durationLoop.count() << " ms" << std::endl;
         std::cout << "Mapping YUV444 planar to RGB planar - symd_single_core : " << duration.count() << " ms" << std::endl << std::endl;
+    }
+
+    TEST_CASE("YUV444 planar to R")
+    {
+        std::vector<float> Y(1920 * 1080);
+        std::vector<float> U(1920 * 1080);
+        std::vector<float> V(1920 * 1080);
+
+        std::vector<float> R(Y.size());
+
+        auto durationSingleCore = executionTimeMs([&]()
+            {
+                symd::map_single_core(R, [](auto y, auto u, auto v)
+                    {
+                        auto yt = y - 16.f;
+                        auto ut = u - 128.f;
+                        auto vt = v - 128.f;
+
+                        auto r = yt * 1.164f + vt * 1.596f;
+                        auto g = yt * 1.164f - ut * 0.392f - vt * 0.813f;
+                        auto b = yt * 1.164f + ut * 2.017f;
+
+                        r = std::max(std::min(r, 255.f), 0.0f);
+                        g = std::max(std::min(g, 255.f), 0.0f);
+                        b = std::max(std::min(b, 255.f), 0.0f);
+
+                        return (r + g + b) / 3;
+
+                    }, Y, U, V);
+            }
+        );
+
+        auto duration = executionTimeMs([&]()
+            {
+                symd::map(R, [](auto y, auto u, auto v)
+                    {
+                        auto yt = y - 16.f;
+                        auto ut = u - 128.f;
+                        auto vt = v - 128.f;
+
+                        auto r = yt * 1.164f + vt * 1.596f;
+                        auto g = yt * 1.164f - ut * 0.392f - vt * 0.813f;
+                        auto b = yt * 1.164f + ut * 2.017f;
+
+                        r = std::max(std::min(r, 255.f), 0.0f);
+                        g = std::max(std::min(g, 255.f), 0.0f);
+                        b = std::max(std::min(b, 255.f), 0.0f);
+
+                        return (r + g + b) / 3;
+
+                    }, Y, U, V);
+            }
+        );
+
+        auto durationLoop = executionTimeMs([&]()
+            {
+                for (int i = 0; i < Y.size(); i++)
+                {
+                    auto yt = Y[i] - 16.f;
+                    auto ut = U[i] - 128.f;
+                    auto vt = V[i] - 128.f;
+
+                    auto r = yt * 1.164f + vt * 1.596f;
+                    auto g = yt * 1.164f - ut * 0.392f - vt * 0.813f;
+                    auto b = yt * 1.164f + ut * 2.017f;
+
+                    r = std::max(std::min(r, 255.f), 0.0f);
+                    g = std::max(std::min(g, 255.f), 0.0f);
+                    b = std::max(std::min(b, 255.f), 0.0f);
+
+                    R[i] = (r + g + b) / 3;
+                }
+            }
+        );
+
+        std::cout << "Mapping YUV444 planar to RGB planar - Loop             : " << durationLoop.count() << " ms" << std::endl;
+        std::cout << "Mapping YUV444 planar to RGB planar - symd_single_core : " << durationSingleCore.count() << " ms" << std::endl;
+        std::cout << "Mapping YUV444 planar to RGB planar - symd_multi_core  : " << duration.count() << " ms" << std::endl << std::endl;
     }
 
     TEST_CASE("Mapping - Basic Stencil")
