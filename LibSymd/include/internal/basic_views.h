@@ -137,17 +137,17 @@ namespace symd::__internal__
     // Fetch and save methods
     ////////////////////////////////////////////////////////////////////////////////
 
-    template <typename Input>
-    auto fetchData(const Input& input, size_t row, size_t col)
+    template <typename View>
+    auto fetchData(const View& view, size_t row, size_t col)
     {
-        auto ptr = getDataPtr(input, row, col);
+        auto ptr = getDataPtr(view, row, col);
         return *ptr;
     }
 
-    template <typename Input>
-    auto fetchVecData(const Input& input, size_t row, size_t col)
+    template <typename View>
+    auto fetchVecData(const View& view, size_t row, size_t col)
     {
-        auto* ptr = getDataPtr(input, row, col);
+        auto* ptr = getDataPtr(view, row, col);
 
         return SymdRegister<std::decay_t<decltype(*ptr)>>(ptr);
     }
@@ -166,24 +166,18 @@ namespace symd::__internal__
         auto* ptr = getDataPtr(out, row, col);
         x.store(ptr);
     }
-/*
-    template <typename Input>
-    size_t safeBorderX(const Input& input)
+
+    template <typename View>
+    size_t horisontalBorder(const View& input)
     {
         return 0;
     }
 
-    template <typename T>
-    int safeBorderX(const Stencil<T>& input)
-    {
-        return input._stencilWidth / 2;
-    }
-
-    template <typename Input>
-    int safeBorderY(const Input& input)
+    template <typename View>
+    size_t verticalBorder(const View& input)
     {
         return 0;
-    }*/
+    }
 }
 
 namespace symd::views
@@ -195,5 +189,14 @@ namespace symd::views
         size_t pitch = __internal__::getPitch(view);
 
         return data_view<std::decay_t<decltype(*dataPtr)>, 2>(dataPtr, region.width(), region.height(), pitch);
+    }
+
+    template<typename View>
+    auto sub_view(const View& view, const __internal__::Region& region)
+    {
+        auto* dataPtr = __internal__::getDataPtr(view, region.startRow, region.startCol);
+        size_t pitch = __internal__::getPitch(view);
+
+        return data_view<const std::decay_t<decltype(*dataPtr)>, 2>(dataPtr, region.width(), region.height(), pitch);
     }
 }

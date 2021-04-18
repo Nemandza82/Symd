@@ -41,6 +41,11 @@ namespace symd::views
             height = height_;
             pitch = pitch_;
         }
+
+        T readPix(size_t y, size_t x) const
+        {
+            return data[y * pitch + x];
+        }
     };
 }
 
@@ -71,7 +76,7 @@ namespace symd::__internal__
     template <typename T>
     size_t getPitch(const views::data_view<T, 2>& x)
     {
-        return getWidth(x.pitch);
+        return x.pitch;
     }
 
     template <typename T>

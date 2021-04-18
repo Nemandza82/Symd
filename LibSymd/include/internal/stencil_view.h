@@ -17,6 +17,14 @@ namespace symd::views
             , _stencilHeight(stencilHeight)
         {}
     };
+
+    template<typename View>
+    auto sub_view(const stencil<View>& st, const __internal__::Region& region)
+    {
+        auto intView = sub_view(st._underlyingView, region);
+
+        return stencil(intView, st._stencilWidth, st._stencilHeight);
+    }
 }
 
 namespace symd::__internal__
@@ -96,32 +104,46 @@ namespace symd::__internal__
 
 
     template <typename T>
-    size_t getWidth(const symd::views::stencil<T>& x)
+    size_t getWidth(const views::stencil<T>& x)
     {
-        return getWidth(x._underlying);
+        return getWidth(x._underlyingView);
     }
 
     template <typename T>
-    size_t getHeight(const symd::views::stencil<T>& x)
+    size_t getHeight(const views::stencil<T>& x)
     {
-        return getHeight(x._underlying);
+        return getHeight(x._underlyingView);
     }
 
     template <typename T>
-    size_t getPitch(const symd::views::stencil<T>& x)
+    size_t getPitch(const views::stencil<T>& x)
     {
-        return getPitch(x._underlying);
+        return getPitch(x._underlyingView);
     }
 
     template <typename T>
-    auto fetchData(const symd::views::stencil<T>& x, size_t row, size_t col)
+    auto fetchData(const views::stencil<T>& x, size_t row, size_t col)
     {
         return StencilPix(x._underlyingView, row, col);
     }
 
     template <typename View>
-    auto fetchVecData(const symd::views::stencil<View>& st, size_t row, size_t col)
+    auto fetchVecData(const views::stencil<View>& st, size_t row, size_t col)
     {
         return StencilVec(st._underlyingView, row, col);
     }
+
+    template <typename View>
+    size_t horisontalBorder(const views::stencil<View>& st)
+    {
+        return (st._stencilWidth / 2) + horisontalBorder(st._underlyingView);
+    }
+
+    template <typename View>
+    size_t verticalBorder(const views::stencil<View>& st)
+    {
+        return (st._stencilHeight / 2) + verticalBorder(st._underlyingView);
+    }
+
+
 }
