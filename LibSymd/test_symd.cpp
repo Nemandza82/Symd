@@ -288,7 +288,7 @@ namespace tests
         symd::views::data_view<float, 2> twoDInput(input.data(), width, height, width);
         symd::views::data_view<float, 2> twoDOutput(output.data(), width, height, width);
 
-        /*auto duration = executionTimeMs([&]()
+        auto duration = executionTimeMs([&]()
             {
                 // Do the convolution. We also need 2D stencil view
                 symd::map(twoDOutput, [&](const auto& x)
@@ -337,8 +337,7 @@ namespace tests
 
         std::cout << "Convolution 3x3 - Loop             : " << durationLoop.count() << " ms" << std::endl;
         std::cout << "Convolution 3x3 - symd_single_core : " << durationSingleCore.count() << " ms" << std::endl;
-        std::cout << "Convolution 3x3 - symd_multi_core  : " << duration.count() << " ms" << std::endl << std::endl;*/
+        std::cout << "Convolution 3x3 - symd_multi_core  : " << duration.count() << " ms" << std::endl << std::endl;
     }
-
 }
 

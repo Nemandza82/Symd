@@ -2,33 +2,22 @@
 #include "symd_register.h"
 
 
-namespace symd::views
+namespace symd::__internal__
 {
     template <typename View>
-    struct stencil
+    struct Stencil
     {
-        const View& _underlyingView;
-        const int _stencilWidth;
-        const int _stencilHeight;
+        View _underlyingView;
+        const int _width;
+        const int _height;
 
-        stencil(const View& view, int stencilWidth, int stencilHeight)
-            : _underlyingView(view)
-            , _stencilWidth(stencilWidth)
-            , _stencilHeight(stencilHeight)
+        Stencil(View&& view, int width, int height)
+            : _underlyingView(std::forward<View>(view))
+            , _width(width)
+            , _height(height)
         {}
     };
 
-    template<typename View>
-    auto sub_view(const stencil<View>& st, const __internal__::Region& region)
-    {
-        auto intView = sub_view(st._underlyingView, region);
-
-        return stencil(intView, st._stencilWidth, st._stencilHeight);
-    }
-}
-
-namespace symd::__internal__
-{
     static size_t foldCoords(__int64 x, size_t low, size_t high)
     {
         if (x < (__int64)low)
@@ -104,46 +93,60 @@ namespace symd::__internal__
 
 
     template <typename T>
-    size_t getWidth(const views::stencil<T>& x)
+    size_t getWidth(const Stencil<T>& x)
     {
         return getWidth(x._underlyingView);
     }
 
     template <typename T>
-    size_t getHeight(const views::stencil<T>& x)
+    size_t getHeight(const Stencil<T>& x)
     {
         return getHeight(x._underlyingView);
     }
 
     template <typename T>
-    size_t getPitch(const views::stencil<T>& x)
+    size_t getPitch(const Stencil<T>& x)
     {
         return getPitch(x._underlyingView);
     }
 
     template <typename T>
-    auto fetchData(const views::stencil<T>& x, size_t row, size_t col)
+    auto fetchData(const Stencil<T>& x, size_t row, size_t col)
     {
         return StencilPix(x._underlyingView, row, col);
     }
 
     template <typename View>
-    auto fetchVecData(const views::stencil<View>& st, size_t row, size_t col)
+    auto fetchVecData(const Stencil<View>& st, size_t row, size_t col)
     {
         return StencilVec(st._underlyingView, row, col);
     }
 
     template <typename View>
-    size_t horisontalBorder(const views::stencil<View>& st)
+    size_t horisontalBorder(const Stencil<View>& st)
     {
-        return (st._stencilWidth / 2) + horisontalBorder(st._underlyingView);
+        return (st._width / 2) + horisontalBorder(st._underlyingView);
     }
 
     template <typename View>
-    size_t verticalBorder(const views::stencil<View>& st)
+    size_t verticalBorder(const Stencil<View>& st)
     {
-        return (st._stencilHeight / 2) + verticalBorder(st._underlyingView);
+        return (st._height / 2) + verticalBorder(st._underlyingView);
+    }
+}
+
+
+namespace symd::views
+{
+    template <typename View>
+    auto stencil(View&& view, int width, int height)
+    {
+        return __internal__::Stencil<View>(std::forward<View>(view), width, height);
     }
 
-
+    template<typename View>
+    auto sub_view(const __internal__::Stencil<View>& st, const __internal__::Region& region)
+    {
+        return stencil(sub_view(st._underlyingView, region), st._width, st._height);
+    }
 }
