@@ -221,37 +221,39 @@ namespace tests
     }
 
 
-    //TEST_CASE("Float bit and")
-    //{
-    //    auto bit_and = [](auto&& lhs, auto&& rhs)
-    //    {
-    //        using T = std::decay_t<decltype(lhs)>;
-    //        using U = std::decay_t<decltype(rhs)>;
-    //        static_assert(std::is_same_v<T, U>);
+    TEST_CASE("Float bit and")
+    {
+        // TODO: Move to helper functions somehow, make it work for double as well!
+        auto bit_and = [](auto&& lhs, auto&& rhs)
+        {
+            using T = std::decay_t<decltype(lhs)>;
+            using U = std::decay_t<decltype(rhs)>;
+            static_assert(std::is_same_v<T, U>);
 
-    //        if constexpr (std::is_same_v<T, float>)
-    //        {
-    //            union FpBitTwiddler
-    //            {
-    //                float f;
-    //                uint32_t u;
-    //            } lhs_, rhs_;
+            if constexpr (std::is_same_v<T, float>)
+            {
+                union
+                {
+                    float f;
+                    uint32_t u;
+                } lhs_, rhs_, res;
 
-    //            lhs_.f = lhs;
-    //            rhs_.f = rhs;
+                lhs_.f = lhs;
+                rhs_.f = rhs;
 
-    //            return lhs_.u & rhs_.u;
-    //        }
-    //        else
-    //        {
-    //            return lhs & rhs;
-    //        }
+                res.u = lhs_.u & rhs_.u;
+                return res.f;
+            }
+            else
+            {
+                return lhs & rhs;
+            }
 
-    //    };
+        };
 
-    //    checkOperationResult(inData1F, bit_and, inData2F);
-    //    checkOperationResult(inData2F, bit_and, inData1F);
-    //}
+        checkOperationResult(inData1F, bit_and, inData2F);
+        checkOperationResult(inData2F, bit_and, inData1F);
+    }
 
 
     TEST_CASE("Float cmp equal")
