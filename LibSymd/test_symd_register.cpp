@@ -35,9 +35,52 @@ namespace tests
         return true;
     }
 
+    template <typename T>
+    static bool isRegCmpValid(const SymdRegister<T>& reg, const std::vector<bool>& reference)
+    {
+        std::vector<T> tmpRes(SYMD_LEN + 2);
+        tmpRes[0] = (T)0;
+        tmpRes[SYMD_LEN + 1] = (T)0;
+
+        reg.store(tmpRes.data() + 1);
+
+        // Does not overwrite nearby locations
+        REQUIRE(tmpRes[0] == (T)0);
+        REQUIRE(tmpRes[SYMD_LEN + 1] == (T)0);
+
+        for (std::size_t i = 0; i < SYMD_LEN; i++)
+        {
+            // FLOAT
+            if constexpr (std::is_same_v<T, float>)
+            {
+                if (reference[i] && !isnan(reg[i]))
+                    return false;
+                else if (!reference[i] && isnan(reg[i]))
+                    return false;
+
+                // Check store as well
+                if (reference[i] && !isnan(tmpRes[i + 1]))
+                    return false;
+                else if (!reference[i] && isnan(tmpRes[i + 1]))
+                    return false;
+            }
+            else if constexpr (std::is_same_v<T, int>)
+            {
+                // TODO
+                return false;
+            }
+            else 
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
 
     template <typename T, typename Operation>
-    std::vector<T> applyOpToVector(const std::vector<T>& in, Operation op, T x)
+    std::vector<T> applyOpToVector(const std::vector<T>& in, Operation&& op, T x)
     {
         std::vector<T> reference(in.size());
 
@@ -49,7 +92,7 @@ namespace tests
 
 
     template <typename T, typename Operation>
-    std::vector<T> applyOpToVector(T x, Operation op, const std::vector<T>& in)
+    std::vector<T> applyOpToVector(T x, Operation&& op, const std::vector<T>& in)
     {
         std::vector<T> reference(in.size());
 
@@ -61,7 +104,7 @@ namespace tests
 
 
     template <typename T, typename Operation>
-    std::vector<T> applyOpToVector(const std::vector<T>& in1, Operation op, const std::vector<T>& in2)
+    std::vector<T> applyOpToVector(const std::vector<T>& in1, Operation&& op, const std::vector<T>& in2)
     {
         std::vector<T> reference(in1.size());
 
@@ -73,7 +116,7 @@ namespace tests
 
 
     template <typename T, typename Operation>
-    static void checkOperationResult(const std::vector<T>& in1, Operation op, const std::vector<T>& in2)
+    static void checkOperationResult(const std::vector<T>& in1, Operation&& op, const std::vector<T>& in2)
     {
         REQUIRE(in1.size() == in2.size());
 
@@ -94,7 +137,7 @@ namespace tests
 
 
     template <typename T, typename Operation>
-    static void checkUnaryOperationResult(Operation op, const std::vector<T>& in)
+    static void checkUnaryOperationResult(Operation&& op, const std::vector<T>& in)
     {
         SymdRegister<T> reg(in.data());
         REQUIRE(isRegEqualToData(reg, in));
@@ -108,6 +151,26 @@ namespace tests
         REQUIRE(isRegEqualToData(res, reference));
     }
 
+
+    template <typename T, typename Operation>
+    static void checkCmpOperationResult(const std::vector<T>& in1, Operation&& op, const std::vector<T>& in2)
+    {
+        REQUIRE(in1.size() == in2.size());
+
+        SymdRegister<T> reg1(in1.data());
+        SymdRegister<T> reg2(in2.data());
+
+        REQUIRE(isRegEqualToData(reg1, in1));
+        REQUIRE(isRegEqualToData(reg2, in2));
+
+        SymdRegister<T> res = op(reg1, reg2);   
+        std::vector<bool> reference(in1.size());
+        
+        for (std::size_t i = 0; i < in1.size(); i++)
+            reference[i] = op(in1[i], in2[i]);
+
+        REQUIRE(isRegCmpValid(res, reference));
+    }
 
     /////////////////////////////////////////////////////////////////////////////////////////
     /// Test float operations
@@ -157,6 +220,75 @@ namespace tests
         checkOperationResult(inData2F, std::divides(), inData1F);
     }
 
+
+    //TEST_CASE("Float bit and")
+    //{
+    //    auto bit_and = [](auto&& lhs, auto&& rhs)
+    //    {
+    //        using T = std::decay_t<decltype(lhs)>;
+    //        using U = std::decay_t<decltype(rhs)>;
+    //        static_assert(std::is_same_v<T, U>);
+
+    //        if constexpr (std::is_same_v<T, float>)
+    //        {
+    //            union FpBitTwiddler
+    //            {
+    //                float f;
+    //                uint32_t u;
+    //            } lhs_, rhs_;
+
+    //            lhs_.f = lhs;
+    //            rhs_.f = rhs;
+
+    //            return lhs_.u & rhs_.u;
+    //        }
+    //        else
+    //        {
+    //            return lhs & rhs;
+    //        }
+
+    //    };
+
+    //    checkOperationResult(inData1F, bit_and, inData2F);
+    //    checkOperationResult(inData2F, bit_and, inData1F);
+    //}
+
+
+    TEST_CASE("Float cmp equal")
+    {
+        checkCmpOperationResult(inData1F, std::equal_to(), inData2F);
+        checkCmpOperationResult(inData2F, std::equal_to(), inData1F);
+    }
+
+    TEST_CASE("Float cmp not equal")
+    {
+        checkCmpOperationResult(inData1F, std::not_equal_to(), inData2F);
+        checkCmpOperationResult(inData2F, std::not_equal_to(), inData1F);
+    }
+
+    TEST_CASE("Float cmp greater equal")
+    {
+        checkCmpOperationResult(inData1F, std::greater_equal(), inData2F);
+        checkCmpOperationResult(inData2F, std::greater_equal(), inData1F);
+    }
+
+    TEST_CASE("Float cmp less equal")
+    {
+        checkCmpOperationResult(inData1F, std::less_equal(), inData2F);
+        checkCmpOperationResult(inData2F, std::less_equal(), inData1F);
+    }
+
+    TEST_CASE("Float cmp greater")
+    {
+        checkCmpOperationResult(inData1F, std::greater(), inData2F);
+        checkCmpOperationResult(inData2F, std::greater(), inData1F);
+    }
+
+    TEST_CASE("Float cmp less")
+    {
+        checkCmpOperationResult(inData1F, std::less(), inData2F);
+        checkCmpOperationResult(inData2F, std::less(), inData1F);
+    }
 
     /////////////////////////////////////////////////////////////////////////////////////////
     /// Test int operations
