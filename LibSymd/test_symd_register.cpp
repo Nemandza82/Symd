@@ -1,6 +1,7 @@
 #include "catch.h"
 #include "include/internal/symd_register.h"
 
+#pragma warning( push )
 #pragma warning( disable : 26444 )
 
 using namespace symd::__internal__;
@@ -66,7 +67,7 @@ namespace tests
                 else if (!reference[i] && isnan(tmpRes[i + 1]))
                     return false;
             }
-            // INT
+            // INTS
             else if constexpr (std::is_integral_v<T>)
             {
                 if (reference[i] && reg[i] != -1)
@@ -607,3 +608,5 @@ namespace tests
         checkOperationResult(inData2b, ucMinusSat, inData1b);
     }
 }
+
+#pragma warning( pop )
