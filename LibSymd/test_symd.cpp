@@ -4,6 +4,7 @@
 #include "include/symd.h"
 #include <chrono>
 #include <algorithm>
+#include <random>
 
 
 namespace tests
@@ -17,6 +18,18 @@ namespace tests
 #else
     constexpr int NUM_ITER = 100;
 #endif
+
+    /// <summary>
+    /// Fills input vector with random floats in range 0-255
+    /// </summary>
+    void randomizeData(std::vector<float>& data)
+    {
+        std::default_random_engine generator;
+        std::uniform_real_distribution<float> distribution(0.f, 255.f);
+
+        for (auto& x : data)
+            x = distribution(generator);
+    }
 
     template <typename T>
     static void requireEqual(const T* data, const std::vector<T>& ref)
@@ -33,6 +46,18 @@ namespace tests
         requireEqual(data.data(), ref);
     }
 
+    template <typename T>
+    static void requireNear(const std::vector<T>& data, const std::vector<T>& ref, T eps)
+    {
+        REQUIRE(data.size() == ref.size());
+
+        for (size_t i = 0; i < ref.size(); i++)
+            REQUIRE(std::abs(data[i] - ref[i]) < eps);
+    }
+
+    /// <summary>
+    /// Executes input function for number of times and returns average execution time in ms.
+    /// </summary>
     template <typename F>
     static auto executionTimeMs(F&& func)
     {
@@ -213,24 +238,50 @@ namespace tests
 
     TEST_CASE("YUV444 planar to RGB planar")
     {
-        std::vector<float> Y(1920 * 1080);
-        std::vector<float> U(1920 * 1080);
-        std::vector<float> V(1920 * 1080);
+        size_t width = 1920;
+        size_t height = 1080;
 
-        std::vector<float> R(Y.size());
-        std::vector<float> G(Y.size());
-        std::vector<float> B(Y.size());
+        std::vector<float> Y(width * height);
+        std::vector<float> U(width * height);
+        std::vector<float> V(width * height);
 
-        auto outTuple = std::tie(R, G, B);
+        randomizeData(Y);
+        randomizeData(U);
+        randomizeData(V);
 
-        auto duration = executionTimeMs([&]()
+        std::vector<float> R_sc(Y.size());
+        std::vector<float> G_sc(Y.size());
+        std::vector<float> B_sc(Y.size());
+
+        auto outTuple_sc = std::tie(R_sc, G_sc, B_sc);
+
+        auto durationSingleCore = executionTimeMs([&]()
             {
-                symd::map_single_core(outTuple, [](auto y, auto u, auto v)
+                symd::map_single_core(outTuple_sc, [](auto y, auto u, auto v)
                     {
                         return yuvToRgbKernel(y, u, v);
                     }, Y, U, V);
             }
         );
+
+        std::vector<float> R_mc(Y.size());
+        std::vector<float> G_mc(Y.size());
+        std::vector<float> B_mc(Y.size());
+
+        auto outTuple_mc = std::tie(R_mc, G_mc, B_mc);
+
+        auto duration = executionTimeMs([&]()
+            {
+                symd::map(outTuple_mc, [](auto y, auto u, auto v)
+                    {
+                        return yuvToRgbKernel(y, u, v);
+                    }, Y, U, V);
+            }
+        );
+
+        std::vector<float> R_loop(Y.size());
+        std::vector<float> G_loop(Y.size());
+        std::vector<float> B_loop(Y.size());
 
         auto durationLoop = executionTimeMs([&]()
             {
@@ -238,15 +289,24 @@ namespace tests
                 {
                     auto rgb = yuvToRgbKernel(Y[i], U[i], V[i]);
 
-                    R[i] = rgb[0];
-                    G[i] = rgb[1];
-                    B[i] = rgb[2];
+                    R_loop[i] = rgb[0];
+                    G_loop[i] = rgb[1];
+                    B_loop[i] = rgb[2];
                 }
             }
         );
 
+        requireNear(R_sc, R_loop, 0.03f);
+        requireNear(G_sc, G_loop, 0.03f);
+        requireNear(B_sc, B_loop, 0.03f);
+
+        requireNear(R_mc, R_loop, 0.03f);
+        requireNear(G_mc, G_loop, 0.03f);
+        requireNear(B_mc, B_loop, 0.03f);
+
         std::cout << "Mapping YUV444 planar to RGB planar - Loop             : " << durationLoop.count() << " ms" << std::endl;
-        std::cout << "Mapping YUV444 planar to RGB planar - symd_single_core : " << duration.count() << " ms" << std::endl << std::endl;
+        std::cout << "Mapping YUV444 planar to RGB planar - symd_single_core : " << durationSingleCore.count() << " ms" << std::endl;
+        std::cout << "Mapping YUV444 planar to RGB planar - symd_multi_core  : " << duration.count() << " ms" << std::endl << std::endl;
     }
 
     TEST_CASE("Mapping - Basic Stencil")
@@ -276,39 +336,50 @@ namespace tests
     TEST_CASE("Mapping - Convolucion 3x3")
     {
         size_t width = 1920;
-        size_t height = 1920;
+        size_t height = 1080;
 
         std::vector<float> input(width * height);
-        std::vector<float> output(input.size());
+        randomizeData(input);
 
         // Kernel for convolution
-        std::array<float, 9> kernel = { 1.f / 9 };
+        std::array<float, 9> kernel = {
+            1.f / 9, 1.f / 9, 1.f / 9,
+            1.f / 9, 1.f / 9, 1.f / 9,
+            1.f / 9, 1.f / 9, 1.f / 9
+        };
 
         // Prepare 2D view to data to do 2D convolution
         symd::views::data_view<float, 2> twoDInput(input.data(), width, height, width);
-        symd::views::data_view<float, 2> twoDOutput(output.data(), width, height, width);
+
+        std::vector<float> output_mc(input.size());
+        symd::views::data_view<float, 2> twoDOutput_mc(output_mc.data(), width, height, width);
 
         auto duration = executionTimeMs([&]()
             {
                 // Do the convolution. We also need 2D stencil view
-                symd::map(twoDOutput, [&](const auto& x)
+                symd::map(twoDOutput_mc, [&](const auto& x)
                     {
                         return conv3x3_Kernel(x, kernel.data());
 
                     }, symd::views::stencil(twoDInput, 3, 3));
             }
         );
+
+        std::vector<float> output_sc(input.size());
+        symd::views::data_view<float, 2> twoDOutput_sc(output_sc.data(), width, height, width);
 
         auto durationSingleCore = executionTimeMs([&]()
             {
                 // Do the convolution. We also need 2D stencil view
-                symd::map_single_core(twoDOutput, [&](const auto& x)
+                symd::map_single_core(twoDOutput_sc, [&](const auto& x)
                     {
                         return conv3x3_Kernel(x, kernel.data());
 
                     }, symd::views::stencil(twoDInput, 3, 3));
             }
         );
+
+        std::vector<float> output_loop(input.size());
 
         auto durationLoop = executionTimeMs([&]()
             {
@@ -329,11 +400,15 @@ namespace tests
                             twoDInput.readPix(i + 1, j) * kernel[7] +
                             twoDInput.readPix(i + 1, j + 1) * kernel[8];
 
-                        output[i * width + j] = res;
+                        output_loop[i * width + j] = res;
                     }
                 }
             }
         );
+
+        requireNear(output_sc, output_mc, 0.03f);
+        requireNear(output_sc, output_loop, 0.03f);
+        requireNear(output_mc, output_loop, 0.03f);
 
         std::cout << "Convolution 3x3 - Loop             : " << durationLoop.count() << " ms" << std::endl;
         std::cout << "Convolution 3x3 - symd_single_core : " << durationSingleCore.count() << " ms" << std::endl;

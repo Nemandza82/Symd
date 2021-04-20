@@ -153,18 +153,18 @@ namespace symd::__internal__
     }
 
 
-    template <typename Output, typename X>
-    auto saveData(Output& out, const X& x, size_t row, size_t col)
+    template <typename View, typename DataType>
+    void saveData(View& outView, const DataType& element, size_t row, size_t col)
     {
-        auto* ptr = getDataPtr(out, row, col);
-        *ptr = x;
+        auto* ptr = getDataPtr(outView, row, col);
+        *ptr = element;
     }
 
-    template <typename Output, typename X>
-    auto saveVecData(Output& out, const SymdRegister<X>& x, size_t row, size_t col)
+    template <typename View, typename DataType>
+    void saveVecData(View& outView, const SymdRegister<DataType>& element, size_t row, size_t col)
     {
-        auto* ptr = getDataPtr(out, row, col);
-        x.store(ptr);
+        auto* ptr = getDataPtr(outView, row, col);
+        element.store(ptr);
     }
 
     template <typename View>
@@ -177,26 +177,5 @@ namespace symd::__internal__
     size_t verticalBorder(const View& input)
     {
         return 0;
-    }
-}
-
-namespace symd::views
-{
-    template<typename View>
-    auto sub_view(View& view, const __internal__::Region& region)
-    {
-        auto* dataPtr = __internal__::getDataPtr(view, region.startRow, region.startCol);
-        size_t pitch = __internal__::getPitch(view);
-
-        return data_view<std::decay_t<decltype(*dataPtr)>, 2>(dataPtr, region.width(), region.height(), pitch);
-    }
-
-    template<typename View>
-    auto sub_view(const View& view, const __internal__::Region& region)
-    {
-        auto* dataPtr = __internal__::getDataPtr(view, region.startRow, region.startCol);
-        size_t pitch = __internal__::getPitch(view);
-
-        return data_view<const std::decay_t<decltype(*dataPtr)>, 2>(dataPtr, region.width(), region.height(), pitch);
     }
 }

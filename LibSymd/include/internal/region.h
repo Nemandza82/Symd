@@ -3,9 +3,7 @@
 #include <utility>
 
 
-namespace symd
-{
-namespace __internal__
+namespace symd::__internal__
 {
     /// <summary>
     /// Inclusive region. Used to help parallel compute.
@@ -63,7 +61,7 @@ namespace __internal__
         /// <returns>Two disjoint regions with cover the source region.</returns>
         void split(std::vector<Region>& result) const
         {
-            if (count() < 200000)
+            if (count() < 100000)
             {
                 result.push_back(*this);
             }
@@ -83,5 +81,4 @@ namespace __internal__
             }
         }
     };
-}
 }
