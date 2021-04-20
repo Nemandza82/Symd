@@ -64,10 +64,19 @@ namespace tests
                 else if (!reference[i] && isnan(tmpRes[i + 1]))
                     return false;
             }
+            // INT
             else if constexpr (std::is_same_v<T, int>)
             {
-                // TODO
-                return false;
+                if (reference[i] && reg[i] != -1)
+                    return false;
+                else if (!reference[i] && reg[i] != 0)
+                    return false;
+
+                // Check store as well
+                if (reference[i] && tmpRes[i + 1] != -1)
+                    return false;
+                else if (!reference[i] && tmpRes[i + 1] != 0)
+                    return false;
             }
             else
             {
@@ -291,17 +300,26 @@ namespace tests
         checkOperationResult(inData2F, floatingPointBitOp(std::bit_and()), inData1F);
     }
 
+
     TEST_CASE("Float bit or")
     {
         checkOperationResult(inData1F, floatingPointBitOp(std::bit_or()), inData2F);
         checkOperationResult(inData2F, floatingPointBitOp(std::bit_or()), inData1F);
     }
 
+
     TEST_CASE("Float bit xor")
     {
         checkOperationResult(inData1F, floatingPointBitOp(std::bit_xor()), inData2F);
         checkOperationResult(inData2F, floatingPointBitOp(std::bit_xor()), inData1F);
     }
+
+    TEST_CASE("Float bit not")
+    {
+        checkUnaryOperationResult(floatingPointBitUnaryOp(std::bit_not()), inData1F);
+        checkUnaryOperationResult(floatingPointBitUnaryOp(std::bit_not()), inData2F);
+    }
+
 
     TEST_CASE("Float cmp equal")
     {
@@ -315,11 +333,13 @@ namespace tests
         checkCmpOperationResult(inData2F, std::not_equal_to(), inData1F);
     }
 
+
     TEST_CASE("Float cmp greater equal")
     {
         checkCmpOperationResult(inData1F, std::greater_equal(), inData2F);
         checkCmpOperationResult(inData2F, std::greater_equal(), inData1F);
     }
+
 
     TEST_CASE("Float cmp less equal")
     {
@@ -333,16 +353,11 @@ namespace tests
         checkCmpOperationResult(inData2F, std::greater(), inData1F);
     }
 
+
     TEST_CASE("Float cmp less")
     {
         checkCmpOperationResult(inData1F, std::less(), inData2F);
         checkCmpOperationResult(inData2F, std::less(), inData1F);
-    }
-
-    TEST_CASE("Float bit not")
-    {
-        checkUnaryOperationResult(floatingPointBitUnaryOp(std::bit_not()), inData1F);
-        checkUnaryOperationResult(floatingPointBitUnaryOp(std::bit_not()), inData2F);
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////
@@ -358,17 +373,20 @@ namespace tests
         checkOperationResult(inData2i, std::plus(), inData1i);
     }
 
+
     TEST_CASE("Int substraction")
     {
         checkOperationResult(inData1i, std::minus(), inData2i);
         checkOperationResult(inData2i, std::minus(), inData1i);
     }
 
+
     TEST_CASE("Int multiplication")
     {
         checkOperationResult(inData1i, std::multiplies(), inData2i);
         checkOperationResult(inData2i, std::multiplies(), inData1i);
     }
+
 
     TEST_CASE("Int division")
     {
@@ -382,11 +400,13 @@ namespace tests
         checkOperationResult(inData2i, std::bit_and(), inData1i);
     }
 
+
     TEST_CASE("Int bit or")
     {
         checkOperationResult(inData1i, std::bit_or(), inData2i);
         checkOperationResult(inData2i, std::bit_or(), inData1i);
     }
+
 
     TEST_CASE("Int bit xor")
     {
@@ -394,9 +414,49 @@ namespace tests
         checkOperationResult(inData2i, std::bit_xor(), inData1i);
     }
 
+
     TEST_CASE("Int bit not")
     {
         checkUnaryOperationResult(std::bit_not(), inData1i);
         checkUnaryOperationResult(std::bit_not(), inData2i);
+    }
+
+
+    TEST_CASE("Int cmp equal")
+    {
+        checkCmpOperationResult(inData1i, std::equal_to(), inData2i);
+        checkCmpOperationResult(inData2i, std::equal_to(), inData1i);
+    }
+
+    TEST_CASE("Int cmp not equal")
+    {
+        checkCmpOperationResult(inData1i, std::not_equal_to(), inData2i);
+        checkCmpOperationResult(inData2i, std::not_equal_to(), inData1i);
+    }
+
+
+    TEST_CASE("Int cmp greater equal")
+    {
+        checkCmpOperationResult(inData1i, std::greater_equal(), inData2i);
+        checkCmpOperationResult(inData2i, std::greater_equal(), inData1i);
+    }
+
+    TEST_CASE("Int cmp less equal")
+    {
+        checkCmpOperationResult(inData1i, std::less_equal(), inData2i);
+        checkCmpOperationResult(inData2i, std::less_equal(), inData1i);
+    }
+
+
+    TEST_CASE("Int cmp greater")
+    {
+        checkCmpOperationResult(inData1i, std::greater(), inData2i);
+        checkCmpOperationResult(inData2i, std::greater(), inData1i);
+    }
+
+    TEST_CASE("Int cmp less")
+    {
+        checkCmpOperationResult(inData1i, std::less(), inData2i);
+        checkCmpOperationResult(inData2i, std::less(), inData1i);
     }
 }
