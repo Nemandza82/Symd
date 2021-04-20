@@ -381,24 +381,32 @@ namespace tests
 
         std::vector<float> output_loop(input.size());
 
+        auto readMirror = [&](int i, int j)
+        {
+            auto ii = symd::__internal__::foldCoords(i, 0, height - 1);
+            auto jj = symd::__internal__::foldCoords(j, 0, width - 1);
+
+            return twoDInput.readPix(ii, jj);
+        };
+
         auto durationLoop = executionTimeMs([&]()
             {
-                for (int i = 1; i < height-1; i++)
+                for (int i = 0; i < height; i++)
                 {
-                    for (int j = 1; j < width-1; j++)
+                    for (int j = 0; j < width; j++)
                     {
                         float res =
-                            twoDInput.readPix(i - 1, j - 1) * kernel[0] +
-                            twoDInput.readPix(i - 1, j) * kernel[1] +
-                            twoDInput.readPix(i - 1, j + 1) * kernel[2] +
+                            readMirror(i - 1, j - 1) * kernel[0] +
+                            readMirror(i - 1, j) * kernel[1] +
+                            readMirror(i - 1, j + 1) * kernel[2] +
 
-                            twoDInput.readPix(i, j - 1) * kernel[3] +
-                            twoDInput.readPix(i, j) * kernel[4] +
-                            twoDInput.readPix(i, j + 1) * kernel[5] +
+                            readMirror(i, j - 1) * kernel[3] +
+                            readMirror(i, j) * kernel[4] +
+                            readMirror(i, j + 1) * kernel[5] +
 
-                            twoDInput.readPix(i + 1, j - 1) * kernel[6] +
-                            twoDInput.readPix(i + 1, j) * kernel[7] +
-                            twoDInput.readPix(i + 1, j + 1) * kernel[8];
+                            readMirror(i + 1, j - 1) * kernel[6] +
+                            readMirror(i + 1, j) * kernel[7] +
+                            readMirror(i + 1, j + 1) * kernel[8];
 
                         output_loop[i * width + j] = res;
                     }
