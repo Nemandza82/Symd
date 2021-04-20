@@ -69,7 +69,7 @@ namespace tests
                 // TODO
                 return false;
             }
-            else 
+            else
             {
                 return false;
             }
@@ -163,13 +163,77 @@ namespace tests
         REQUIRE(isRegEqualToData(reg1, in1));
         REQUIRE(isRegEqualToData(reg2, in2));
 
-        SymdRegister<T> res = op(reg1, reg2);   
+        SymdRegister<T> res = op(reg1, reg2);
         std::vector<bool> reference(in1.size());
-        
+
         for (std::size_t i = 0; i < in1.size(); i++)
             reference[i] = op(in1[i], in2[i]);
 
         REQUIRE(isRegCmpValid(res, reference));
+    }
+
+    template <typename BitOperation>
+    static decltype(auto) floatingPointBitOp(BitOperation&& bOp)
+    {
+        auto bOpRes = [&bOp](auto&& lhs, auto&& rhs)
+        {
+            using T = std::decay_t<decltype(lhs)>;
+            using U = std::decay_t<decltype(rhs)>;
+            static_assert(std::is_same_v<T, U>);
+
+            if constexpr (std::is_floating_point_v<T>)
+            {
+                // This is a regular value (floating point values don't support bitwise operations).
+                union
+                {
+                    T f;
+                    typename std::conditional<std::is_same_v<T, float>, uint32_t, uint64_t>::type u;
+                } lhs_, rhs_, res;
+
+                lhs_.f = lhs;
+                rhs_.f = rhs;
+
+                res.u = bOp(lhs_.u, rhs_.u);
+                return res.f;
+            }
+            else
+            {
+                // This is a SymdRegister.
+                return bOp(rhs, lhs);
+            }
+        };
+
+        return bOpRes;
+    }
+
+    template <typename BitOperation>
+    static decltype(auto) floatingPointBitUnaryOp(BitOperation&& uBOp)
+    {
+        auto uBOpRes = [&uBOp](auto&& arg)
+        {
+            using T = std::decay_t<decltype(arg)>;
+            if constexpr (std::is_floating_point_v<T>)
+            {
+                // This is a regular value (floating point values don't support bitwise operations).
+                union
+                {
+                    T f;
+                    typename std::conditional<std::is_same_v<T, float>, uint32_t, uint64_t>::type u;
+                } arg_, res;
+
+                arg_.f = arg;
+
+                res.u = uBOp(arg_.u);
+                return res.f;
+            }
+            else
+            {
+                // This is a SymdRegister.
+                return uBOp(arg);
+            }
+        };
+
+        return uBOpRes;
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////
@@ -223,38 +287,21 @@ namespace tests
 
     TEST_CASE("Float bit and")
     {
-        // TODO: Move to helper functions somehow, make it work for double as well!
-        auto bit_and = [](auto&& lhs, auto&& rhs)
-        {
-            using T = std::decay_t<decltype(lhs)>;
-            using U = std::decay_t<decltype(rhs)>;
-            static_assert(std::is_same_v<T, U>);
-
-            if constexpr (std::is_same_v<T, float>)
-            {
-                union
-                {
-                    float f;
-                    uint32_t u;
-                } lhs_, rhs_, res;
-
-                lhs_.f = lhs;
-                rhs_.f = rhs;
-
-                res.u = lhs_.u & rhs_.u;
-                return res.f;
-            }
-            else
-            {
-                return lhs & rhs;
-            }
-
-        };
-
-        checkOperationResult(inData1F, bit_and, inData2F);
-        checkOperationResult(inData2F, bit_and, inData1F);
+        checkOperationResult(inData1F, floatingPointBitOp(std::bit_and()), inData2F);
+        checkOperationResult(inData2F, floatingPointBitOp(std::bit_and()), inData1F);
     }
 
+    TEST_CASE("Float bit or")
+    {
+        checkOperationResult(inData1F, floatingPointBitOp(std::bit_or()), inData2F);
+        checkOperationResult(inData2F, floatingPointBitOp(std::bit_or()), inData1F);
+    }
+
+    TEST_CASE("Float bit xor")
+    {
+        checkOperationResult(inData1F, floatingPointBitOp(std::bit_xor()), inData2F);
+        checkOperationResult(inData2F, floatingPointBitOp(std::bit_xor()), inData1F);
+    }
 
     TEST_CASE("Float cmp equal")
     {
@@ -290,6 +337,12 @@ namespace tests
     {
         checkCmpOperationResult(inData1F, std::less(), inData2F);
         checkCmpOperationResult(inData2F, std::less(), inData1F);
+    }
+
+    TEST_CASE("Float bit not")
+    {
+        checkUnaryOperationResult(floatingPointBitUnaryOp(std::bit_not()), inData1F);
+        checkUnaryOperationResult(floatingPointBitUnaryOp(std::bit_not()), inData2F);
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////
