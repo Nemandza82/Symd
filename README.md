@@ -2,7 +2,9 @@
 C++ header only template library designed to make it easier to write high-performance (vector, multi-threaded), image and data processing code on modern machines. It automatically generates vector (SIMD, SSE, AVX, NEON) code.
 
 # Usage
- * Just copy LibSymd/include folder to your project
+Symd is a header-only library. To use Symd, you do not need to use our projects from this repo. They are only for testing purposes. To use Symd in your project you need to:
+
+ * Copy LibSymd/include folder to your project
  * Include symd.h
  * And you are ready to go
 
