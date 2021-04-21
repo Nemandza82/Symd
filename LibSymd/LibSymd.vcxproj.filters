@@ -29,6 +29,9 @@
     <ClInclude Include="include\internal\basic_views.h">
       <Filter>include\internal</Filter>
     </ClInclude>
+    <ClInclude Include="include\internal\sub_view.h">
+      <Filter>include\internal</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="include">

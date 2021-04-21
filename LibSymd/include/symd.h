@@ -5,6 +5,7 @@
 #include <functional>
 #include "internal/basic_views.h"
 #include "internal/multi_output.h"
+#include "internal/sub_view.h"
 #include "internal/stencil_view.h"
 
 
