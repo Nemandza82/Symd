@@ -10,7 +10,7 @@ Simple map example:
 
 ```cpp
 #include <iostream>
-#include "../lib/symd.h"
+#include "../LibSymd/include/symd.h"
 
 
 void main()
