@@ -350,9 +350,9 @@ namespace tests
 
         symd::views::data_view<float, 2> twoDInput1(input1.data(), width, height, width);
         symd::views::data_view<float, 2> twoDInput2(input2.data(), width, height, width);
-        symd::views::data_view<float, 2> twoDOutput_mc(output.data(), width, height, width);
+        symd::views::data_view<float, 2> twoDOutput(output.data(), width, height, width);
 
-        symd::map(twoDOutput_mc, [&](auto a, auto b) { return a + b; }, twoDInput1, twoDInput2);
+        symd::map(twoDOutput, [&](auto a, auto b) { return a + b; }, twoDInput1, twoDInput2);
     }
 
     template <typename StencilView, typename DataType>

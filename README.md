@@ -60,10 +60,62 @@ std::vector<float> output(input1.size());
 
 symd::views::data_view<float, 2> twoDInput1(input1.data(), width, height, width);
 symd::views::data_view<float, 2> twoDInput2(input2.data(), width, height, width);
-symd::views::data_view<float, 2> twoDOutput_mc(output.data(), width, height, width);
+symd::views::data_view<float, 2> twoDOutput(output.data(), width, height, width);
 
-symd::map(twoDOutput_mc, [&](auto a, auto b) { return a + b; }, twoDInput1, twoDInput2);
+symd::map(twoDOutput, [&](auto a, auto b) { return a + b; }, twoDInput1, twoDInput2);
 ```
 
+### Can I use custom data source with Symd?
+
+Chances are that you will be using your own matrix/vector or some third party classes for storing data which are not nativly supported by Symd (eg OpenCV matrix). 
+Using such classes as inputs and outputs with Symd is possible. You need to overload methods for geting size of data and accessing elements before including Symd. Example:
+
+```cpp
+namespace symd::__internal__
+{
+    template <typename T>
+    size_t getWidth(const MyMatrix<T>& myMatrix)
+    {
+        return myMatrix.width();
+    }
+
+    template <typename T>
+    size_t getHeight(const MyMatrix<T>& myMatrix)
+    {
+        return myMatrix.height();
+    }
+
+    template <typename T>
+    size_t getPitch(const MyMatrix<T>& myMatrix)
+    {
+        return myMatrix.pitch();
+    }
+
+    template <typename T>
+    T* getDataPtr(MyMatrix<T>& myMatrix, size_t row, size_t col)
+    {
+        return &myMatrix(row, + col);
+    }
+
+    template <typename T>
+    const T* getDataPtr(const MyMatrix<T>& myMatrix, size_t row, size_t col)
+    {
+        return &myMatrix(row, +col);
+    }
+}
+
+#include "../LibSymd/include/symd.h"
+
+
+void myMatrixExample()
+{
+    MyMatrix<float> A(1920, 1080);
+    MyMatrix<float> B(1920, 1080);
+
+    MyMatrix<float> res(1920, 1080);
+
+    symd::map(res, [](auto a, auto b) { return a + b;  }, A, B);
+}
+```
 
 
