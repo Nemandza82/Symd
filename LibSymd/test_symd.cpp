@@ -339,6 +339,22 @@ namespace tests
     }
 
 
+    TEST_CASE("Mapping - simple 2d view example")
+    {
+        size_t width = 640;
+        size_t height = 480;
+
+        std::vector<float> input1(width * height);
+        std::vector<float> input2(input1.size());
+        std::vector<float> output(input1.size());
+
+        symd::views::data_view<float, 2> twoDInput1(input1.data(), width, height, width);
+        symd::views::data_view<float, 2> twoDInput2(input2.data(), width, height, width);
+        symd::views::data_view<float, 2> twoDOutput_mc(output.data(), width, height, width);
+
+        symd::map(twoDOutput_mc, [&](auto a, auto b) { return a + b; }, twoDInput1, twoDInput2);
+    }
+
     template <typename StencilView, typename DataType>
     auto conv3x3_Kernel(const StencilView& sv, const DataType* kernel)
     {
