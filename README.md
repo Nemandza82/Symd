@@ -46,9 +46,9 @@ Output:
 2, 4, 6, 8, 10, 12, 14, 16, 18,
 ```
 
-### Can I use 2D inputs
+### Can I use 2D inputs?
 
-Yes. You need to wrap your data with our 2D data_view. Example:
+Yes. You need to wrap your data with 2D data_view. Example:
 
 ```cpp
 size_t width = 640;
@@ -63,6 +63,7 @@ symd::views::data_view<float, 2> twoDInput2(input2.data(), width, height, width)
 symd::views::data_view<float, 2> twoDOutput_mc(output.data(), width, height, width);
 
 symd::map(twoDOutput_mc, [&](auto a, auto b) { return a + b; }, twoDInput1, twoDInput2);
-}
 ```
+
+
 
