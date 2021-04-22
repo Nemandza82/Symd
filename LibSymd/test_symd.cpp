@@ -366,15 +366,8 @@ namespace tests
         symd::views::data_view<float, 2> twoDInput(input.data(), width, height, width);
         symd::views::data_view<float, 2> twoDOutput(output.data(), width, height, width);
 
-        // Do the convolution. We also need 2D stencil view.
-        symd::map(twoDOutput, [&](const auto& sv)
-            {
-                return
-                    sv(-1, -1) * 1.f + sv(-1, 0) * 2.f + sv(-1, 1) * 1.f +
-                    sv( 0, -1) * 2.f + sv( 0, 0) * 3.f + sv( 0, 1) * 2.f +
-                    sv( 1, -1) * 1.f + sv( 1, 0) * 2.f + sv( 1, 1) * 1.f;
-
-            }, symd::views::stencil(twoDInput, 3, 3));
+        // Calculate image gradient. We also need 2D stencil view.
+        symd::map(twoDOutput, [&](const auto& sv) { return sv(0, 1) - sv(0, -1); }, symd::views::stencil(twoDInput, 3, 3));
     }
 
     template <typename StencilView, typename DataType>
