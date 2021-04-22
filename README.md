@@ -3,7 +3,7 @@ C++ header only template library designed to make it easier to write high-perfor
 
 ## Requirements
 
-C++17 is requirement.
+C++17 is a requirement.
 
 ### Compiler
 
@@ -65,10 +65,10 @@ symd::views::data_view<float, 2> twoDOutput(output.data(), width, height, width)
 symd::map(twoDOutput, [&](auto a, auto b) { return a + b; }, twoDInput1, twoDInput2);
 ```
 
-### Can I use custom data source with Symd?
+### Can I use a custom data source with Symd?
 
-Chances are that you will be using your own matrix/vector or some third party classes for storing data which are not nativly supported by Symd (eg OpenCV matrix). 
-Using such classes as inputs and outputs with Symd is possible. You need to overload methods for geting size of data and accessing elements before including Symd. Example:
+Chances are that you will be using your own matrix/vector or some third party classes for storing data which are not natively supported by Symd (eg OpenCV matrix). 
+Using such classes as inputs and outputs with Symd is possible. You need to overload methods for getting size of data and accessing elements before including Symd. Example:
 
 ```cpp
 namespace symd::__internal__
@@ -117,5 +117,34 @@ void myMatrixExample()
     symd::map(res, [](auto a, auto b) { return a + b;  }, A, B);
 }
 ```
+
+
+### How can I access nearby elements in the Symd kernel (implement convolution)?
+
+To access newarby elements in symd kernel, you need to use stencil view (symd::views::stencil). Example:
+
+```cpp
+size_t width = 640;
+size_t height = 480;
+
+std::vector<float> input(width * height);
+std::vector<float> output(input.size());
+
+symd::views::data_view<float, 2> twoDInput(input.data(), width, height, width);
+symd::views::data_view<float, 2> twoDOutput(output.data(), width, height, width);
+
+// Do the convolution. We also need 2D stencil view.
+symd::map(twoDOutput, [&](const auto& sv)
+	{
+		return
+			sv(-1, -1) * 1.f + sv(-1, 0) * 2.f + sv(-1, 1) * 1.f +
+			sv( 0, -1) * 2.f + sv( 0, 0) * 3.f + sv( 0, 1) * 2.f +
+			sv( 1, -1) * 1.f + sv( 1, 0) * 2.f + sv( 1, 1) * 1.f;
+
+	}, symd::views::stencil(twoDInput, 3, 3));
+
+```
+
+
 
 

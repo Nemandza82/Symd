@@ -355,6 +355,28 @@ namespace tests
         symd::map(twoDOutput, [&](auto a, auto b) { return a + b; }, twoDInput1, twoDInput2);
     }
 
+    TEST_CASE("Mapping - simple conv example")
+    {
+        size_t width = 640;
+        size_t height = 480;
+
+        std::vector<float> input(width * height);
+        std::vector<float> output(input.size());
+
+        symd::views::data_view<float, 2> twoDInput(input.data(), width, height, width);
+        symd::views::data_view<float, 2> twoDOutput(output.data(), width, height, width);
+
+        // Do the convolution. We also need 2D stencil view.
+        symd::map(twoDOutput, [&](const auto& sv)
+            {
+                return
+                    sv(-1, -1) * 1.f + sv(-1, 0) * 2.f + sv(-1, 1) * 1.f +
+                    sv( 0, -1) * 2.f + sv( 0, 0) * 3.f + sv( 0, 1) * 2.f +
+                    sv( 1, -1) * 1.f + sv( 1, 0) * 2.f + sv( 1, 1) * 1.f;
+
+            }, symd::views::stencil(twoDInput, 3, 3));
+    }
+
     template <typename StencilView, typename DataType>
     auto conv3x3_Kernel(const StencilView& sv, const DataType* kernel)
     {
