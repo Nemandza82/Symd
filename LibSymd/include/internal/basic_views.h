@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include <array>
-#include <span>
+///#include <span>
 #include <assert.h>
 #include "data_view.h"
 #include "symd_register.h"
@@ -96,7 +96,7 @@ namespace symd::__internal__
     // Overloads for std::span
     /////////////////////////////////////////////////////////////////////////////////////////////////
 
-    template <typename T, std::size_t N>
+    /*template <typename T, std::size_t N>
     size_t getWidth(const std::span<T, N>& x)
     {
         return x.size();
@@ -130,7 +130,7 @@ namespace symd::__internal__
         assert(col < x.size());
 
         return x.data() + col;
-    }
+    }*/
 
 
     ////////////////////////////////////////////////////////////////////////////////
