@@ -468,5 +468,27 @@ namespace tests
         std::cout << "Convolution 3x3 - symd_single_core : " << durationSingleCore.count() << " ms" << std::endl;
         std::cout << "Convolution 3x3 - symd_multi_core  : " << duration.count() << " ms" << std::endl << std::endl;
     }
+
+
+    TEST_CASE("Reduction simple test")
+    {
+        std::vector<float> input = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 };
+
+        // Create reduce view which is enabling us to perform reduction.
+        // Reduce view size must be equal to input size
+        // Reduction operation is summing in this case
+        auto sum = symd::views::reduce_view(input.size(), 1, 0.0f, [](auto x, auto y)
+            {
+                return x + y;
+            });
+
+        // We are performing reduction by mapping to reduce view.
+        // This enables us to apply some map (transorm0 operation prior to reducing.
+        symd::map(sum, [](auto x) { return x * 2; }, input);
+
+        // Get funal result from reduce view
+        auto res = sum.getResult();
+        REQUIRE(sum.getResult() ==  342);
+    }
 }
 

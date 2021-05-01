@@ -90,6 +90,7 @@
     <ClInclude Include="include\internal\data_view.h" />
     <ClInclude Include="include\internal\intrinsic_extensions_gcc.h" />
     <ClInclude Include="include\internal\multi_output.h" />
+    <ClInclude Include="include\internal\reduce_view.h" />
     <ClInclude Include="include\internal\region.h" />
     <ClInclude Include="include\internal\stencil_view.h" />
     <ClInclude Include="include\internal\sub_view.h" />
@@ -97,6 +98,7 @@
     <ClInclude Include="include\internal\symd_register.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="include\internal\reduce_view.cpp" />
     <ClCompile Include="test_symd.cpp" />
     <ClCompile Include="test_symd_register.cpp" />
   </ItemGroup>

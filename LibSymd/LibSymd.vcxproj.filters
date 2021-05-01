@@ -3,6 +3,9 @@
   <ItemGroup>
     <ClCompile Include="test_symd.cpp" />
     <ClCompile Include="test_symd_register.cpp" />
+    <ClCompile Include="include\internal\reduce_view.cpp">
+      <Filter>include\internal</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\symd.h">
@@ -30,6 +33,9 @@
       <Filter>include\internal</Filter>
     </ClInclude>
     <ClInclude Include="include\internal\sub_view.h">
+      <Filter>include\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internal\reduce_view.h">
       <Filter>include\internal</Filter>
     </ClInclude>
   </ItemGroup>

@@ -7,6 +7,7 @@
 #include "internal/multi_output.h"
 #include "internal/sub_view.h"
 #include "internal/stencil_view.h"
+#include "internal/reduce_view.h"
 
 
 namespace symd
@@ -100,8 +101,8 @@ namespace symd
 
         std::for_each(std::execution::par_unseq, regions.begin(), regions.end(), [&](__internal__::Region& region)
             {
-                auto subRes = views::sub_view(result, region);
-                map_single_core(subRes, operation, views::sub_view(std::forward<Inputs>(inputs), region)...);
+                auto subRes = __internal__::sub_view(result, region);
+                map_single_core(subRes, operation, __internal__::sub_view(std::forward<Inputs>(inputs), region)...);
             });
     }
 }

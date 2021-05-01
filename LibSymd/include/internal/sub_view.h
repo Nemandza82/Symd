@@ -120,14 +120,20 @@ namespace symd::__internal__
 
         return result;
     }
+
+    template <typename View>
+    auto sub_view(View&& view, const Region& region)
+    {
+        return __internal__::SubView<View>(std::forward<View>(view), region);
+    }
 }
 
 
 namespace symd::views
 {
     template <typename View>
-    auto sub_view(View&& view, const __internal__::Region& region)
+    auto sub_view(View&& view, size_t startRow, size_t endRow, size_t startCol, size_t endCol)
     {
-        return __internal__::SubView<View>(std::forward<View>(view), region);
+        return __internal__::sub_view(std::forward<View>(view), __internal__::Region(startRow, endRow, startCol, endCol));
     }
 }

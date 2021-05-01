@@ -177,9 +177,12 @@ namespace symd::views
     {
         return __internal__::Stencil<View>(std::forward<View>(view), width, height, borderHandling, c);
     }
+}
 
+namespace symd::__internal__
+{
     template<typename View, typename C>
-    auto sub_view(const __internal__::Stencil<View, C>& st, const __internal__::Region& region)
+    auto sub_view(const Stencil<View, C>& st, const Region& region)
     {
         return stencil(sub_view(st._underlyingView, region), st._width, st._height);
     }
