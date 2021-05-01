@@ -139,5 +139,26 @@ symd::map(twoDOutput, [&](const auto& sv) { return sv(0, 1) - sv(0, -1); },
 ```
 
 
+### How can I perform reduction?
+
+You need to create reduce_view and specify reduce opperation. Example:
+
+```cpp
+std::vector<float> input = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 };
+
+// Reduce operation is summing
+auto sum = symd::views::reduce_view(input.size(), 1, 0.0f, [](auto x, auto y)
+    {
+        return x + y;
+    });
+```
+
+After that you map your inputs to reduce_view. That enables you to do some processing of input data prior to reducing.
+
+```cpp
+symd::map(sum, [](auto x) { return x * 2; }, input);
+```
+
+
 
 
