@@ -31,6 +31,18 @@ namespace tests
             x = distribution(generator);
     }
 
+    /// <summary>
+    /// Fills input vector with random ints in range 0-255
+    /// </summary>
+    void randomizeData(std::vector<int>& data)
+    {
+        std::default_random_engine generator;
+        std::uniform_int_distribution<int> distribution(0, 255);
+
+        for (auto& x : data)
+            x = distribution(generator);
+    }
+
     template <typename T>
     static void requireEqual(const T* data, const std::vector<T>& ref)
     {
@@ -212,7 +224,7 @@ namespace tests
 
         auto outTuple = std::tie(out1, out2);
 
-        symd::map_single_core(outTuple, [](auto x)
+        symd::map(outTuple, [](auto x)
             {
                 auto res1 = x * 2;
                 auto res2 = x * 3;
@@ -223,6 +235,27 @@ namespace tests
         requireEqual(out1, { 2.f, 4.f, 6.f, 8.f, 10.f, 12.f, 14.f, 16.f, 18.f });
         requireEqual(out2, { 3.f, 6.f, 9.f, 12.f, 15.f, 18.f, 21.f, 24.f, 27.f });
     }
+
+    /*TEST_CASE("Mapping 2 - multi out 2")
+    {
+        std::vector<float> input = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+
+        std::array<std::vector<float>, 2> out = {
+            std::vector<float>(input.size()),
+            std::vector<float>(input.size())
+        };
+
+        symd::map(out, [](auto x)
+            {
+                auto res1 = x * 2;
+                auto res2 = x * 3;
+
+                return std::array{ res1, res2 };
+            }, input);
+
+        requireEqual(out[0], { 2.f, 4.f, 6.f, 8.f, 10.f, 12.f, 14.f, 16.f, 18.f });
+        requireEqual(out[1], { 3.f, 6.f, 9.f, 12.f, 15.f, 18.f, 21.f, 24.f, 27.f });
+    }*/
 
     // Taking 0 inputs need to be added support for..
     TEST_CASE("Mapping - 0 inputs")
@@ -395,33 +428,33 @@ namespace tests
         };
 
         // Prepare 2D view to data to do 2D convolution
-        symd::views::data_view<float, 2> twoDInput(input.data(), width, height, width);
+        symd::views::data_view<float, 2> input_2d(input.data(), width, height, width);
 
         std::vector<float> output_mc(input.size());
-        symd::views::data_view<float, 2> twoDOutput_mc(output_mc.data(), width, height, width);
+        symd::views::data_view<float, 2> output_2d_mc(output_mc.data(), width, height, width);
 
         auto duration = executionTimeMs([&]()
             {
                 // Do the convolution. We also need 2D stencil view
-                symd::map(twoDOutput_mc, [&](const auto& x)
+                symd::map(output_2d_mc, [&](const auto& x)
                     {
                         return conv3x3_Kernel(x, kernel.data());
 
-                    }, symd::views::stencil(twoDInput, 3, 3));
+                    }, symd::views::stencil(input_2d, 3, 3));
             }
         );
 
         std::vector<float> output_sc(input.size());
-        symd::views::data_view<float, 2> twoDOutput_sc(output_sc.data(), width, height, width);
+        symd::views::data_view<float, 2> output_2d_sc(output_sc.data(), width, height, width);
 
         auto durationSingleCore = executionTimeMs([&]()
             {
                 // Do the convolution. We also need 2D stencil view
-                symd::map_single_core(twoDOutput_sc, [&](const auto& x)
+                symd::map_single_core(output_2d_sc, [&](const auto& x)
                     {
                         return conv3x3_Kernel(x, kernel.data());
 
-                    }, symd::views::stencil(twoDInput, 3, 3));
+                    }, symd::views::stencil(input_2d, 3, 3));
             }
         );
 
@@ -432,7 +465,7 @@ namespace tests
             auto ii = symd::__internal__::foldCoords(i, 0, height - 1);
             auto jj = symd::__internal__::foldCoords(j, 0, width - 1);
 
-            return twoDInput.readPix(ii, jj);
+            return input_2d.readPix(ii, jj);
         };
 
         auto durationLoop = executionTimeMs([&]()
@@ -488,7 +521,82 @@ namespace tests
 
         // Get funal result from reduce view
         auto res = sum.getResult();
-        REQUIRE(sum.getResult() ==  342);
+        REQUIRE(res ==  342);
+    }
+
+    TEST_CASE("Reduction - many elements")
+    {
+        size_t width = 1920;
+        size_t height = 1080;
+
+        std::vector<int> input(width * height);
+        randomizeData(input);
+
+        symd::views::data_view<int, 2> input_2d(input.data(), width, height, width);
+        int res;
+
+        auto durationMap = executionTimeMs([&]()
+            {
+                auto sum = symd::views::reduce_view(width, height, (int)0, [](auto x, auto y)
+                    {
+                        return x + y;
+                    });
+
+                symd::map(sum, [](auto x) { return x; }, input_2d);
+
+                res = sum.getResult();
+            });
+
+        int resLoop = 0;
+
+        auto durationLoop = executionTimeMs([&]()
+            {
+                // Simple loop
+                resLoop = 0;
+
+                for (auto x : input)
+                    resLoop += x;
+            });
+
+        // Get funal result from reduce view
+        REQUIRE(res == resLoop);
+
+        std::cout << "Simple reduction - Loop: " << durationLoop.count() << " ms" << std::endl;
+        std::cout << "Simple reduction - Symd: " << durationMap.count() << " ms" << std::endl << std::endl;
+    }
+
+    TEST_CASE("Reduction - multiple outputs")
+    {
+        size_t width = 1920;
+        size_t height = 1080;
+
+        std::vector<int> input(width * height);
+        randomizeData(input);
+
+        symd::views::data_view<int, 2> input_2d(input.data(), width, height, width);
+
+        auto sumX = symd::views::reduce_view(width, height, (int)0, [](auto x, auto y)
+            {
+                return x + y;
+            });
+
+        auto sumY = symd::views::reduce_view(width, height, (int)0, [](auto x, auto y)
+            {
+                return x + y;
+            });
+
+        auto outTuple = std::tie(sumX, sumY);
+
+        symd::map_single_core(outTuple, [](auto x)
+            {
+                return std::array{ x, 2 * x };
+
+            }, input_2d);
+
+        auto resX = sumX.getResult();
+        auto resY = sumY.getResult();
+
+        REQUIRE(resY == 2 * resX);
     }
 }
 

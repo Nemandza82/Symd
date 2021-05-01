@@ -14,26 +14,35 @@ namespace symd::__internal__
     // Overloads for std::vector
     /////////////////////////////////////////////////////////////////////////////////////////////////
 
+    /// <summary>
+    /// Gets the width of vector with fundamental data types.
+    /// </summary>
     template <typename T>
-    size_t getWidth(const std::vector<T>& x)
+    size_t getWidth(const std::vector<T>& x, typename std::enable_if<std::is_fundamental<T>::value, T>::type* = 0)
     {
         return x.size();
     }
 
+    /// <summary>
+    /// Gets the height of vector with fundamental data types.
+    /// </summary>
     template <typename T>
-    size_t getHeight(const std::vector<T>& x)
+    size_t getHeight(const std::vector<T>& x, typename std::enable_if<std::is_fundamental<T>::value, T>::type* = 0)
     {
         return 1;
     }
 
+    /// <summary>
+    /// Gets the pitch of vector with fundamental data types.
+    /// </summary>
     template <typename T>
-    size_t getPitch(const std::vector<T>& x)
+    size_t getPitch(const std::vector<T>& x, typename std::enable_if<std::is_fundamental<T>::value, T>::type* = 0)
     {
         return getWidth(x);
     }
 
     template <typename T>
-    T* getDataPtr(std::vector<T, std::allocator<T>>& x, size_t row, size_t col)
+    T* getDataPtr(std::vector<T, std::allocator<T>>& x, size_t row, size_t col, typename std::enable_if<std::is_fundamental<T>::value, T>::type* = 0)
     {
         assert(row == 0);
         assert(col < x.size());
@@ -42,7 +51,7 @@ namespace symd::__internal__
     }
 
     template <typename T>
-    const T* getDataPtr(const std::vector<T, std::allocator<T>>& x, size_t row, size_t col)
+    const T* getDataPtr(const std::vector<T, std::allocator<T>>& x, size_t row, size_t col, typename std::enable_if<std::is_fundamental<T>::value, T>::type* = 0)
     {
         assert(row == 0);
         assert(col < x.size());
@@ -56,25 +65,25 @@ namespace symd::__internal__
     /////////////////////////////////////////////////////////////////////////////////////////////////
 
     template <typename T, std::size_t N>
-    size_t getWidth(const std::array<T, N>& x)
+    size_t getWidth(const std::array<T, N>& x, typename std::enable_if<std::is_fundamental<T>::value, T>::type* = 0)
     {
         return N;
     }
 
     template <typename T, std::size_t N>
-    size_t getHeight(const std::array<T, N>& x)
+    size_t getHeight(const std::array<T, N>& x, typename std::enable_if<std::is_fundamental<T>::value, T>::type* = 0)
     {
         return 1;
     }
 
     template <typename T, std::size_t N>
-    size_t getPitch(const std::array<T, N>& x)
+    size_t getPitch(const std::array<T, N>& x, typename std::enable_if<std::is_fundamental<T>::value, T>::type* = 0)
     {
         return getWidth(x);
     }
 
     template <typename T, std::size_t N>
-    T* getDataPtr(std::array<T, N>& x, size_t row, size_t col)
+    T* getDataPtr(std::array<T, N>& x, size_t row, size_t col, typename std::enable_if<std::is_fundamental<T>::value, T>::type* = 0)
     {
         assert(row == 0);
         assert(col < x.size());
@@ -83,7 +92,7 @@ namespace symd::__internal__
     }
 
     template <typename T, std::size_t N>
-    const T* getDataPtr(const std::array<T, N>& x, size_t row, size_t col)
+    const T* getDataPtr(const std::array<T, N>& x, size_t row, size_t col, typename std::enable_if<std::is_fundamental<T>::value, T>::type* = 0)
     {
         assert(row == 0);
         assert(col < x.size());

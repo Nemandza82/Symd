@@ -2,44 +2,88 @@
 #include "symd_register.h"
 //#include "basic_views.h"
 #include <utility>
+#include <array>
 
 
 namespace symd::__internal__
 {
-    template <typename... Results>
-    size_t getWidth(const std::tuple<Results...>& res)
+    template <typename... Views>
+    size_t getWidth(const std::tuple<Views...>& views)
     {
-        return getWidth(std::get<0>(res));
+        return getWidth(std::get<0>(views));
     }
 
-    template <typename... Results>
-    size_t getHeight(const std::tuple<Results...>& res)
+    template <typename View, int N>
+    size_t getWidth(const std::array<View, N>& views, typename std::enable_if<!std::is_fundamental_v<View>, View>::type* = 0)
     {
-        return getHeight(std::get<0>(res));
+        return getWidth(views[0]);
     }
+
+
+
+    template <typename... Views>
+    size_t getHeight(const std::tuple<Views...>& views)
+    {
+        return getHeight(std::get<0>(views));
+    }
+
+    template <typename View, int N>
+    size_t getHeight(const std::array<View, N>& views, typename std::enable_if<!std::is_fundamental_v<View>, View>::type* = 0)
+    {
+        return getHeight(views[0]);
+    }
+
 
 
     template<typename Tuple, typename Elements, size_t... I>
-    void saveDataImpl(Tuple& res, const Elements& element, size_t row, size_t col, std::index_sequence<I...>)
+    void saveDataImpl(Tuple& views, const Elements& elements, size_t row, size_t col, std::index_sequence<I...>)
     {
-        (saveData(std::get<I>(res), element[I], row, col), ...);
+        (saveData(std::get<I>(views), elements[I], row, col), ...);
     }
 
-    template <typename R, typename... Results>
-    void saveData(std::tuple<Results...>& res, const std::array<R, sizeof...(Results)>& element, size_t row, size_t col)
+    template <typename R, typename... Views>
+    void saveData(std::tuple<Views...>& views, const std::array<R, sizeof...(Views)>& element, size_t row, size_t col)
     {
-        saveDataImpl(res, element, row, col, std::make_index_sequence<sizeof...(Results)>{});
+        saveDataImpl(views, element, row, col, std::make_index_sequence<sizeof...(Views)>{});
     }
+
+    template <typename R, typename View, int N>
+    void saveData(std::array<View, N>& views, const std::array<R, N>& elements, size_t row, size_t col)
+    {
+        for (int i = 0; i < N; i++)
+            saveData(views[i], elements[i], row, col);
+    }
+
+
 
     template<typename Tuple, typename Elements, size_t... I>
-    void saveVecDataImpl(Tuple& res, const Elements& element, size_t row, size_t col, std::index_sequence<I...>)
+    void saveVecDataImpl(Tuple& views, const Elements& elements, size_t row, size_t col, std::index_sequence<I...>)
     {
-        (saveVecData(std::get<I>(res), element[I], row, col), ...);
+        (saveVecData(std::get<I>(views), elements[I], row, col), ...);
     }
 
-    template <typename R, typename... Results>
-    void saveVecData(std::tuple<Results...>& res, const std::array<SymdRegister<R>, sizeof...(Results)>& element, size_t row, size_t col)
+    template <typename R, typename... Views>
+    void saveVecData(std::tuple<Views...>& views, const std::array<SymdRegister<R>, sizeof...(Views)>& elements, size_t row, size_t col)
     {
-        saveVecDataImpl(res, element, row, col, std::make_index_sequence<sizeof...(Results)>{});
+        saveVecDataImpl(views, elements, row, col, std::make_index_sequence<sizeof...(Views)>{});
     }
+
+    template <typename R, typename View, int N>
+    void saveVecData(std::array<View, N>& views, const std::array<SymdRegister<R>, N>& elements, size_t row, size_t col)
+    {
+        for (int i = 0; i < N; i++)
+            saveDataVec(views[i], elements[i], row, col);
+    }
+}
+
+
+namespace symd::__internal__
+{
+   /* template <typename V1, typename V2>
+    auto sub_view(std::tuple<V1, V2>& views, const Region& region)
+    {
+        return std::make_tuple(
+            sub_view(std::get<0>(views), region), 
+            sub_view(std::get<1>(views), region));
+    }*/
 }
