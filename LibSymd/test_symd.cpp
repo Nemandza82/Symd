@@ -587,7 +587,7 @@ namespace tests
 
         auto outTuple = std::tie(sumX, sumY);
 
-        symd::map_single_core(outTuple, [](auto x)
+        symd::map(outTuple, [](auto x)
             {
                 return std::array{ x, 2 * x };
 

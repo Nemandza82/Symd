@@ -9,7 +9,7 @@ namespace symd::views
     template <typename T, typename ReduceOperation>
     struct reduce_view
     {
-        std::mutex _final_sum_mutex;
+        std::shared_ptr<std::mutex> _final_sum_mutex;
         std::function<void(const reduce_view<T, ReduceOperation>& self)> _finalizer;
 
         T _sum;
@@ -35,6 +35,7 @@ namespace symd::views
             _sum = startValue;
             _regSum = __internal__::SymdRegister<T>(startValue);
 
+            _final_sum_mutex = std::make_shared<std::mutex>();
             _finalizer = [](const reduce_view<T, ReduceOperation>& self) {
             };
         }
@@ -63,8 +64,11 @@ namespace symd::views
 
         void threadSafeAppend(const T& x)
         {
-            std::lock_guard<std::mutex> guard(_final_sum_mutex);
-            _sum = _reduceOperation(_sum, x);
+            if (_final_sum_mutex)
+            {
+                std::lock_guard<std::mutex> guard(*_final_sum_mutex);
+                _sum = _reduceOperation(_sum, x);
+            }
         }
 
         T getResult() const

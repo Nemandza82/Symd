@@ -97,6 +97,15 @@ namespace symd::__internal__
         return sub_viewImpl(views, region, std::make_index_sequence<N>{});
     }*/
 
+    template <typename V1, typename V2>
+    auto sub_view(std::tuple<V1, V2>& views, const Region& region)
+    {
+        return std::make_tuple(
+        
+            sub_view(std::get<0>(views), region),
+                sub_view(std::get<1>(views), region)
+        );
+    }
     
 
     template <typename View>
