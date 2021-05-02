@@ -236,7 +236,7 @@ namespace tests
         requireEqual(out2, { 3.f, 6.f, 9.f, 12.f, 15.f, 18.f, 21.f, 24.f, 27.f });
     }
 
-    /*TEST_CASE("Mapping 2 - multi out 2")
+    TEST_CASE("Mapping 2 - multi out 2")
     {
         std::vector<float> input = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 
@@ -255,7 +255,7 @@ namespace tests
 
         requireEqual(out[0], { 2.f, 4.f, 6.f, 8.f, 10.f, 12.f, 14.f, 16.f, 18.f });
         requireEqual(out[1], { 3.f, 6.f, 9.f, 12.f, 15.f, 18.f, 21.f, 24.f, 27.f });
-    }*/
+    }
 
     // Taking 0 inputs need to be added support for..
     TEST_CASE("Mapping - 0 inputs")
@@ -595,6 +595,36 @@ namespace tests
 
         auto resX = sumX.getResult();
         auto resY = sumY.getResult();
+
+        REQUIRE(resY == 2 * resX);
+    }
+
+
+    TEST_CASE("Reduction - multiple outputs 2")
+    {
+        size_t width = 1920;
+        size_t height = 1080;
+
+        std::vector<int> input(width * height);
+        randomizeData(input);
+
+        symd::views::data_view<int, 2> input_2d(input.data(), width, height, width);
+
+        auto reduceOpp = [](auto x, auto y) { return x + y; };
+
+        auto out = std::array{ 
+            symd::views::reduce_view(width, height, (int)0, reduceOpp),
+            symd::views::reduce_view(width, height, (int)0, reduceOpp)
+        };
+
+        symd::map(out, [](auto x)
+            {
+                return std::array{ x, 2 * x };
+
+            }, input_2d);
+
+        auto resX = out[0].getResult();
+        auto resY = out[1].getResult();
 
         REQUIRE(resY == 2 * resX);
     }

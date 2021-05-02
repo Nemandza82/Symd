@@ -22,6 +22,10 @@ namespace symd::views
 
         const ReduceOperation _reduceOperation;
 
+        reduce_view()
+        {
+        }
+
         reduce_view(size_t width, size_t height, const T& startValue, const ReduceOperation& reduceOperation)
             : _reduceOperation(reduceOperation)
             , _width(width)
@@ -85,18 +89,6 @@ namespace symd::views
 
 namespace symd::__internal__
 {
-    template<typename T, typename ReduceOperation>
-    auto sub_view(views::reduce_view<T, ReduceOperation>& reductor, const Region& region)
-    {
-        // sub_view from reduce_view is smaller reduce_view
-        return views::reduce_view<T, ReduceOperation>(region.width(), region.height(), reductor._startValue, reductor._reduceOperation, 
-            [&](const views::reduce_view<T, ReduceOperation>& self)
-            {
-                reductor.threadSafeAppend(self.getResult());
-            });
-    }
-
-
     template <typename T, typename ReduceOperation>
     size_t getWidth(const views::reduce_view<T, ReduceOperation>& reductor)
     {
@@ -148,4 +140,15 @@ namespace symd::__internal__
     {
         
     }*/
+
+    template<typename T, typename ReduceOperation>
+    auto sub_view(views::reduce_view<T, ReduceOperation>& reductor, const Region& region)
+    {
+        // sub_view from reduce_view is smaller reduce_view
+        return views::reduce_view<T, ReduceOperation>(region.width(), region.height(), reductor._startValue, reductor._reduceOperation,
+            [&](const views::reduce_view<T, ReduceOperation>& self)
+            {
+                reductor.threadSafeAppend(self.getResult());
+            });
+    }
 }

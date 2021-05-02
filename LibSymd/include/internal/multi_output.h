@@ -72,18 +72,42 @@ namespace symd::__internal__
     void saveVecData(std::array<View, N>& views, const std::array<SymdRegister<R>, N>& elements, size_t row, size_t col)
     {
         for (int i = 0; i < N; i++)
-            saveDataVec(views[i], elements[i], row, col);
+            saveVecData(views[i], elements[i], row, col);
     }
 }
 
 
 namespace symd::__internal__
 {
-   /* template <typename V1, typename V2>
-    auto sub_view(std::tuple<V1, V2>& views, const Region& region)
+    /*template <typename View, int N, size_t... I>
+    void sub_viewImpl(std::array<View, N>& views, const Region& region, std::index_sequence<I...>)
     {
-        return std::make_tuple(
-            sub_view(std::get<0>(views), region), 
-            sub_view(std::get<1>(views), region));
+        return std::array
+        {
+            sub_view(views[I], region) ...
+        };
+    }
+
+    template <typename View, int N>
+    auto sub_view(std::array<View, N>& views, const Region& region)
+    {
+        using SubViewT = std::decay_t<decltype(sub_view(views[0], region))>;
+
+
+        return sub_viewImpl(views, region, std::make_index_sequence<N>{});
     }*/
+
+    
+
+    template <typename View>
+    auto sub_view(std::array<View, 2>& views, const Region& region)
+    {
+        using SubViewT = std::decay_t<decltype(sub_view(views[0], region))>;
+
+        return std::array<SubViewT, 2>
+        {
+            sub_view(views[0], region),
+            sub_view(views[1], region)
+        };
+    }
 }
