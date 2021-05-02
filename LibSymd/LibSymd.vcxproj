@@ -98,7 +98,6 @@
     <ClInclude Include="include\internal\symd_register.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="include\internal\reduce_view.cpp" />
     <ClCompile Include="test_symd.cpp" />
     <ClCompile Include="test_symd_register.cpp" />
   </ItemGroup>
