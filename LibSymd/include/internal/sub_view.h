@@ -74,18 +74,6 @@ namespace symd::__internal__
             subView._region.startCol + col);
     }
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Handle multiple outputs to sub-veiew
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    template <typename View, typename DataType, int count>
-    void saveVecData(SubView<View>& subView, const std::array<SymdRegister<DataType>, count>& element, size_t row, size_t col)
-    {
-        saveVecData(
-            subView._underlyingView,
-            element,
-            subView._region.startRow + row,
-            subView._region.startCol + col);
-    }
 
     template <typename View>
     size_t horisontalBorder(const SubView<View>& subView)

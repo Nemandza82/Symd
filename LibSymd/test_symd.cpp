@@ -71,11 +71,11 @@ namespace tests
     /// Executes input function for number of times and returns average execution time in ms.
     /// </summary>
     template <typename F>
-    static auto executionTimeMs(F&& func)
+    static auto executionTimeMs(F&& func, int num_iter = NUM_ITER)
     {
         auto t1 = std::chrono::high_resolution_clock::now();
 
-        for (int i = 0; i < NUM_ITER; i++)
+        for (int i = 0; i < num_iter; i++)
         {
             func();
         }
@@ -83,7 +83,7 @@ namespace tests
         auto t2 = std::chrono::high_resolution_clock::now();
 
         std::chrono::duration<double, std::milli> duration = t2 - t1;
-        duration = duration / NUM_ITER;
+        duration = duration / num_iter;
 
         return duration;
     }
@@ -297,36 +297,8 @@ namespace tests
         randomizeData(U);
         randomizeData(V);
 
-        std::vector<float> R_sc(Y.size());
-        std::vector<float> G_sc(Y.size());
-        std::vector<float> B_sc(Y.size());
 
-        auto outTuple_sc = std::tie(R_sc, G_sc, B_sc);
-
-        auto durationSingleCore = executionTimeMs([&]()
-            {
-                symd::map_single_core(outTuple_sc, [](auto y, auto u, auto v)
-                    {
-                        return yuvToRgbKernel(y, u, v);
-                    }, Y, U, V);
-            }
-        );
-
-        std::vector<float> R_mc(Y.size());
-        std::vector<float> G_mc(Y.size());
-        std::vector<float> B_mc(Y.size());
-
-        auto outTuple_mc = std::tie(R_mc, G_mc, B_mc);
-
-        auto duration = executionTimeMs([&]()
-            {
-                symd::map(outTuple_mc, [](auto y, auto u, auto v)
-                    {
-                        return yuvToRgbKernel(y, u, v);
-                    }, Y, U, V);
-            }
-        );
-
+        // Measure simple loop time -------------------------------------------------------------------
         std::vector<float> R_loop(Y.size());
         std::vector<float> G_loop(Y.size());
         std::vector<float> B_loop(Y.size());
@@ -344,6 +316,47 @@ namespace tests
             }
         );
 
+        std::cout << "Mapping YUV444 planar to RGB planar - Loop             : " << durationLoop.count() << " ms" << std::endl;
+
+
+        // Measure single core execution time -------------------------------------------------------------------
+        std::vector<float> R_sc(Y.size());
+        std::vector<float> G_sc(Y.size());
+        std::vector<float> B_sc(Y.size());
+
+        auto outTuple_sc = std::tie(R_sc, G_sc, B_sc);
+
+        auto durationSingleCore = executionTimeMs([&]()
+            {
+                symd::map_single_core(outTuple_sc, [](auto y, auto u, auto v)
+                    {
+                        return yuvToRgbKernel(y, u, v);
+                    }, Y, U, V);
+            }
+        );
+
+        std::cout << "Mapping YUV444 planar to RGB planar - symd_single_core : " << durationSingleCore.count() << " ms" << std::endl;
+
+
+        // Measure full multi core execution time -------------------------------------------------------------------
+        std::vector<float> R_mc(Y.size());
+        std::vector<float> G_mc(Y.size());
+        std::vector<float> B_mc(Y.size());
+
+        auto outTuple_mc = std::tie(R_mc, G_mc, B_mc);
+
+        auto duration = executionTimeMs([&]()
+            {
+                symd::map(outTuple_mc, [](auto y, auto u, auto v)
+                    {
+                        return yuvToRgbKernel(y, u, v);
+                    }, Y, U, V);
+            }
+        );
+
+        std::cout << "Mapping YUV444 planar to RGB planar - symd_multi_core  : " << duration.count() << " ms" << std::endl << std::endl;
+
+
         requireNear(R_sc, R_loop, 0.03f);
         requireNear(G_sc, G_loop, 0.03f);
         requireNear(B_sc, B_loop, 0.03f);
@@ -351,10 +364,6 @@ namespace tests
         requireNear(R_mc, R_loop, 0.03f);
         requireNear(G_mc, G_loop, 0.03f);
         requireNear(B_mc, B_loop, 0.03f);
-
-        std::cout << "Mapping YUV444 planar to RGB planar - Loop             : " << durationLoop.count() << " ms" << std::endl;
-        std::cout << "Mapping YUV444 planar to RGB planar - symd_single_core : " << durationSingleCore.count() << " ms" << std::endl;
-        std::cout << "Mapping YUV444 planar to RGB planar - symd_multi_core  : " << duration.count() << " ms" << std::endl << std::endl;
     }
 
     TEST_CASE("Mapping - Basic Stencil")
