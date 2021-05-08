@@ -14,7 +14,7 @@ namespace symd::__internal__
         return getWidth(std::get<0>(views));
     }
 
-    template <typename View, int N>
+    template <typename View, size_t N>
     size_t getWidth(const std::array<View, N>& views, typename std::enable_if<!std::is_fundamental_v<View>, View>::type* = 0)
     {
         return getWidth(views[0]);
@@ -28,7 +28,7 @@ namespace symd::__internal__
         return getHeight(std::get<0>(views));
     }
 
-    template <typename View, int N>
+    template <typename View, size_t N>
     size_t getHeight(const std::array<View, N>& views, typename std::enable_if<!std::is_fundamental_v<View>, View>::type* = 0)
     {
         return getHeight(views[0]);
@@ -48,10 +48,10 @@ namespace symd::__internal__
         saveDataImpl(views, element, row, col, std::make_index_sequence<sizeof...(Views)>{});
     }
 
-    template <typename R, typename View, int N>
+    template <typename R, typename View, size_t N>
     void saveData(std::array<View, N>& views, const std::array<R, N>& elements, size_t row, size_t col)
     {
-        for (int i = 0; i < N; i++)
+        for (size_t i = 0; i < N; i++)
             saveData(views[i], elements[i], row, col);
     }
 
@@ -69,16 +69,16 @@ namespace symd::__internal__
         saveVecDataImpl(views, elements, row, col, std::make_index_sequence<sizeof...(Views)>{});
     }
 
-    template <typename R, typename View, int N>
+    template <typename R, typename View, size_t N>
     void saveVecData(std::array<View, N>& views, const std::array<SymdRegister<R>, N>& elements, size_t row, size_t col)
     {
-        for (int i = 0; i < N; i++)
+        for (size_t i = 0; i < N; i++)
             saveVecData(views[i], elements[i], row, col);
     }
 
 
 
-    template <typename View, int N, size_t... I>
+    template <typename View, size_t N, size_t... I>
     auto sub_viewImpl(std::array<View, N>& views, const Region& region, std::index_sequence<I...>)
     {
         using SubViewT = std::decay_t<decltype(sub_view(views[0], region))>;

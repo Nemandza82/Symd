@@ -111,7 +111,7 @@ namespace symd::__internal__
         return reductor._width;
     }
 
-    template <typename T, typename ReduceOperation>
+    /*template <typename T, typename ReduceOperation>
     auto fetchData(const views::reduce_view<T, ReduceOperation>& reductor, size_t row, size_t col)
     {
         static_assert(false, "Cannot fetch from Reductor");
@@ -121,7 +121,7 @@ namespace symd::__internal__
     auto fetchVecData(const views::reduce_view<T, ReduceOperation>& reductor, size_t row, size_t col)
     {
         static_assert(false, "Cannot fetch from Reductor");
-    }
+    }*/
 
     template <typename T, typename ReduceOperation>
     void saveData(views::reduce_view<T, ReduceOperation>& reductor, const T& element, size_t row, size_t col)

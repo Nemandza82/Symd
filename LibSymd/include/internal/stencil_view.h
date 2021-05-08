@@ -34,13 +34,13 @@ namespace symd::__internal__
         }
     };
 
-    static size_t foldCoords(__int64 x, size_t low, size_t high)
+    static size_t foldCoords(int64_t x, size_t low, size_t high)
     {
-        if (x < (__int64)low)
+        if (x < (int64_t)low)
         {
             return size_t(2 * low + std::abs(x));
         }
-        else if (x >= (__int64)high)
+        else if (x >= (int64_t)high)
         {
             return size_t(2 * high - std::abs(x));
         }
@@ -83,8 +83,8 @@ namespace symd::__internal__
 
         UnderlyingDataType operator()(int dr, int dc) const
         {
-            size_t row = foldCoords((__int64)_row + dr, 0, (__int64)(_underlyingHeight - 1));
-            size_t col = foldCoords((__int64)_col + dc, 0, (__int64)(_underlyingWidth - 1));
+            size_t row = foldCoords((int64_t)_row + dr, 0, (int64_t)(_underlyingHeight - 1));
+            size_t col = foldCoords((int64_t)_col + dc, 0, (int64_t)(_underlyingWidth - 1));
 
             return fetchData(_underlyingView, row, col);
         }
@@ -175,7 +175,7 @@ namespace symd::views
     template <typename View, typename C>
     auto stencil(View&& view, int width, int height, Border borderHandling, C c)
     {
-        return __internal__::Stencil<View>(std::forward<View>(view), width, height, borderHandling, c);
+        return __internal__::Stencil<View, C>(std::forward<View>(view), width, height, borderHandling, c);
     }
 }
 
