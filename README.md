@@ -9,6 +9,16 @@ C++17 is a requirement.
 
 For development and testing we use Visual Studio 2019 latest updated (16.9.4), with /std:c++17 setting. Library should work on GCC and Clang as well but is currently not tested and probably would require a few tweeks.
 
+#### Compiling on Ubuntu
+
+In addition to gcc or Clang you need to install tbb:
+
+```
+sudo apt update
+sudo apt install libtbb-dev
+```
+
+
 ### CPU
 
  * Intel or AMD x64 CPU with [AVX support](https://en.wikipedia.org/wiki/Advanced_Vector_Extensions). Roughly CPUs from 2011 and later.
