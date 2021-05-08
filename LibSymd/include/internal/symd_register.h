@@ -24,9 +24,6 @@ namespace symd
         constexpr bool Is_NEON = true;
     #endif
 
-    #include "intrinsic_extensions_gcc.h"
-
-
         template <typename T>
         class UnderlyingRegister
         {

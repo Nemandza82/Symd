@@ -8,9 +8,6 @@
     <ClInclude Include="include\symd.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="include\internal\intrinsic_extensions_gcc.h">
-      <Filter>include\internal</Filter>
-    </ClInclude>
     <ClInclude Include="include\internal\region.h">
       <Filter>include\internal</Filter>
     </ClInclude>

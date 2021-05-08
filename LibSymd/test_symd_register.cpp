@@ -195,18 +195,14 @@ namespace tests
 
             if constexpr (std::is_floating_point_v<T>)
             {
-                // This is a regular value (floating point values don't support bitwise operations).
-                union
-                {
-                    T f;
-                    typename std::conditional<std::is_same_v<T, float>, uint32_t, uint64_t>::type u;
-                } lhs_, rhs_, res;
+                using ResType = typename std::conditional<std::is_same_v<T, float>, uint32_t, uint64_t>::type;
 
-                lhs_.f = lhs;
-                rhs_.f = rhs;
+                auto* lhs_ = reinterpret_cast<const ResType*>(&lhs);
+                auto* rhs_ = reinterpret_cast<const ResType*>(&rhs);
 
-                res.u = bOp(lhs_.u, rhs_.u);
-                return res.f;
+                ResType res = bOp(*lhs_, *rhs_);
+
+                return *reinterpret_cast<T*>(&res);
             }
             else
             {
@@ -224,19 +220,15 @@ namespace tests
         auto uBOpRes = [&uBOp](auto&& arg)
         {
             using T = std::decay_t<decltype(arg)>;
+
             if constexpr (std::is_floating_point_v<T>)
             {
-                // This is a regular value (floating point values don't support bitwise operations).
-                union
-                {
-                    T f;
-                    typename std::conditional<std::is_same_v<T, float>, uint32_t, uint64_t>::type u;
-                } arg_, res;
+                using ResType = typename std::conditional<std::is_same_v<T, float>, uint32_t, uint64_t>::type;
 
-                arg_.f = arg;
+                auto* arg_ = reinterpret_cast<const ResType*>(&arg);
+                ResType res = uBOp(*arg_);
 
-                res.u = uBOp(arg_.u);
-                return res.f;
+                return *reinterpret_cast<T*>(&res);
             }
             else
             {

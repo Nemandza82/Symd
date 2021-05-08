@@ -88,7 +88,6 @@
   <ItemGroup>
     <ClInclude Include="include\internal\basic_views.h" />
     <ClInclude Include="include\internal\data_view.h" />
-    <ClInclude Include="include\internal\intrinsic_extensions_gcc.h" />
     <ClInclude Include="include\internal\multi_output.h" />
     <ClInclude Include="include\internal\reduce_view.h" />
     <ClInclude Include="include\internal\region.h" />

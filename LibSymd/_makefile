@@ -1,2 +1,2 @@
 test_symd: test_symd.cpp test_symd_register.cpp
-	g++ test_symd.cpp -std=c++17 -march=ivybridge -O3 -o test_symd
+	g++ test_symd.cpp test_symd_register.cpp -std=c++17 -march=ivybridge -O3 -o test_symd
