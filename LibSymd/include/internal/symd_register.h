@@ -266,11 +266,11 @@ namespace symd
                 else if constexpr (std::is_same_v<T, int>)
                 {
     #ifdef SYMD_SSE
-                    return typename UnderlyingRegister<T>::Type {
+                    return SymdRegister(typename UnderlyingRegister<T>::Type {
                         _mm_add_epi32(_reg[0], other._reg[0]),
-                        _mm_add_epi32(_reg[1], other._reg[1]) };
+                        _mm_add_epi32(_reg[1], other._reg[1]) });
     #elif defined SYMD_NEON
-                    return vaddq_s32(_reg, other._reg);
+                    return SymdRegister(vaddq_s32(_reg, other._reg));
     #endif
                 }
                 else if constexpr (std::is_same_v<T, unsigned char>)
@@ -283,7 +283,7 @@ namespace symd
                 }
                 else if constexpr (std::is_same_v<T, double>)
                 {
-                    return typename UnderlyingRegister<T>::Type {
+                    return SymdRegister(typename UnderlyingRegister<T>::Type {
     #ifdef SYMD_SSE
                         _mm256_add_pd(_reg[0], other._reg[0]),
                         _mm256_add_pd(_reg[1], other._reg[1])
@@ -291,7 +291,7 @@ namespace symd
                         vaddq_f64(_reg[0], other._reg[0]),
                         vaddq_f64(_reg[1], other._reg[1])
     #endif
-                    };
+                    });
                 }
             }
 
