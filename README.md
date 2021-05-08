@@ -16,7 +16,7 @@ We ship Visual Studio solution file, so just load it.
 
 #### Compiling on Ubuntu - g++
 
-To can compile test with g++ run:
+To can compile tests with g++ run:
 
 ```
 g++ test_symd.cpp test_symd_register.cpp -std=c++17 -march=ivybridge -O3 -o test_symd
@@ -24,7 +24,7 @@ g++ test_symd.cpp test_symd_register.cpp -std=c++17 -march=ivybridge -O3 -o test
 
 #### Compiling on Ubuntu - Clang
 
-To can compile test with Clang run:
+To can compile tests with Clang run:
 
 ```
 clang++ test_symd.cpp test_symd_register.cpp -std=c++17 -mavx -O3 -o test_symd
