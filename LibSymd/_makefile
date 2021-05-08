@@ -1,0 +1,2 @@
+test_symd: test_symd.cpp test_symd_register.cpp
+	clang test_symd.cpp -std=c++17 -march=native -o test_symd
