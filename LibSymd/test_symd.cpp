@@ -103,7 +103,7 @@ namespace tests
         requireEqual(output, { 2, 4, 6, 8, 10, 12, 14, 16, 18 });
     }
 
-   /* // Blend is substitute for "if" construct
+    // Blend is substitute for "if" construct
     TEST_CASE("Mapping 2 - blend")
     {
         std::vector<int> input = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
@@ -633,6 +633,6 @@ namespace tests
         auto resY = out[1].getResult();
 
         REQUIRE(resY == 2 * resX);
-    }*/
+    }
 }
 
