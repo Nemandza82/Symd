@@ -1,5 +1,5 @@
 #pragma once
-#include <execution>
+//#include <execution>
 #include <future>
 #include <algorithm>
 #include <functional>
@@ -96,13 +96,15 @@ namespace symd
         auto width = __internal__::getWidth(result);
         auto heigth = __internal__::getHeight(result);
 
-        std::vector<__internal__::Region> regions;
+        /*std::vector<__internal__::Region> regions;
         __internal__::Region(width, heigth).split(regions);
 
         std::for_each(std::execution::par_unseq, regions.begin(), regions.end(), [&](__internal__::Region& region)
             {
                 auto subRes = __internal__::sub_view(result, region);
                 map_single_core(subRes, operation, __internal__::sub_view(std::forward<Inputs>(inputs), region)...);
-            });
+            });*/
+
+        map_single_core(result, operation, inputs...);
     }
 }
