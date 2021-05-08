@@ -1030,7 +1030,7 @@ namespace symd
                 else if constexpr (std::is_same_v<T, float> && std::is_same_v<R, unsigned char>)
                 {
                     // Float -> unsigned char ------------------------------------------------------------
-                    return this->convert_to<int>().convert_to<unsigned char>();
+                    return this->convert_to<int>().template convert_to<unsigned char>();
                 }
                 else if constexpr (std::is_same_v<T, float> && std::is_same_v<R, double>)
                 {
@@ -1077,7 +1077,7 @@ namespace symd
                 else if constexpr (std::is_same_v<T, double> && std::is_same_v<R, unsigned char>)
                 {
                     // double -> unsigned char ------------------------------------------------------------
-                    return this->convert_to<int>().convert_to<unsigned char>();
+                    return this->convert_to<int>().template convert_to<unsigned char>();
                 }
                 else if constexpr (std::is_same_v<T, int> && std::is_same_v<R, float>)
                 {
@@ -1117,7 +1117,7 @@ namespace symd
                 else if constexpr (std::is_same_v<T, unsigned char> && std::is_same_v<R, float>)
                 {
                     // unsigned char -> float ------------------------------------------------------------
-                    return this->convert_to<int>().convert_to<float>();
+                    return this->convert_to<int>().template convert_to<float>();
                 }
                 else if constexpr (std::is_same_v<T, unsigned char> && std::is_same_v<R, int>)
                 {
@@ -1139,7 +1139,7 @@ namespace symd
                 else if constexpr (std::is_same_v<T, unsigned char> && std::is_same_v<R, double>)
                 {
                     // unsigned char -> double ------------------------------------------------------------
-                    return this->convert_to<int>().convert_to<double>();
+                    return this->convert_to<int>().template convert_to<double>();
                 }
                 else
                 {
