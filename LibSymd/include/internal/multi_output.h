@@ -89,7 +89,7 @@ namespace symd::__internal__
         };
     }
 
-    template <typename View, int N>
+    template <typename View, size_t N>
     auto sub_view(std::array<View, N>& views, const Region& region)
     {
         return sub_viewImpl(views, region, std::make_index_sequence<N>{});
