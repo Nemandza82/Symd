@@ -1,3 +1,4 @@
+#define CATCH_CONFIG_MAIN
 #include "catch.h"
 #include "include/internal/symd_register.h"
 
