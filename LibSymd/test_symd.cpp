@@ -211,9 +211,22 @@ namespace tests
             }
         );
 
-        std::cout << "Simple processing - Loop             : " << durationLoop.count() << " ms" << std::endl;
-        std::cout << "Simple processing - symd_single_core : " << durationSymdSingleCore.count() << " ms" << std::endl;
-        std::cout << "Simple processing - symd_multi_core  : " << durationSymd.count() << " ms" << std::endl << std::endl;
+        std::vector<double> inputD(2000000);
+        std::vector<double> outputD(input.size());
+
+        auto durationSymdDouble = executionTimeMs([&]()
+            {
+                symd::map(outputD, [](const auto& x)
+                    {
+                        return 2. * x;
+                    }, inputD);
+            }
+        );
+
+        std::cout << "Simple processing (float) - Loop             : " << durationLoop.count() << " ms" << std::endl;
+        std::cout << "Simple processing (float) - symd_single_core : " << durationSymdSingleCore.count() << " ms" << std::endl;
+        std::cout << "Simple processing (float) - symd_multi_core  : " << durationSymd.count() << " ms" << std::endl;
+        std::cout << "Simple processing (double) - symd_multi_core : " << durationSymdDouble.count() << " ms" << std::endl << std::endl;
     }
 
     TEST_CASE("Mapping 2 - multi out")

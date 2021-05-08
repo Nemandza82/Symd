@@ -185,7 +185,7 @@ namespace tests
     }
 
     template <typename BitOperation>
-    static decltype(auto) floatingPointBitOp(BitOperation&& bOp)
+    static auto floatingPointBitOp(BitOperation&& bOp)
     {
         auto bOpRes = [&bOp](auto&& lhs, auto&& rhs)
         {

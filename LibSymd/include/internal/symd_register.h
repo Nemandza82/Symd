@@ -1,6 +1,7 @@
 #pragma once
 #include <type_traits>
 #include <limits>
+#include <array>
 
 namespace symd
 {
@@ -64,7 +65,7 @@ namespace symd
         public:
 
     #ifdef SYMD_SSE
-            using Type = __m128i[2];
+            using Type = std::array<__m128i, 2>;
     #elif defined SYMD_NEON
             using Type = int32x4_t; // Neon has 4 elements
     #endif
@@ -99,9 +100,9 @@ namespace symd
         public:
 
     #ifdef SYMD_SSE
-            using Type = __m256d[2];
+            using Type = std::array<__m256d, 2>;
     #elif defined SYMD_NEON
-            using Type = float64x2_t[2]; // Neon has 4 elements
+            using Type = std::array<float64x2_t, 2>; // Neon has 4 elements
     #endif
 
             constexpr static bool is_supported_type()
