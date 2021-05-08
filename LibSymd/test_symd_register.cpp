@@ -56,15 +56,15 @@ namespace tests
             // FLOATS
             if constexpr (std::is_floating_point_v<T>)
             {
-                if (reference[i] && !isnan(reg[i]))
+                if (reference[i] && !std::isnan(reg[i]))
                     return false;
-                else if (!reference[i] && isnan(reg[i]))
+                else if (!reference[i] && std::isnan(reg[i]))
                     return false;
 
                 // Check store as well
-                if (reference[i] && !isnan(tmpRes[i + 1]))
+                if (reference[i] && !std::isnan(tmpRes[i + 1]))
                     return false;
-                else if (!reference[i] && isnan(tmpRes[i + 1]))
+                else if (!reference[i] && std::isnan(tmpRes[i + 1]))
                     return false;
             }
             // INTS
