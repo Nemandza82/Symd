@@ -259,7 +259,7 @@ namespace tests
     static std::vector<double> inData2D{ 8, 7, 6, 4, 4, 3, 2, 1 };
 
     template <typename FT>
-    std::pair<const std::vector<FT>&, const std::vector<FT>&> getFpTestData()
+    std::pair<const std::vector<FT>, const std::vector<FT>> getFpTestData()
     {
         if constexpr (std::is_same_v<FT, float>) 
         {
@@ -273,7 +273,7 @@ namespace tests
 
     TEMPLATE_TEST_CASE("Float addition", "[float][operators]", float, double)
     {
-        const auto& [inData1, inData2] = getFpTestData<TestType>();
+        const auto [inData1, inData2] = getFpTestData<TestType>();
 
         checkOperationResult(inData1, std::plus(), inData2);
         checkOperationResult(inData2, std::plus(), inData1);
@@ -295,7 +295,7 @@ namespace tests
 
     TEMPLATE_TEST_CASE("Float substraction", "[float][operators]", float, double)
     {
-        const auto& [inData1, inData2] = getFpTestData<TestType>();
+        const auto [inData1, inData2] = getFpTestData<TestType>();
 
         checkOperationResult(inData1, std::minus(), inData2);
         checkOperationResult(inData2, std::minus(), inData1);
@@ -304,7 +304,7 @@ namespace tests
 
     TEMPLATE_TEST_CASE("Float multiplication", "[float][operators]", float, double)
     {
-        const auto& [inData1, inData2] = getFpTestData<TestType>();
+        const auto [inData1, inData2] = getFpTestData<TestType>();
 
         checkOperationResult(inData1, std::multiplies(), inData2);
         checkOperationResult(inData2, std::multiplies(), inData1);
@@ -313,7 +313,7 @@ namespace tests
 
     TEMPLATE_TEST_CASE("Float division", "[float][operators]", float, double)
     {
-        const auto& [inData1, inData2] = getFpTestData<TestType>();
+        const auto [inData1, inData2] = getFpTestData<TestType>();
 
         checkOperationResult(inData1, std::divides(), inData2);
         checkOperationResult(inData2, std::divides(), inData1);
@@ -322,7 +322,7 @@ namespace tests
 
     TEMPLATE_TEST_CASE("Float bit and", "[float][operators]", float, double)
     {
-        const auto& [inData1, inData2] = getFpTestData<TestType>();
+        const auto [inData1, inData2] = getFpTestData<TestType>();
 
         checkOperationResult(inData1, floatingPointBitOp(std::bit_and()), inData2);
         checkOperationResult(inData2, floatingPointBitOp(std::bit_and()), inData1);
@@ -331,7 +331,7 @@ namespace tests
 
     TEMPLATE_TEST_CASE("Float bit or", "[float][operators]", float, double)
     {
-        const auto& [inData1, inData2] = getFpTestData<TestType>();
+        const auto [inData1, inData2] = getFpTestData<TestType>();
 
         checkOperationResult(inData1, floatingPointBitOp(std::bit_or()), inData2);
         checkOperationResult(inData2, floatingPointBitOp(std::bit_or()), inData1);
@@ -340,7 +340,7 @@ namespace tests
 
     TEMPLATE_TEST_CASE("Float bit xor", "[float][operators]", float, double)
     {
-        const auto& [inData1, inData2] = getFpTestData<TestType>();
+        const auto [inData1, inData2] = getFpTestData<TestType>();
 
         checkOperationResult(inData1, floatingPointBitOp(std::bit_xor()), inData2);
         checkOperationResult(inData2, floatingPointBitOp(std::bit_xor()), inData1);
@@ -349,7 +349,7 @@ namespace tests
 
     TEMPLATE_TEST_CASE("Float bit not", "[float][operators]", float, double)
     {
-        const auto& [inData1, inData2] = getFpTestData<TestType>();
+        const auto [inData1, inData2] = getFpTestData<TestType>();
 
         checkUnaryOperationResult(floatingPointBitUnaryOp(std::bit_not()), inData1);
         checkUnaryOperationResult(floatingPointBitUnaryOp(std::bit_not()), inData2);
@@ -358,7 +358,7 @@ namespace tests
 
     TEMPLATE_TEST_CASE("Float cmp equal", "[float][operators]", float, double)
     {
-        const auto& [inData1, inData2] = getFpTestData<TestType>();
+        const auto [inData1, inData2] = getFpTestData<TestType>();
 
         checkCmpOperationResult(inData1, std::equal_to(), inData2);
         checkCmpOperationResult(inData2, std::equal_to(), inData1);
@@ -366,7 +366,7 @@ namespace tests
 
     TEMPLATE_TEST_CASE("Float cmp not equal", "[float][operators]", float, double)
     {
-        const auto& [inData1, inData2] = getFpTestData<TestType>();
+        const auto [inData1, inData2] = getFpTestData<TestType>();
 
         checkCmpOperationResult(inData1, std::not_equal_to(), inData2);
         checkCmpOperationResult(inData2, std::not_equal_to(), inData1);
@@ -375,7 +375,7 @@ namespace tests
 
     TEMPLATE_TEST_CASE("Float cmp greater equal", "[float][operators]", float, double)
     {
-        const auto& [inData1, inData2] = getFpTestData<TestType>();
+        const auto [inData1, inData2] = getFpTestData<TestType>();
 
         checkCmpOperationResult(inData1, std::greater_equal(), inData2);
         checkCmpOperationResult(inData2, std::greater_equal(), inData1);
@@ -384,7 +384,7 @@ namespace tests
 
     TEMPLATE_TEST_CASE("Float cmp less equal", "[float][operators]", float, double)
     {
-        const auto& [inData1, inData2] = getFpTestData<TestType>();
+        const auto [inData1, inData2] = getFpTestData<TestType>();
 
         checkCmpOperationResult(inData1, std::less_equal(), inData2);
         checkCmpOperationResult(inData2, std::less_equal(), inData1);
@@ -392,7 +392,7 @@ namespace tests
 
     TEMPLATE_TEST_CASE("Float cmp greater", "[float][operators]", float, double)
     {
-        const auto& [inData1, inData2] = getFpTestData<TestType>();
+        const auto [inData1, inData2] = getFpTestData<TestType>();
 
         checkCmpOperationResult(inData1, std::greater(), inData2);
         checkCmpOperationResult(inData2, std::greater(), inData1);
@@ -401,7 +401,7 @@ namespace tests
 
     TEMPLATE_TEST_CASE("Float cmp less", "[float][operators]", float, double)
     {
-        const auto& [inData1, inData2] = getFpTestData<TestType>();
+        const auto [inData1, inData2] = getFpTestData<TestType>();
 
         checkCmpOperationResult(inData1, std::less(), inData2);
         checkCmpOperationResult(inData2, std::less(), inData1);
@@ -418,7 +418,7 @@ namespace tests
     static std::vector<unsigned char> inData2b{ 8, 7, 6, 4, 4, 3, 2, 1 };
 
     template <typename IT>
-    std::pair<const std::vector<IT>&, const std::vector<IT>&> getIntTestData()
+    std::pair<const std::vector<IT>, const std::vector<IT>> getIntTestData()
     {
         if constexpr (std::is_same_v<IT, int>)
         {
@@ -432,7 +432,7 @@ namespace tests
 
     TEMPLATE_TEST_CASE("Int addition", "[integer][operators]", int)
     {
-        const auto& [inData1, inData2] = getIntTestData<TestType>();
+        const auto [inData1, inData2] = getIntTestData<TestType>();
         checkOperationResult(inData1, std::plus(), inData2);
         checkOperationResult(inData2, std::plus(), inData1);
     }
@@ -440,7 +440,7 @@ namespace tests
 
     TEMPLATE_TEST_CASE("Int substraction", "[integer][operators]", int)
     {
-        const auto& [inData1, inData2] = getIntTestData<TestType>();
+        const auto [inData1, inData2] = getIntTestData<TestType>();
 
         checkOperationResult(inData1, std::minus(), inData2);
         checkOperationResult(inData2, std::minus(), inData1);
@@ -449,7 +449,7 @@ namespace tests
 
     TEMPLATE_TEST_CASE("Int multiplication", "[integer][operators]", int)
     {
-        const auto& [inData1, inData2] = getIntTestData<TestType>();
+        const auto [inData1, inData2] = getIntTestData<TestType>();
 
         checkOperationResult(inData1, std::multiplies(), inData2);
         checkOperationResult(inData2, std::multiplies(), inData1);
@@ -464,7 +464,7 @@ namespace tests
 
     TEMPLATE_TEST_CASE("Int bit and", "[integer][operators]", int, unsigned char)
     {
-        const auto& [inData1, inData2] = getIntTestData<TestType>();
+        const auto [inData1, inData2] = getIntTestData<TestType>();
 
         checkOperationResult(inData1, std::bit_and(), inData2);
         checkOperationResult(inData2, std::bit_and(), inData1);
@@ -473,7 +473,7 @@ namespace tests
 
     TEMPLATE_TEST_CASE("Int bit or", "[integer][operators]", int, unsigned char)
     {
-        const auto& [inData1, inData2] = getIntTestData<TestType>();
+        const auto [inData1, inData2] = getIntTestData<TestType>();
 
         checkOperationResult(inData1, std::bit_or(), inData2);
         checkOperationResult(inData2, std::bit_or(), inData1);
@@ -482,7 +482,7 @@ namespace tests
 
     TEMPLATE_TEST_CASE("Int bit xor", "[integer][operators]", int, unsigned char)
     {
-        const auto& [inData1, inData2] = getIntTestData<TestType>();
+        const auto [inData1, inData2] = getIntTestData<TestType>();
 
         checkOperationResult(inData1, std::bit_xor(), inData2);
         checkOperationResult(inData2, std::bit_xor(), inData1);
@@ -491,7 +491,7 @@ namespace tests
 
     TEMPLATE_TEST_CASE("Int bit not", "[integer][operators]", int, unsigned char)
     {
-        const auto& [inData1, inData2] = getIntTestData<TestType>();
+        const auto [inData1, inData2] = getIntTestData<TestType>();
 
         checkUnaryOperationResult(std::bit_not(), inData1);
         checkUnaryOperationResult(std::bit_not(), inData2);
@@ -500,7 +500,7 @@ namespace tests
 
     TEMPLATE_TEST_CASE("Int cmp equal", "[integer][operators]", int)
     {
-        const auto& [inData1, inData2] = getIntTestData<TestType>();
+        const auto [inData1, inData2] = getIntTestData<TestType>();
 
         checkCmpOperationResult(inData1, std::equal_to(), inData2);
         checkCmpOperationResult(inData2, std::equal_to(), inData1);
@@ -508,7 +508,7 @@ namespace tests
 
     TEMPLATE_TEST_CASE("Int cmp not equal", "[integer][operators]", int)
     {
-        const auto& [inData1, inData2] = getIntTestData<TestType>();
+        const auto [inData1, inData2] = getIntTestData<TestType>();
 
         checkCmpOperationResult(inData1, std::not_equal_to(), inData2);
         checkCmpOperationResult(inData2, std::not_equal_to(), inData1);
@@ -517,7 +517,7 @@ namespace tests
 
     TEMPLATE_TEST_CASE("Int cmp greater equal", "[integer][operators]", int)
     {
-        const auto& [inData1, inData2] = getIntTestData<TestType>();
+        const auto [inData1, inData2] = getIntTestData<TestType>();
 
         checkCmpOperationResult(inData1, std::greater_equal(), inData2);
         checkCmpOperationResult(inData2, std::greater_equal(), inData1);
@@ -525,7 +525,7 @@ namespace tests
 
     TEMPLATE_TEST_CASE("Int cmp less equal", "[integer][operators]", int)
     {
-        const auto& [inData1, inData2] = getIntTestData<TestType>();
+        const auto [inData1, inData2] = getIntTestData<TestType>();
 
         checkCmpOperationResult(inData1, std::less_equal(), inData2);
         checkCmpOperationResult(inData2, std::less_equal(), inData1);
@@ -534,7 +534,7 @@ namespace tests
 
     TEMPLATE_TEST_CASE("Int cmp greater", "[integer][operators]", int)
     {
-        const auto& [inData1, inData2] = getIntTestData<TestType>();
+        const auto [inData1, inData2] = getIntTestData<TestType>();
 
         checkCmpOperationResult(inData1, std::greater(), inData2);
         checkCmpOperationResult(inData2, std::greater(), inData1);
@@ -543,7 +543,7 @@ namespace tests
 
     TEMPLATE_TEST_CASE("Int cmp less", "[integer][operators]", int)
     {
-        const auto& [inData1, inData2] = getIntTestData<TestType>();
+        const auto [inData1, inData2] = getIntTestData<TestType>();
 
         checkCmpOperationResult(inData1, std::less(), inData2);
         checkCmpOperationResult(inData2, std::less(), inData1);
