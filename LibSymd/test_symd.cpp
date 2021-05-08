@@ -103,7 +103,7 @@ namespace tests
         requireEqual(output, { 2, 4, 6, 8, 10, 12, 14, 16, 18 });
     }
 
-    // Blend is substitute for "if" construct
+   /* // Blend is substitute for "if" construct
     TEST_CASE("Mapping 2 - blend")
     {
         std::vector<int> input = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
@@ -131,22 +131,6 @@ namespace tests
 
         requireEqual(output.data(), { 2, -4, 6, -8, 6, -12, -14, 6, -18 });
     }
-
-    /*TEST_CASE("Mapping 2 - min span")
-    {
-        std::vector<int> input = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 };
-
-        // Symd can work with spans
-        std::span<int> span(&input[2], 11);
-        std::vector<int> output(span.size());
-
-        symd::map_single_core(output, [](auto x)
-            {
-                return std::min(x, 7);
-            }, span);
-
-        requireEqual(output, { 3, 4, 5, 6, 7, 7, 7, 7, 7, 7, 7 });
-    }*/
 
     TEST_CASE("Mapping 2 - abs")
     {
@@ -649,6 +633,6 @@ namespace tests
         auto resY = out[1].getResult();
 
         REQUIRE(resY == 2 * resX);
-    }
+    }*/
 }
 
