@@ -7,17 +7,28 @@ C++17 is a requirement.
 
 ### Compiler
 
-For development and testing we use Visual Studio 2019 latest updated (16.9.4), with /std:c++17 setting. Library should work on GCC and Clang as well but is currently not tested and probably would require a few tweeks.
+Symd can be used with Visual Studio, g++, and Clang.
 
-#### Compiling on Ubuntu
+#### Compiling on Windows
 
-In addition to gcc or Clang you need to install tbb:
+For development and testing we use Visual Studio 2019 (16.9.4), with /std:c++17 setting. 
+We ship Visual Studio solution file, so just load it.
+
+#### Compiling on Ubuntu - g++
+
+To can compile test with g++ run:
 
 ```
-sudo apt update
-sudo apt install libtbb-dev
+g++ test_symd.cpp test_symd_register.cpp -std=c++17 -march=ivybridge -O3 -o test_symd
 ```
 
+#### Compiling on Ubuntu - Clang
+
+To can compile test with Clang run:
+
+```
+clang++ test_symd.cpp test_symd_register.cpp -std=c++17 -mavx -O3 -o test_symd
+```
 
 ### CPU
 
