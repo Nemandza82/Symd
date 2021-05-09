@@ -151,12 +151,12 @@ size_t height = 480;
 std::vector<float> input(width * height);
 std::vector<float> output(input.size());
 
-symd::views::data_view<float, 2> twoDInput(input.data(), width, height, width);
-symd::views::data_view<float, 2> twoDOutput(output.data(), width, height, width);
+symd::views::data_view<float, 2> input_2d(input.data(), width, height, width);
+symd::views::data_view<float, 2> output_2d(output.data(), width, height, width);
 
 // Calculate image gradient. We also need 2D stencil view.
-symd::map(twoDOutput, [&](const auto& sv) { return sv(0, 1) - sv(0, -1); },
-	symd::views::stencil(twoDInput, 3, 3));
+symd::map(output_2d, [&](const auto& sv) { return sv(0, 1) - sv(0, -1); },
+	symd::views::stencil(input_2d, 3, 3));
 ```
 
 
