@@ -67,6 +67,8 @@ Output:
 2, 4, 6, 8, 10, 12, 14, 16, 18,
 ```
 
+Operations on input vetor are performed using SSE, AVX (or Neon).
+
 ### Can I use 2D inputs?
 
 Yes. You need to wrap your data with 2D data_view. Example:
