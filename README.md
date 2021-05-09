@@ -186,6 +186,10 @@ Getting the result of reduction:
 float result = sum.getResult();
 ```
 
+## Maintainer
+
+[Nemandza82](@Nemandza82)
+
 ## License
 
 Licensed under the [MIT License](LICENSE).
