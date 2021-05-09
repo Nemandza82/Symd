@@ -79,11 +79,11 @@ std::vector<float> input1(width * height);
 std::vector<float> input2(input1.size());
 std::vector<float> output(input1.size());
 
-symd::views::data_view<float, 2> twoDInput1(input1.data(), width, height, width);
-symd::views::data_view<float, 2> twoDInput2(input2.data(), width, height, width);
-symd::views::data_view<float, 2> twoDOutput(output.data(), width, height, width);
+symd::views::data_view<float, 2> input1_2d(input1.data(), width, height, width);
+symd::views::data_view<float, 2> input2_2d(input2.data(), width, height, width);
+symd::views::data_view<float, 2> output_2d(output.data(), width, height, width);
 
-symd::map(twoDOutput, [&](auto a, auto b) { return a + b; }, twoDInput1, twoDInput2);
+symd::map(output_2d, [&](auto a, auto b) { return a + b; }, input1_2d, input2_2d);
 ```
 
 ### Can I use a custom data source with Symd?
@@ -115,13 +115,13 @@ namespace symd::__internal__
     template <typename T>
     T* getDataPtr(MyMatrix<T>& myMatrix, size_t row, size_t col)
     {
-        return &myMatrix(row, + col);
+        return &myMatrix(row, col);
     }
 
     template <typename T>
     const T* getDataPtr(const MyMatrix<T>& myMatrix, size_t row, size_t col)
     {
-        return &myMatrix(row, +col);
+        return &myMatrix(row, col);
     }
 }
 
@@ -180,6 +180,12 @@ After that you map your inputs to reduce_view. That enables you to do some proce
 symd::map(sum, [](auto x) { return x * 2; }, input);
 ```
 
+Getting the result of reduction:
 
+```cpp
+float result = sum.getResult();
+```
 
+## License
 
+Licensed under the [MIT License].
