@@ -188,7 +188,7 @@ float result = sum.getResult();
 
 ## Maintainer
 
-[Nemandza82](@Nemandza82)
+[Nemandza82](https://github.com/Nemandza82)
 
 ## License
 
