@@ -86,10 +86,10 @@ symd::views::data_view<float, 2> output_2d(output.data(), width, height, width);
 symd::map(output_2d, [&](auto a, auto b) { return a + b; }, input1_2d, input2_2d);
 ```
 
-### Can I use a custom data source with Symd?
+### Can I use my own matrix class as input or output to Symd?
 
-Chances are that you will be using your own matrix/vector or some third party classes for storing data which are not natively supported by Symd (eg OpenCV matrix). 
-Using such classes as inputs and outputs with Symd is possible. You need to overload methods for getting size of data and accessing elements before including Symd. Example:
+Chances are that you will be using your own matrix/vector class or some third party class for storing data which are not natively supported by Symd (eg OpenCV matrix). 
+Using such classes as inputs or outputs with Symd is possible. You need to overload methods for getting size of data and accessing elements before including Symd. Example:
 
 ```cpp
 namespace symd::__internal__
