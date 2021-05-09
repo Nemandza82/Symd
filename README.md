@@ -88,6 +88,8 @@ symd::views::data_view<float, 2> output_2d(output.data(), width, height, width);
 symd::map(output_2d, [&](auto a, auto b) { return a + b; }, input1_2d, input2_2d);
 ```
 
+symd::views::data_view is non-owning view of underlying data.
+
 ### Can I use my own matrix class as input or output to Symd?
 
 Chances are that you will be using your own matrix/vector class or some third party class for storing data which are not natively supported by Symd (eg OpenCV matrix). 
@@ -144,7 +146,7 @@ void myMatrixExample()
 
 ### How can I access nearby elements in the Symd kernel (implement convolution)?
 
-To access newarby elements in symd kernel, you need to use stencil view (symd::views::stencil). Example:
+To access nearby elements in Symd kernel, you need to use stencil view (symd::views::stencil). Example:
 
 ```cpp
 size_t width = 640;
@@ -164,7 +166,7 @@ symd::map(output_2d, [&](const auto& sv) { return sv(0, 1) - sv(0, -1); },
 
 ### How can I perform reduction?
 
-You need to create reduce_view and specify reduce opperation. Example:
+You need to create reduce_view and specify reduce operation. Example:
 
 ```cpp
 std::vector<float> input = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 };
