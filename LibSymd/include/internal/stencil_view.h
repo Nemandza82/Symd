@@ -5,7 +5,7 @@ namespace symd
 {
     enum class Border
     {
-        zero,
+        constant,
         replicate,
         mirror,
         mirror_replicate
@@ -34,7 +34,7 @@ namespace symd::__internal__
         }
     };
 
-    static size_t foldCoords(int64_t x, size_t low, size_t high)
+    static size_t mirrorCoords(int64_t x, size_t low, size_t high)
     {
         if (x < (int64_t)low)
         {
@@ -49,6 +49,7 @@ namespace symd::__internal__
             return size_t(x);
         }
     }
+
 
     /// <summary>
     /// Object to access stencil around specified data location (row, col)
@@ -77,16 +78,43 @@ namespace symd::__internal__
             _underlyingWidth = getWidth(_underlyingView);
             _underlyingHeight = getHeight(_underlyingView);
 
-            _borderHandling = borderHandling;
+            _borderHandling = borderHandling;            
             _borderConstant = c;
         }
 
         UnderlyingDataType operator()(int dr, int dc) const
         {
-            size_t row = foldCoords((int64_t)_row + dr, 0, (int64_t)(_underlyingHeight - 1));
-            size_t col = foldCoords((int64_t)_col + dc, 0, (int64_t)(_underlyingWidth - 1));
+            const auto resRow = (int64_t)_row + dr;
+            const auto resCol = (int64_t)_col + dc;
 
-            return fetchData(_underlyingView, row, col);
+            // TODO: First cast then sub?
+            const auto heightLimit = (int64_t)(_underlyingHeight - 1);
+            const auto widthLimit = (int64_t)(_underlyingWidth - 1);
+
+            switch (_borderHandling)
+            {
+                case Border::mirror:
+                    {
+                        size_t finalRow = mirrorCoords(resRow, 0, heightLimit);
+                        size_t finalCol = mirrorCoords(resCol, 0, widthLimit);
+
+                        return fetchData(_underlyingView, finalRow, finalCol);
+                    }
+                case Border::constant:
+                    {
+                        if (resRow < 0 || resRow > heightLimit || resCol < 0 || resCol > widthLimit)
+                            return _borderConstant;
+                        else 
+                            return fetchData(_underlyingView, resRow, resCol);
+                    }
+                case Border::replicate:
+                    // TODO
+                case Border::mirror_replicate:
+                    // TODO
+                default:
+                    // Can't happen
+                    return UnderlyingDataType();
+            }
         }
     };
 

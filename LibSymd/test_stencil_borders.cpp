@@ -27,16 +27,38 @@ namespace tests
             REQUIRE(std::abs(data[i] - ref[i]) < eps);
     }
 
-    TEST_CASE("Stencil - Border Type Mirror")
-    {
-        std::vector<float> input { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 20, 21 };
+    static constexpr float epsilon = 0.03f;
 
-        // Kernel for convolution
-        std::array<float, 9> kernel = {
-             0,    -1.f,    0,
-            -1.f,   4.f,   -1.f,
-             0,    -1.f,    0
-        };
+    static constexpr std::array<float, 9> kernel3x3 = {
+        1, 0, -1,
+        2, 0, -2,
+        1, 0, -1
+    };
+
+    //static constexpr std::array<float, 25> kernel5x5 = {
+    //    2,  2,  4,  2,  2,
+    //    1,  1,  2,  1,  1,
+    //    0,  0,  0,  0,  0,
+    //   -1, -1, -2, -1, -1,
+    //   -2, -2, -4, -2, -2
+    //};
+
+    static std::vector<float> input { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 20, 21 };
+
+    struct SBTestData 
+    {
+        symd::Border border;
+        float C;
+        std::vector<float> expected_output;
+    };
+
+    TEST_CASE("Stencil - Border Test Cases")
+    {
+        auto [border, C, expected_output] = GENERATE(
+            SBTestData { symd::Border::mirror, 0.0f, { 0, -8, -8, 0, 0, -8, -8, 0, 0, -8, -8, 0, 0, -8, -8, 0, 0, -8, -8, 0 } },
+            SBTestData { symd::Border::constant, 0.0f, { -10, -6, -6, 13, -24, -8, -8, 28, -40, -8, -8, 44, -57, -8, -8, 61, -52, -6, -6, 55 } },
+            SBTestData { symd::Border::constant, 13.0f, { 29, -6, -6, -26, 28, -8, -8, -24, 12, -8, -8, -8, -5, -8, -8, 9, -13, -6, -6, 16 } }
+        );
 
         // Prepare 2D view to data to do 2D convolution
         symd::views::data_view<float, 2> input_2d(input.data(), 4, 5, 4);
@@ -44,33 +66,14 @@ namespace tests
         std::vector<float> output(input.size());
         symd::views::data_view<float, 2> output_2d(output.data(), 4, 5, 4);
 
+        // Do the convolution. We also need 2D stencil view
         symd::map(output_2d, [&](const auto& x)
             {
-                return conv3x3_Kernel(x, kernel.data());
+                return conv3x3_Kernel(x, kernel3x3.data());
 
-            }, symd::views::stencil(input_2d, 3, 3));
+            }, symd::views::stencil(input_2d, 3, 3, border, C));
 
-        std::vector<float> expected_output { -10.0f, -8.0f, -8.0f, -6.0f,
-                                             -2.0f, 0.0f, 0.0f, 2.0f,
-                                             -2.0f, 0.0f, 0.0f, 2.0f,
-                                             -3.0f, -1.0f, -1.0f, 1.0f,
-                                              8.0f, 10.0f, 10.0f, 12.0f };
-
+        // Verify
         requireNear(output, expected_output, 0.03f);
     }
-
-    // GENERATOS example!
-    //struct TestData
-    //{
-    //    Position startPos;
-    //    Position expectedMove;
-    //};
-
-    //TEST_CASE("Test legal moves on empty 2x1 board")
-    //{
-    //    Board board{ 2, 1 };
-    //    auto testData = GENERATE(TestData{ {0, 0}, {1, 0} }, TestData{ {1, 0}, {0, 0} });
-    //    auto lagalMoves = board.getLegalMoves(testData.startPos);
-    //    REQUIRE(lagalMoves[0] == testData.expectedMove);
-    //}
 }
