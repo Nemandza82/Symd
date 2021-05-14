@@ -97,6 +97,7 @@
     <ClInclude Include="include\internal\symd_register.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="test_stencil_borders.cpp" />
     <ClCompile Include="test_symd.cpp" />
     <ClCompile Include="test_symd_register.cpp" />
   </ItemGroup>

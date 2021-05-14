@@ -3,6 +3,7 @@
   <ItemGroup>
     <ClCompile Include="test_symd.cpp" />
     <ClCompile Include="test_symd_register.cpp" />
+    <ClCompile Include="test_stencil_borders.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\symd.h">
