@@ -468,8 +468,8 @@ namespace tests
 
         auto readMirror = [&](int i, int j)
         {
-            auto ii = symd::__internal__::foldCoords(i, 0, height - 1);
-            auto jj = symd::__internal__::foldCoords(j, 0, width - 1);
+            auto ii = symd::__internal__::mirrorCoords(i, 0, height - 1);
+            auto jj = symd::__internal__::mirrorCoords(j, 0, width - 1);
 
             return input_2d.readPix(ii, jj);
         };
