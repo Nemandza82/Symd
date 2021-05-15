@@ -37,17 +37,41 @@ namespace symd::__internal__
     static size_t mirrorCoords(int64_t x, size_t low, size_t high)
     {
         if (x < (int64_t)low)
-        {
             return size_t(2 * low + std::abs(x));
+        else if (x >= (int64_t)high)
+            return size_t(2 * high - std::abs(x));
+        else
+            return size_t(x);
+    }
+
+    static size_t replicateCoords(int64_t x, size_t low, size_t high)
+    {
+        if (x < (int64_t)low)
+            return low;
+        else if (x >= (int64_t)high)
+            return high;
+        else
+            return size_t(x);
+    }
+
+    static size_t replicateMirrorCoords(int64_t x, size_t low, size_t high)
+    {
+        // Only the border next to anchor is replicated, rest is mirrored.
+
+        if (x < (int64_t)low)
+        {
+            if (std::abs(x - (int64_t)low) > 1)
+                return size_t(2 * low + std::abs(x) - 1);
+            return low;
         }
         else if (x >= (int64_t)high)
         {
-            return size_t(2 * high - std::abs(x));
+            if (std::abs(x - (int64_t)high) > 1)
+                return size_t(2 * high - std::abs(x) + 1);
+            return high;
         }
         else
-        {
             return size_t(x);
-        }
     }
 
 
@@ -84,8 +108,8 @@ namespace symd::__internal__
 
         UnderlyingDataType operator()(int dr, int dc) const
         {
-            const auto resRow = (int64_t)_row + dr;
-            const auto resCol = (int64_t)_col + dc;
+            auto row = (int64_t)_row + dr;
+            auto col = (int64_t)_col + dc;
 
             // TODO: First cast then sub?
             const auto heightLimit = (int64_t)(_underlyingHeight - 1);
@@ -93,24 +117,34 @@ namespace symd::__internal__
 
             switch (_borderHandling)
             {
-                case Border::mirror:
-                    {
-                        size_t finalRow = mirrorCoords(resRow, 0, heightLimit);
-                        size_t finalCol = mirrorCoords(resCol, 0, widthLimit);
-
-                        return fetchData(_underlyingView, finalRow, finalCol);
-                    }
                 case Border::constant:
                     {
-                        if (resRow < 0 || resRow > heightLimit || resCol < 0 || resCol > widthLimit)
+                        if (row < 0 || row > heightLimit || col < 0 || col > widthLimit)
                             return _borderConstant;
                         else 
-                            return fetchData(_underlyingView, resRow, resCol);
+                            return fetchData(_underlyingView, row, col);
+                    }
+                case Border::mirror:
+                    {
+                        row = mirrorCoords(row, 0, heightLimit);
+                        col = mirrorCoords(col, 0, widthLimit);
+
+                        return fetchData(_underlyingView, row, col);
                     }
                 case Border::replicate:
-                    // TODO
+                    {
+                        row = replicateCoords(row, 0, heightLimit);
+                        col = replicateCoords(col, 0, widthLimit);
+
+                        return fetchData(_underlyingView, row, col);
+                    }
                 case Border::mirror_replicate:
-                    // TODO
+                    {
+                        row = replicateMirrorCoords(row, 0, heightLimit);
+                        col = replicateMirrorCoords(col, 0, widthLimit);
+
+                        return fetchData(_underlyingView, row, col);
+                    }
                 default:
                     // Can't happen
                     return UnderlyingDataType();
