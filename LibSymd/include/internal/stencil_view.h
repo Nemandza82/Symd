@@ -24,13 +24,13 @@ namespace symd::__internal__
         Border _borderHandling;
         C _borderConstant;
 
-        Stencil(View&& view, int width, int height, Border borderHandling = Border::mirror, C c = C(0))
+        Stencil(View&& view, int width, int height, Border borderHandling = Border::mirror, C borderConstant = C(0))
             : _underlyingView(std::forward<View>(view))
             , _width(width)
             , _height(height)
         {
             _borderHandling = borderHandling;
-            _borderConstant = c;
+            _borderConstant = borderConstant;
         }
     };
 
@@ -94,7 +94,7 @@ namespace symd::__internal__
     public:
         using UnderlyingDataType = std::decay_t<decltype(fetchData(_underlyingView, 0, 0))>;
 
-        StencilPix(const View& view, size_t row, size_t col, Border borderHandling, C c)
+        StencilPix(const View& view, size_t row, size_t col, Border borderHandling, C borderConstant)
             : _underlyingView(view)
             , _row(row)
             , _col(col)
@@ -103,7 +103,7 @@ namespace symd::__internal__
             _underlyingHeight = getHeight(_underlyingView);
 
             _borderHandling = borderHandling;            
-            _borderConstant = c;
+            _borderConstant = borderConstant;
         }
 
         UnderlyingDataType operator()(int dr, int dc) const
@@ -111,9 +111,8 @@ namespace symd::__internal__
             auto row = (int64_t)_row + dr;
             auto col = (int64_t)_col + dc;
 
-            // TODO: First cast then sub?
-            const auto heightLimit = (int64_t)(_underlyingHeight - 1);
-            const auto widthLimit = (int64_t)(_underlyingWidth - 1);
+            const auto heightLimit = (int64_t)(_underlyingHeight) - 1;
+            const auto widthLimit = (int64_t)(_underlyingWidth) - 1;
 
             switch (_borderHandling)
             {
@@ -175,7 +174,6 @@ namespace symd::__internal__
         }
     };
 
-
     template <typename View, typename C>
     size_t getWidth(const Stencil<View, C>& x)
     {
@@ -218,7 +216,6 @@ namespace symd::__internal__
         return (st._height / 2) + verticalBorder(st._underlyingView);
     }
 }
-
 
 namespace symd::views
 {

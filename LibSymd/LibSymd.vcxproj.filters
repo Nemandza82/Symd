@@ -33,6 +33,7 @@
     <ClInclude Include="include\internal\reduce_view.h">
       <Filter>include\internal</Filter>
     </ClInclude>
+    <ClInclude Include="test_helpers.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="include">

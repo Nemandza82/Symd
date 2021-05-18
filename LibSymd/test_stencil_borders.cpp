@@ -1,41 +1,7 @@
-#include "catch.h"
-#include "include/symd.h"
-#include <iostream>
+#include "test_helpers.h"
 
 namespace tests
 {
-    // TODO: Repeated from test_symd.cpp, do something about it.
-    template <typename StencilView, typename DataType>
-    auto conv3x3_Kernel(const StencilView& sv, const DataType* kernel)
-    {
-        return
-            sv(-1, -1) * kernel[0] + sv(-1, 0) * kernel[1] + sv(-1, 1) * kernel[2] +
-            sv(0, -1) * kernel[3] + sv(0, 0) * kernel[4] + sv(0, 1) * kernel[5] +
-            sv(1, -1) * kernel[6] + sv(1, 0) * kernel[7] + sv(1, 1) * kernel[8];
-    }
-
-    template <typename StencilView, typename DataType>
-    auto conv5x5_Kernel(const StencilView& sv, const DataType* kernel)
-    {
-        return
-            sv(-2, -2) * kernel[0] + sv(-2, -1) * kernel[1] + sv(-2, 0) * kernel[2] + sv(-2, 1) * kernel[3] + sv(-2, 2) * kernel[4] +
-            sv(-1, -2) * kernel[5] + sv(-1, -1) * kernel[6] + sv(-1, 0) * kernel[7] + sv(-1, 1) * kernel[8] + sv(-1, 2) * kernel[9] +
-            sv(0, -2) * kernel[10] + sv(0, -1) * kernel[11] + sv(0, 0) * kernel[12] + sv(0, 1) * kernel[13] + sv(0, 2) * kernel[14] +
-            sv(1, -2) * kernel[15] + sv(1, -1) * kernel[16] + sv(1, 0) * kernel[17] + sv(1, 1) * kernel[18] + sv(1, 2) * kernel[19] +
-            sv(2, -2) * kernel[20] + sv(2, -1) * kernel[21] + sv(2, 0) * kernel[22] + sv(2, 1) * kernel[23] + sv(2, 2) * kernel[24];
-    }
-
-
-    // TODO: Repeated from test_symd.cpp, do something about it.
-    template <typename T>
-    static void requireNear(const std::vector<T>& data, const std::vector<T>& ref, T eps)
-    {
-        REQUIRE(data.size() == ref.size());
-
-        for (size_t i = 0; i < ref.size(); i++)
-            REQUIRE(std::abs(data[i] - ref[i]) < eps);
-    }
-
     static constexpr std::array<float, 9> kernel3x3 = {
         1, 0, -1,
         2, 0, -2,

@@ -1,245 +1,7 @@
-#include "catch.h"
-#include "include/internal/symd_register.h"
-
-#pragma warning( push )
-#pragma warning( disable : 26444 )
-
-using namespace symd::__internal__;
+#include "test_helpers.h"
 
 namespace tests
 {
-    /////////////////////////////////////////////////////////////////////////////////////////
-    /// Helper functions
-    /////////////////////////////////////////////////////////////////////////////////////////
-
-    template <typename T>
-    static bool isRegEqualToData(const SymdRegister<T>& reg, const std::vector<T>& reference)
-    {
-        std::vector<T> tmpRes(SYMD_LEN + 2);
-        tmpRes[0] = (T)0;
-        tmpRes[SYMD_LEN + 1] = (T)0;
-
-        reg.store(tmpRes.data() + 1);
-
-        // Does not overwrite nearby locations
-        REQUIRE(tmpRes[0] == (T)0);
-        REQUIRE(tmpRes[SYMD_LEN + 1] == (T)0);
-
-        for (size_t i = 0; i < SYMD_LEN; i++)
-        {
-            if (reg[i] != reference[i])
-                return false;
-
-            // Check store as well
-            if (tmpRes[i + 1] != reference[i])
-                return false;
-        }
-
-        return true;
-    }
-
-    template <typename T>
-    static bool isRegCmpValid(const SymdRegister<T>& reg, const std::vector<bool>& reference)
-    {
-        std::vector<T> tmpRes(SYMD_LEN + 2);
-        tmpRes[0] = (T)0;
-        tmpRes[SYMD_LEN + 1] = (T)0;
-
-        reg.store(tmpRes.data() + 1);
-
-        // Does not overwrite nearby locations
-        REQUIRE(tmpRes[0] == (T)0);
-        REQUIRE(tmpRes[SYMD_LEN + 1] == (T)0);
-
-        for (std::size_t i = 0; i < SYMD_LEN; i++)
-        {
-            // FLOATS
-            if constexpr (std::is_floating_point_v<T>)
-            {
-                if (reference[i] && !std::isnan(reg[i]))
-                    return false;
-                else if (!reference[i] && std::isnan(reg[i]))
-                    return false;
-
-                // Check store as well
-                if (reference[i] && !std::isnan(tmpRes[i + 1]))
-                    return false;
-                else if (!reference[i] && std::isnan(tmpRes[i + 1]))
-                    return false;
-            }
-            // INTS
-            else if constexpr (std::is_integral_v<T>)
-            {
-                if (reference[i] && reg[i] != -1)
-                    return false;
-                else if (!reference[i] && reg[i] != 0)
-                    return false;
-
-                // Check store as well
-                if (reference[i] && tmpRes[i + 1] != -1)
-                    return false;
-                else if (!reference[i] && tmpRes[i + 1] != 0)
-                    return false;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-
-    template <typename T, typename Operation>
-    std::vector<T> applyOpToVector(const std::vector<T>& in, Operation&& op, T x)
-    {
-        std::vector<T> reference(in.size());
-
-        for (size_t i = 0; i < in.size(); i++)
-            reference[i] = op(in[i], x);
-
-        return reference;
-    }
-
-
-    template <typename T, typename Operation>
-    std::vector<T> applyOpToVector(T x, Operation&& op, const std::vector<T>& in)
-    {
-        std::vector<T> reference(in.size());
-
-        for (size_t i = 0; i < in.size(); i++)
-            reference[i] = op(x, in[i]);
-
-        return reference;
-    }
-
-
-    template <typename T, typename Operation>
-    std::vector<T> applyOpToVector(const std::vector<T>& in1, Operation&& op, const std::vector<T>& in2)
-    {
-        std::vector<T> reference(in1.size());
-
-        for (size_t i = 0; i < in1.size(); i++)
-            reference[i] = op(in1[i], in2[i]);
-
-        return reference;
-    }
-
-
-    template <typename T, typename Operation>
-    static void checkOperationResult(const std::vector<T>& in1, Operation&& op, const std::vector<T>& in2)
-    {
-        REQUIRE(in1.size() == in2.size());
-
-        SymdRegister<T> reg1(in1.data());
-        SymdRegister<T> reg2(in2.data());
-
-        REQUIRE(isRegEqualToData(reg1, in1));
-        REQUIRE(isRegEqualToData(reg2, in2));
-
-        SymdRegister<T> res = op(reg1, reg2);
-        std::vector<T> reference(in1.size());
-
-        for (size_t i = 0; i < in1.size(); i++)
-            reference[i] = op(in1[i], in2[i]);
-
-        REQUIRE(isRegEqualToData(res, reference));
-    }
-
-
-    template <typename T, typename Operation>
-    static void checkUnaryOperationResult(Operation&& op, const std::vector<T>& in)
-    {
-        SymdRegister<T> reg(in.data());
-        REQUIRE(isRegEqualToData(reg, in));
-
-        SymdRegister<T> res = op(reg);
-        std::vector<T> reference(in.size());
-
-        for (size_t i = 0; i < in.size(); i++)
-            reference[i] = op(in[i]);
-
-        REQUIRE(isRegEqualToData(res, reference));
-    }
-
-
-    template <typename T, typename Operation>
-    static void checkCmpOperationResult(const std::vector<T>& in1, Operation&& op, const std::vector<T>& in2)
-    {
-        REQUIRE(in1.size() == in2.size());
-
-        SymdRegister<T> reg1(in1.data());
-        SymdRegister<T> reg2(in2.data());
-
-        REQUIRE(isRegEqualToData(reg1, in1));
-        REQUIRE(isRegEqualToData(reg2, in2));
-
-        SymdRegister<T> res = op(reg1, reg2);
-        std::vector<bool> reference(in1.size());
-
-        for (std::size_t i = 0; i < in1.size(); i++)
-            reference[i] = op(in1[i], in2[i]);
-
-        REQUIRE(isRegCmpValid(res, reference));
-    }
-
-    template <typename BitOperation>
-    static auto floatingPointBitOp(BitOperation&& bOp)
-    {
-        auto bOpRes = [&bOp](auto&& lhs, auto&& rhs)
-        {
-            using T = std::decay_t<decltype(lhs)>;
-            using U = std::decay_t<decltype(rhs)>;
-            static_assert(std::is_same_v<T, U>);
-
-            if constexpr (std::is_floating_point_v<T>)
-            {
-                using ResType = typename std::conditional<std::is_same_v<T, float>, uint32_t, uint64_t>::type;
-
-                auto* lhs_ = reinterpret_cast<const ResType*>(&lhs);
-                auto* rhs_ = reinterpret_cast<const ResType*>(&rhs);
-
-                ResType res = bOp(*lhs_, *rhs_);
-
-                return *reinterpret_cast<T*>(&res);
-            }
-            else
-            {
-                // This is a SymdRegister.
-                return bOp(rhs, lhs);
-            }
-        };
-
-        return bOpRes;
-    }
-
-    template <typename BitOperation>
-    static decltype(auto) floatingPointBitUnaryOp(BitOperation&& uBOp)
-    {
-        auto uBOpRes = [&uBOp](auto&& arg)
-        {
-            using T = std::decay_t<decltype(arg)>;
-
-            if constexpr (std::is_floating_point_v<T>)
-            {
-                using ResType = typename std::conditional<std::is_same_v<T, float>, uint32_t, uint64_t>::type;
-
-                auto* arg_ = reinterpret_cast<const ResType*>(&arg);
-                ResType res = uBOp(*arg_);
-
-                return *reinterpret_cast<T*>(&res);
-            }
-            else
-            {
-                // This is a SymdRegister.
-                return uBOp(arg);
-            }
-        };
-
-        return uBOpRes;
-    }
-
     /////////////////////////////////////////////////////////////////////////////////////////
     /// Test float operations
     /////////////////////////////////////////////////////////////////////////////////////////
@@ -255,11 +17,11 @@ namespace tests
     {
         if constexpr (std::is_same_v<FT, float>) 
         {
-            return std::make_pair(std::cref(inData1F), std::cref(inData2F));
+            return std::make_pair(inData1F, inData2F);
         }
         else
         {
-            return std::make_pair(std::cref(inData1D), std::cref(inData2D));
+            return std::make_pair(inData1D, inData2D);
         }
     }
 
@@ -414,11 +176,11 @@ namespace tests
     {
         if constexpr (std::is_same_v<IT, int>)
         {
-            return std::make_pair(std::cref(inData1i), std::cref(inData2i));
+            return std::make_pair(inData1i, inData2i);
         }
         else
         {
-            return std::make_pair(std::cref(inData1b), std::cref(inData2b));
+            return std::make_pair(inData1b, inData2b);
         }
     }
 
@@ -600,5 +362,3 @@ namespace tests
         checkOperationResult(inData2b, ucMinusSat, inData1b);
     }
 }
-
-#pragma warning( pop )
