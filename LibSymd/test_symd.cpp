@@ -1,10 +1,5 @@
 #define CATCH_CONFIG_MAIN
-#include "catch.h"
-#include <iostream>
-#include "include/symd.h"
-#include <chrono>
-#include <algorithm>
-#include <random>
+#include "test_helpers.h"
 
 
 namespace tests
@@ -18,54 +13,6 @@ namespace tests
 #else
     constexpr int NUM_ITER = 100;
 #endif
-
-    /// <summary>
-    /// Fills input vector with random floats in range 0-255
-    /// </summary>
-    void randomizeData(std::vector<float>& data)
-    {
-        std::default_random_engine generator;
-        std::uniform_real_distribution<float> distribution(0.f, 255.f);
-
-        for (auto& x : data)
-            x = distribution(generator);
-    }
-
-    /// <summary>
-    /// Fills input vector with random ints in range 0-255
-    /// </summary>
-    void randomizeData(std::vector<int>& data)
-    {
-        std::default_random_engine generator;
-        std::uniform_int_distribution<int> distribution(0, 255);
-
-        for (auto& x : data)
-            x = distribution(generator);
-    }
-
-    template <typename T>
-    static void requireEqual(const T* data, const std::vector<T>& ref)
-    {
-        for (size_t i = 0; i < ref.size(); i++)
-            REQUIRE(data[i] == ref[i]);
-    }
-
-    template <typename T>
-    static void requireEqual(const std::vector<T>& data, const std::vector<T>& ref)
-    {
-        REQUIRE(data.size() == ref.size());
-
-        requireEqual(data.data(), ref);
-    }
-
-    template <typename T>
-    static void requireNear(const std::vector<T>& data, const std::vector<T>& ref, T eps)
-    {
-        REQUIRE(data.size() == ref.size());
-
-        for (size_t i = 0; i < ref.size(); i++)
-            REQUIRE(std::abs(data[i] - ref[i]) < eps);
-    }
 
     /// <summary>
     /// Executes input function for number of times and returns average execution time in ms.
@@ -409,15 +356,6 @@ namespace tests
         symd::map(twoDOutput, [&](const auto& sv) { return sv(0, 1) - sv(0, -1); }, symd::views::stencil(twoDInput, 3, 3));
     }
 
-    template <typename StencilView, typename DataType>
-    auto conv3x3_Kernel(const StencilView& sv, const DataType* kernel)
-    {
-        return
-            sv(-1, -1) * kernel[0] + sv(-1, 0) * kernel[1] + sv(-1, 1) * kernel[2] +
-            sv(0, -1) * kernel[3] + sv(0, 0) * kernel[4] + sv(0, 1) * kernel[5] +
-            sv(1, -1) * kernel[6] + sv(1, 0) * kernel[7] + sv(1, 1) * kernel[8];
-    }
-
     TEST_CASE("Mapping - Convolucion 3x3")
     {
         size_t width = 1920;
@@ -468,8 +406,8 @@ namespace tests
 
         auto readMirror = [&](int i, int j)
         {
-            auto ii = symd::__internal__::foldCoords(i, 0, height - 1);
-            auto jj = symd::__internal__::foldCoords(j, 0, width - 1);
+            auto ii = symd::__internal__::mirrorCoords(i, 0, height - 1);
+            auto jj = symd::__internal__::mirrorCoords(j, 0, width - 1);
 
             return input_2d.readPix(ii, jj);
         };

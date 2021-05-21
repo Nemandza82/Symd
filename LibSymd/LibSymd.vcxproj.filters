@@ -3,6 +3,7 @@
   <ItemGroup>
     <ClCompile Include="test_symd.cpp" />
     <ClCompile Include="test_symd_register.cpp" />
+    <ClCompile Include="test_stencil_borders.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\symd.h">
@@ -32,6 +33,7 @@
     <ClInclude Include="include\internal\reduce_view.h">
       <Filter>include\internal</Filter>
     </ClInclude>
+    <ClInclude Include="test_helpers.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="include">

@@ -95,8 +95,10 @@
     <ClInclude Include="include\internal\sub_view.h" />
     <ClInclude Include="include\symd.h" />
     <ClInclude Include="include\internal\symd_register.h" />
+    <ClInclude Include="test_helpers.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="test_stencil_borders.cpp" />
     <ClCompile Include="test_symd.cpp" />
     <ClCompile Include="test_symd_register.cpp" />
   </ItemGroup>

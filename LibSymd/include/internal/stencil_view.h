@@ -5,7 +5,7 @@ namespace symd
 {
     enum class Border
     {
-        zero,
+        constant,
         replicate,
         mirror,
         mirror_replicate
@@ -24,31 +24,56 @@ namespace symd::__internal__
         Border _borderHandling;
         C _borderConstant;
 
-        Stencil(View&& view, int width, int height, Border borderHandling = Border::mirror, C c = C(0))
+        Stencil(View&& view, int width, int height, Border borderHandling = Border::mirror, C borderConstant = C(0))
             : _underlyingView(std::forward<View>(view))
             , _width(width)
             , _height(height)
         {
             _borderHandling = borderHandling;
-            _borderConstant = c;
+            _borderConstant = borderConstant;
         }
     };
 
-    static size_t foldCoords(int64_t x, size_t low, size_t high)
+    static size_t mirrorCoords(int64_t x, size_t low, size_t high)
     {
         if (x < (int64_t)low)
-        {
             return size_t(2 * low + std::abs(x));
+        else if (x >= (int64_t)high)
+            return size_t(2 * high - std::abs(x));
+        else
+            return size_t(x);
+    }
+
+    static size_t replicateCoords(int64_t x, size_t low, size_t high)
+    {
+        if (x < (int64_t)low)
+            return low;
+        else if (x >= (int64_t)high)
+            return high;
+        else
+            return size_t(x);
+    }
+
+    static size_t replicateMirrorCoords(int64_t x, size_t low, size_t high)
+    {
+        // Only the border next to anchor is replicated, rest is mirrored.
+
+        if (x < (int64_t)low)
+        {
+            if (std::abs(x - (int64_t)low) > 1)
+                return size_t(2 * low + std::abs(x) - 1);
+            return low;
         }
         else if (x >= (int64_t)high)
         {
-            return size_t(2 * high - std::abs(x));
+            if (std::abs(x - (int64_t)high) > 1)
+                return size_t(2 * high - std::abs(x) + 1);
+            return high;
         }
         else
-        {
             return size_t(x);
-        }
     }
+
 
     /// <summary>
     /// Object to access stencil around specified data location (row, col)
@@ -69,7 +94,7 @@ namespace symd::__internal__
     public:
         using UnderlyingDataType = std::decay_t<decltype(fetchData(_underlyingView, 0, 0))>;
 
-        StencilPix(const View& view, size_t row, size_t col, Border borderHandling, C c)
+        StencilPix(const View& view, size_t row, size_t col, Border borderHandling, C borderConstant)
             : _underlyingView(view)
             , _row(row)
             , _col(col)
@@ -77,16 +102,52 @@ namespace symd::__internal__
             _underlyingWidth = getWidth(_underlyingView);
             _underlyingHeight = getHeight(_underlyingView);
 
-            _borderHandling = borderHandling;
-            _borderConstant = c;
+            _borderHandling = borderHandling;            
+            _borderConstant = borderConstant;
         }
 
         UnderlyingDataType operator()(int dr, int dc) const
         {
-            size_t row = foldCoords((int64_t)_row + dr, 0, (int64_t)(_underlyingHeight - 1));
-            size_t col = foldCoords((int64_t)_col + dc, 0, (int64_t)(_underlyingWidth - 1));
+            auto row = (int64_t)_row + dr;
+            auto col = (int64_t)_col + dc;
 
-            return fetchData(_underlyingView, row, col);
+            const auto heightLimit = (int64_t)(_underlyingHeight) - 1;
+            const auto widthLimit = (int64_t)(_underlyingWidth) - 1;
+
+            switch (_borderHandling)
+            {
+                case Border::constant:
+                    {
+                        if (row < 0 || row > heightLimit || col < 0 || col > widthLimit)
+                            return _borderConstant;
+                        else 
+                            return fetchData(_underlyingView, row, col);
+                    }
+                case Border::mirror:
+                    {
+                        row = mirrorCoords(row, 0, heightLimit);
+                        col = mirrorCoords(col, 0, widthLimit);
+
+                        return fetchData(_underlyingView, row, col);
+                    }
+                case Border::replicate:
+                    {
+                        row = replicateCoords(row, 0, heightLimit);
+                        col = replicateCoords(col, 0, widthLimit);
+
+                        return fetchData(_underlyingView, row, col);
+                    }
+                case Border::mirror_replicate:
+                    {
+                        row = replicateMirrorCoords(row, 0, heightLimit);
+                        col = replicateMirrorCoords(col, 0, widthLimit);
+
+                        return fetchData(_underlyingView, row, col);
+                    }
+                default:
+                    // Can't happen
+                    return UnderlyingDataType();
+            }
         }
     };
 
@@ -112,7 +173,6 @@ namespace symd::__internal__
             return fetchVecData(_underlyingView, _row + dr, _col + dc);
         }
     };
-
 
     template <typename View, typename C>
     size_t getWidth(const Stencil<View, C>& x)
@@ -156,7 +216,6 @@ namespace symd::__internal__
         return (st._height / 2) + verticalBorder(st._underlyingView);
     }
 }
-
 
 namespace symd::views
 {
