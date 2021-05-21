@@ -190,9 +190,10 @@ Getting the result of reduction:
 float result = sum.getResult();
 ```
 
-## Maintainer
+## Maintainers
 
-[Nemandza82](https://github.com/Nemandza82)
+ * [Nemandza82](https://github.com/Nemandza82)
+ * [0508994](https://github.com/0508994)
 
 ## License
 
