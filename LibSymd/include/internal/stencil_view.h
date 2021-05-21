@@ -3,6 +3,9 @@
 
 namespace symd
 {
+    /// <summary>
+    /// Specifies how accesses outside of underlying view are hendled.
+    /// </summary>
     enum class Border
     {
         constant,
@@ -219,27 +222,51 @@ namespace symd::__internal__
 
 namespace symd::views
 {
+    /// <summary>
+    /// Creates stencil view from input view, so you can access nearby elements inside kernel.
+    /// </summary>
+    /// <param name="view">Underlying view.</param>
+    /// <param name="width">Width of the stencil window.</param>
+    /// <param name="height">Height of the stencil window.</param>
     template <typename View>
     auto stencil(View&& view, int width, int height)
     {
         return __internal__::Stencil<View, int>(std::forward<View>(view), width, height, Border::mirror, 0);
     }
 
+    /// <summary>
+    /// Creates stencil view from input view, so you can access nearby elements inside kernel.
+    /// </summary>
+    /// <param name="view">Underlying view.</param>
+    /// <param name="width">Width of the stencil window.</param>
+    /// <param name="height">Height of the stencil window.</param>
+    /// <param name="borderHandling">Specify how accesses outside of underlying view are handled. Can be constant, replicate, mirror...</param>
     template <typename View>
     auto stencil(View&& view, int width, int height, Border borderHandling)
     {
         return __internal__::Stencil<View, int>(std::forward<View>(view), width, height, borderHandling, 0);
     }
 
+    /// <summary>
+    /// Creates stencil view from input view, so you can access nearby elements inside kernel.
+    /// </summary>
+    /// <param name="view">Underlying view.</param>
+    /// <param name="width">Width of the stencil window.</param>
+    /// <param name="height">Height of the stencil window.</param>
+    /// <param name="borderHandling">Specify how accesses outside of underlying view are handled. Can be constant, replicate, mirror...</param>
+    /// <param name="borderConstant">Constant that replaces value when kernel accesses ourside of underlying view.</param>
     template <typename View, typename C>
-    auto stencil(View&& view, int width, int height, Border borderHandling, C c)
+    auto stencil(View&& view, int width, int height, Border borderHandling, C borderConstant)
     {
-        return __internal__::Stencil<View, C>(std::forward<View>(view), width, height, borderHandling, c);
+        return __internal__::Stencil<View, C>(std::forward<View>(view), width, height, borderHandling, borderConstant);
     }
 }
 
 namespace symd::__internal__
 {
+    /// <summary>
+    /// Creates subview for underlying Stencil view.
+    /// </summary>
     template<typename View, typename C>
     auto sub_view(const Stencil<View, C>& st, const Region& region)
     {

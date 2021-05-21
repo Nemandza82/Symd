@@ -8,6 +8,9 @@ namespace symd::views
     {
     };
 
+    /// <summary>
+    /// 1d view of underlying memory buffer. Can be passes to symd methods.
+    /// </summary>
     template <typename T>
     struct data_view<T, 1>
     {
@@ -15,7 +18,11 @@ namespace symd::views
         size_t width;
         size_t height;
 
-        // Contructs 1D data_view
+        /// <summary>
+        /// Contructs 1D data_view of input memory buffer.
+        /// </summary>
+        /// <param name="ptr">Pointer to underlying memory buffer.</param>
+        /// <param name="length_">Pointer to underlying memory in elements (not bytes).</param>
         data_view(T* ptr, size_t length_)
         {
             data = ptr;
@@ -24,6 +31,9 @@ namespace symd::views
         }
     };
 
+    /// <summary>
+    /// 2d view of underlying memory buffer. Can be passes to symd methods.
+    /// </summary>
     template <typename T>
     struct data_view<T, 2>
     {
@@ -33,7 +43,13 @@ namespace symd::views
         size_t height;
         size_t pitch;
 
-        // Contructs 2D data_view
+        /// <summary>
+        /// Contructs 1D data_view of input memory buffer.
+        /// </summary>
+        /// <param name="ptr">Pointer to underlying memory buffer.</param>
+        /// <param name="width_">Width of data_view.</param>
+        /// <param name="height_">Width of data_view.</param>
+        /// <param name="pitch_">Pitch of data_view. Length of one line in elements.</param>
         data_view(T* ptr, size_t width_, size_t height_, size_t pitch_)
         {
             data = ptr;

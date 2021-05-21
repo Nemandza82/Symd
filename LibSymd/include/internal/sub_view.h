@@ -119,6 +119,14 @@ namespace symd::__internal__
 
 namespace symd::views
 {
+    /// <summary>
+    /// Returns sub-view of underlying view. 
+    /// </summary>
+    /// <param name="view">Underlying view. </param>
+    /// <param name="startRow">Start row for sub-view.</param>
+    /// <param name="endRow">End row for sub-view.</param>
+    /// <param name="startCol">Start column for sub-view.</param>
+    /// <param name="endCol">End column for sub-view.</param>
     template <typename View>
     auto sub_view(View&& view, size_t startRow, size_t endRow, size_t startCol, size_t endCol)
     {

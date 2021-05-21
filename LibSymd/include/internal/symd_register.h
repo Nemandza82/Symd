@@ -1411,15 +1411,22 @@ namespace std
 {
     using namespace symd::__internal__;
 
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    // min
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-
+    /// <summary>
+    /// Returns SymdRegister containing minimum values from two input SymdRegisters.
+    /// </summary>
     template <typename T>
     inline SymdRegister<T> min(SymdRegister<T> first, SymdRegister<T> sec)
     {
         return first.min(sec);
+    }
+
+    /// <summary>
+    /// Returns SymdRegister containing minimum values from input SymdRegister and constant.
+    /// </summary>
+    template <typename T>
+    inline SymdRegister<T> min(SymdRegister<T> first, T sec)
+    {
+        return first.min(SymdRegister<T>(sec));
     }
 
 
@@ -1427,12 +1434,18 @@ namespace std
     // max
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+    /// <summary>
+    /// Returns SymdRegister containing maximum values from two input SymdRegisters.
+    /// </summary>
     template <typename T>
-    inline SymdRegister<T> min(SymdRegister<T> first, T sec)
+    inline SymdRegister<T> max(SymdRegister<T> first, SymdRegister<T> sec)
     {
-        return first.min(SymdRegister<T>(sec));
+        return first.max(sec);
     }
 
+    /// <summary>
+    /// Returns SymdRegister containing maximum values from input SymdRegister and constant.
+    /// </summary>
     template <typename T>
     inline SymdRegister<T> max(SymdRegister<T> first, T sec)
     {
@@ -1444,6 +1457,9 @@ namespace std
     // abs
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+    /// <summary>
+    /// Returns SymdRegister containing abs values from input SymdRegister.
+    /// </summary>
     template <typename T>
     SymdRegister<T> abs(SymdRegister<T> reg)
     {

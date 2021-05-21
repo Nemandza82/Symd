@@ -45,14 +45,11 @@ namespace symd
     }
 
     /// <summary>
-    /// 
+    /// Maps inputs to result using operation. Performs operation on single thread/core.
     /// </summary>
-    /// <typeparam name="Output"></typeparam>
-    /// <typeparam name="Operation"></typeparam>
-    /// <typeparam name="...Inputs"></typeparam>
-    /// <param name="res"></param>
-    /// <param name="operation"></param>
-    /// <param name="...inputs"></param>
+    /// <param name="result">Storing Result of the mapping operation.</param>
+    /// <param name="operation">Operation to be performed on inputs.</param>
+    /// <param name="...inputs">Input views for applying operation.</param>
     template <typename Output, typename Operation, typename... Inputs>
     void map_single_core(Output& result, Operation&& operation, Inputs&&... inputs)
     {
@@ -90,6 +87,12 @@ namespace symd
         }
     }
 
+    /// <summary>
+    /// Maps inputs to result using operation. Performs operation on mumltiple threads/cores.
+    /// </summary>
+    /// <param name="result">Storing Result of the mapping operation.</param>
+    /// <param name="operation">Operation to be performed on inputs.</param>
+    /// <param name="...inputs">Input views for applying operation.</param>
     template <typename Result, typename Operation, typename... Inputs>
     void map(Result& result, Operation&& operation, Inputs&&... inputs)
     {
