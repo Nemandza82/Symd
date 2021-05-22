@@ -118,7 +118,6 @@ namespace symd
 #elif defined(_WIN32) || defined(WIN32)
         std::for_each(std::execution::par_unseq, regions.begin(), regions.end(), pWork);
 #else
-        // Fallback to single core.
         map_single_core(result, operation, inputs...);
 #endif
     }
