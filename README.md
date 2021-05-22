@@ -54,7 +54,7 @@ clang++ test_symd.cpp test_symd_register.cpp test_stencil_borders.cpp -std=c++17
 ```
 
 ##### Building tests with TBB on windows
-The easiest way to set TBB on windows is by using the [vcpkg](https://github.com/microsoft/vcpkg) package manager, and then installing TBB library with it.
+The easiest way to set up TBB on windows is by using the [vcpkg](https://github.com/microsoft/vcpkg) package manager, and then installing TBB library with it.
 This way no further changes to the build system need to be made in order to run the tests successfully.
 
 
