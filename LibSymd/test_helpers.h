@@ -4,8 +4,9 @@
 #include <algorithm>
 #include <random>
 
-#define SYMD_USE_TBB 1
+//#define SYMD_USE_TBB 1
 #include "include/symd.h"
+
 using namespace symd::__internal__;
 
 namespace tests
