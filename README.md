@@ -19,7 +19,7 @@ We ship Visual Studio solution file, so just load it.
 We tested with gcc version 9.3.0. To can compile tests with g++ run:
 
 ```
-g++ test_symd.cpp test_symd_register.cpp -std=c++17 -march=ivybridge -O3 -o test_symd
+g++ test_symd.cpp test_symd_register.cpp test_stencil_borders.cpp -std=c++17 -march=ivybridge -O3 -o test_symd
 ```
 
 #### Compiling on Ubuntu - Clang
@@ -27,8 +27,36 @@ g++ test_symd.cpp test_symd_register.cpp -std=c++17 -march=ivybridge -O3 -o test
 We tested with clang version 10.0.0. To can compile tests with Clang run:
 
 ```
-clang++ test_symd.cpp test_symd_register.cpp -std=c++17 -mavx -O3 -o test_symd
+clang++ test_symd.cpp test_symd_register.cpp test_stencil_borders.cpp -std=c++17 -mavx -O3 -o test_symd
 ```
+
+#### TBB support
+
+Symd can also be used with [Intel's TBB](https://software.intel.com/content/www/us/en/develop/tools/oneapi/components/onetbb.html) support.
+To main requirement here is to have TBB installed on your system, which can be achieved in various ways depending on the platform you are on.
+The next one is setting the TBB switch compile time flag before including the symd library iteself:
+
+```cpp
+#define SYMD_USE_TBB 1
+#include "symd.h"
+```
+
+##### Building tests with TBB on linux
+
+With gcc:
+```
+g++ test_symd.cpp test_symd_register.cpp test_stencil_borders.cpp -std=c++17 -ltbb -march=ivybridge -O3 -o test_symd
+```
+
+With clang:
+```
+clang++ test_symd.cpp test_symd_register.cpp test_stencil_borders.cpp -std=c++17 -ltbb -mavx -O3 -o test_symd
+```
+
+##### Building tests with TBB on windows
+The easiest way to set TBB on windows is by using the [vcpkg](https://github.com/microsoft/vcpkg) package manager, and then installing TBB library with it.
+This way no further changes to the build system need to be made in order to run the tests successfully.
+
 
 ### CPU
 
