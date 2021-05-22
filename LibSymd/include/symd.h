@@ -1,5 +1,4 @@
 #pragma once
-//#include <execution>
 #include <future>
 #include <algorithm>
 #include <functional>
@@ -9,6 +8,12 @@
 #include "internal/sub_view.h"
 #include "internal/stencil_view.h"
 
+
+#ifdef SYMD_USE_TBB
+    #include "tbb/parallel_for_each.h"
+#elif defined(_WIN32) || defined(WIN32)
+    #include <execution>
+#endif
 
 namespace symd
 {
@@ -99,15 +104,22 @@ namespace symd
         auto width = __internal__::getWidth(result);
         auto heigth = __internal__::getHeight(result);
 
-        /*std::vector<__internal__::Region> regions;
+        std::vector<__internal__::Region> regions;
         __internal__::Region(width, heigth).split(regions);
 
-        std::for_each(std::execution::par_unseq, regions.begin(), regions.end(), [&](__internal__::Region& region)
-            {
-                auto subRes = __internal__::sub_view(result, region);
-                map_single_core(subRes, operation, __internal__::sub_view(std::forward<Inputs>(inputs), region)...);
-            });*/
+        [[maybe_unused]] const auto pWork = [&](__internal__::Region& region)
+        {
+            auto subRes = __internal__::sub_view(result, region);
+            map_single_core(subRes, operation, __internal__::sub_view(std::forward<Inputs>(inputs), region)...);
+        };
 
+#ifdef SYMD_USE_TBB
+        tbb::parallel_for_each(regions.begin(), regions.end(), pWork);
+#elif defined(_WIN32) || defined(WIN32)
+        std::for_each(std::execution::par_unseq, regions.begin(), regions.end(), pWork);
+#else
+        // Fallback to single core.
         map_single_core(result, operation, inputs...);
+#endif
     }
 }
