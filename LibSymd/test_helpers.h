@@ -1,9 +1,11 @@
 #pragma once
 #include "catch.h"
-#include "include/symd.h"
 #include <chrono>
 #include <algorithm>
 #include <random>
+
+//#define SYMD_USE_TBB 1
+#include "include/symd.h"
 
 using namespace symd::__internal__;
 
