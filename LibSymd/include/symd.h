@@ -107,16 +107,18 @@ namespace symd
         std::vector<__internal__::Region> regions;
         __internal__::Region(width, heigth).split(regions);
 
-        [[maybe_unused]] const auto pWork = [&](__internal__::Region& region)
-        {
-            auto subRes = __internal__::sub_view(result, region);
-            map_single_core(subRes, operation, __internal__::sub_view(std::forward<Inputs>(inputs), region)...);
-        };
-
 #ifdef SYMD_USE_TBB
-        tbb::parallel_for_each(regions.begin(), regions.end(), pWork);
+        tbb::parallel_for_each(regions.begin(), regions.end(), [&](__internal__::Region& region)
+            {
+                auto subRes = __internal__::sub_view(result, region);
+                map_single_core(subRes, operation, __internal__::sub_view(std::forward<Inputs>(inputs), region)...);
+            });
 #elif defined(_WIN32) || defined(WIN32)
-        std::for_each(std::execution::par_unseq, regions.begin(), regions.end(), pWork);
+        std::for_each(std::execution::par_unseq, regions.begin(), regions.end(), [&](__internal__::Region& region)
+            {
+                auto subRes = __internal__::sub_view(result, region);
+                map_single_core(subRes, operation, __internal__::sub_view(std::forward<Inputs>(inputs), region)...);
+            });
 #else
         map_single_core(result, operation, inputs...);
 #endif
