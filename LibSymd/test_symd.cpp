@@ -310,6 +310,56 @@ namespace tests
         requireNear(B_mc, B_loop, 0.03f);
     }
 
+    TEST_CASE("Mapping - blocking input YUV444 to RGB")
+    {
+        size_t width = 1920;
+        size_t height = 1080;
+
+        // https://www.flir.com/support-center/iis/machine-vision/knowledge-base/understanding-yuv-data-formats/
+        std::vector<float> YUV444(width * height * 3);
+        randomizeData(YUV444);
+
+        // Simple loop -------------------------------------------------------------------
+        std::vector<float> RGB24_loop(YUV444.size());
+
+        auto durationLoop = executionTimeMs([&]()
+            {
+                for (int i = 0; i < YUV444.size(); i += 3)
+                {
+                    auto rgb = yuvToRgbKernel(
+                        YUV444[i + 1],
+                        YUV444[i + 0],
+                        YUV444[i + 2]);
+
+                    RGB24_loop[i + 0] = rgb[0];
+                    RGB24_loop[i + 1] = rgb[1];
+                    RGB24_loop[i + 2] = rgb[2];
+                }
+            });
+
+        std::cout << "Mapping YUV444 to RGB - Loop             : " << durationLoop.count() << " ms" << std::endl;
+
+
+        // Multi core  -------------------------------------------------------------------
+        std::vector<float> RGB24_mc(YUV444.size());
+
+        /*auto duration = executionTimeMs([&]()
+            {
+                symd::map(symd::views::block_view<3,1>(RGB24_mc), [](auto yuv)
+                    {
+                        return yuvToRgbKernel(yuv[1], yuv[0], v[2]);
+
+                    }, symd::views::block_view<3,1>(YUV444));
+            }
+        );
+
+        std::cout << "Mapping YUV444 to RGB - symd_multi_core  : " << duration.count() << " ms" << std::endl << std::endl;*/
+
+        // Correctness test
+        requireNear(RGB24_loop, RGB24_mc, 0.03f);
+    }
+
+
     TEST_CASE("Mapping - Basic Stencil")
     {
         std::vector<float> input = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 };
