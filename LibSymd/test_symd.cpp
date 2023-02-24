@@ -11,7 +11,7 @@ namespace tests
 #ifdef _DEBUG
     constexpr int NUM_ITER = 1;
 #else
-    constexpr int NUM_ITER = 100;
+    constexpr int NUM_ITER = 500;
 #endif
 
     /// <summary>
@@ -158,6 +158,53 @@ namespace tests
         std::cout << "Simple processing (float) - symd_single_core : " << durationSymdSingleCore.count() << " ms" << std::endl;
         std::cout << "Simple processing (float) - symd_multi_core  : " << durationSymd.count() << " ms" << std::endl;
         std::cout << "Simple processing (double) - symd_multi_core : " << durationSymdDouble.count() << " ms" << std::endl << std::endl;
+    }
+
+    // Measure execution time
+    TEST_CASE("Mapping 3 - exec time")
+    {
+        std::vector<float> input0(1024*1024);
+        std::vector<float> input1(1024*1024);
+        std::vector<float> input2(1024*1024);
+        std::vector<float> input3(1024*1024);
+
+        std::vector<float> output(input0.size());
+
+        // initialize input
+        //symd::map_single_core(input, [](){ return 1; });
+
+        // Pass computation to measure time function. It fill execute it multiple times to measure time correctly.
+        auto durationSymdSingleCore = executionTimeMs([&]()
+            {
+                symd::map_single_core(output, [](const auto& x, const auto& y, const auto& z, const auto& w)
+                    {
+                        return (x + y) * (z - w);
+                    }, input0, input1, input2, input3);
+            }
+        );
+
+        std::cout << "Map (x + y) * (z - w); (float) - symd_single_core : " << durationSymdSingleCore.count() << " ms" << std::endl;
+
+        auto durationSymd = executionTimeMs([&]()
+            {
+                symd::map(output, [](const auto& x, const auto& y, const auto& z, const auto& w)
+                    {
+                        return (x + y) * (z - w);
+                    }, input0, input1, input2, input3);
+            }, 10000
+        );
+
+        std::cout << "Map (x + y) * (z - w); (float) - symd_multi_core  : " << durationSymd.count() << " ms" << std::endl;        
+
+        // Measure time for simple for loop
+        auto durationLoop = executionTimeMs([&]()
+            {
+                for (size_t i = 0; i < input3.size(); i++)
+                    output[i] = (input0[i] + input1[i]) * (input2[i] - input3[i]);
+            }
+        );
+
+        std::cout << "Map (x + y) * (z - w); (float) - Loop             : " << durationLoop.count() << " ms" << std::endl;
     }
 
     TEST_CASE("Mapping 2 - multi out")
