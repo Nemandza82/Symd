@@ -1,5 +1,8 @@
 #pragma once
 #include <array>
+#include <vector>
+#include <cassert>
+
 
 namespace symd
 {
@@ -8,22 +11,28 @@ namespace symd
     /// </summary>
     class Shape
     {
-        std::array<size_t, 7> _dims;
+        static constexpr size_t MAX_DIMS = 7;
+
+        std::array<size_t, MAX_DIMS> _dims;
         int ndims;
 
     public:
 
-        /// <summary>
-        /// Constructs one dimensional shape.
-        /// </summary>
-        Shape(size_t length)
+        Shape(std::vector<size_t> dims)
         {
+            assert(dims.size() <= MAX_DIMS);
+            ndims = dims.size();
 
+            for (auto i=0; i<ndims; i++)
+                _dims[i] = dims[i];
         }
 
-        T operator[](size_t ind) const
+        size_t operator[](int ind) const
         {
-            return _ptrToData[ind];
+            if (ind < 0)
+                ind += ndims;
+
+            return _dims[ind];
         }
-    }
+    };
 }
