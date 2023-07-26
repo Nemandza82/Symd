@@ -1,4 +1,6 @@
-#include "test_helpers.h"
+#pragma once
+#include "../test_helpers.h"
+
 
 namespace tests
 {

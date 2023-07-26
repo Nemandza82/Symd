@@ -4,16 +4,44 @@
 #include <algorithm>
 #include <random>
 
-#define SYMD_USE_TBB 1
-#include "include/symd.h"
+// #define SYMD_USE_TBB 1
+#include "../include/symd.h"
 
 using namespace symd::__internal__;
 
 namespace tests
 {
+
+#ifdef _DEBUG
+    constexpr int NUM_ITER = 1;
+#else
+    constexpr int NUM_ITER = 500;
+#endif
+
     /////////////////////////////////////////////////////////////////////////////////////////
-/// Helper functions
-/////////////////////////////////////////////////////////////////////////////////////////
+    /// Helper functions
+    /////////////////////////////////////////////////////////////////////////////////////////
+
+    /// <summary>
+    /// Executes input function for number of times and returns average execution time in ms.
+    /// </summary>
+    template <typename F>
+    static auto executionTimeMs(F&& func, int num_iter = NUM_ITER)
+    {
+        auto t1 = std::chrono::high_resolution_clock::now();
+
+        for (int i = 0; i < num_iter; i++)
+        {
+            func();
+        }
+
+        auto t2 = std::chrono::high_resolution_clock::now();
+
+        std::chrono::duration<double, std::milli> duration = t2 - t1;
+        duration = duration / num_iter;
+
+        return duration;
+    }
 
     template <typename T>
     static bool isRegEqualToData(const SymdRegister<T>& reg, const std::vector<T>& reference)
