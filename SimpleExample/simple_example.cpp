@@ -1,5 +1,5 @@
 #include <iostream>
-#include "../LibSymd/include/symd.h"
+#include "../LibSymd/symd.h"
 
 
 int main()

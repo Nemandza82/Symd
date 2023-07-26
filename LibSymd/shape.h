@@ -1,7 +1,7 @@
 #pragma once
 #include <array>
 
-namespace symd::__internal__
+namespace symd
 {
     /// <summary>
     /// Struct representing shape of input data.

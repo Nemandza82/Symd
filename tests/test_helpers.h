@@ -5,7 +5,7 @@
 #include <random>
 
 // #define SYMD_USE_TBB 1
-#include "../include/symd.h"
+#include "../LibSymd/symd.h"
 
 using namespace symd::__internal__;
 
