@@ -1,5 +1,8 @@
 #pragma once
 #include "basic_views.h"
+#include "../dimensions.h"
+#include "region.h"
+#include <cassert>
 #include <mutex>
 #include <functional>
 
@@ -19,10 +22,8 @@ namespace symd::views
         __internal__::SymdRegister<T> _regSum;
 
     public:
-        const size_t _width;
-        const size_t _height;
+        const Dimensions _shape;
         const T _startValue;
-
         const ReduceOperation _reduceOperation;
 
         /// <summary>
@@ -39,10 +40,9 @@ namespace symd::views
         /// <param name="height">Height of input view you want to perform reduction on.</param>
         /// <param name="startValue">Value for initializing operation / neutral element for operation. Eg 0 for addition or 1 for multiplication.</param>
         /// <param name="reduceOperation">Input operation lambda function.</param>
-        reduce_view(size_t width, size_t height, const T& startValue, const ReduceOperation& reduceOperation)
+        reduce_view(const Dimensions& shape, const T& startValue, const ReduceOperation& reduceOperation)
             : _reduceOperation(reduceOperation)
-            , _width(width)
-            , _height(height)
+            , _shape(shape)
             , _startValue(startValue)
         {
             _sum = startValue;
@@ -56,16 +56,14 @@ namespace symd::views
         /// <summary>
         /// Constructs reduce_view given reduce operation and finalizer - DO NOT USE, FOR INTERNAL USE ONLY.
         /// </summary>
-        /// <param name="width">Width of input view you want to perform reduction on.</param>
-        /// <param name="height">Height of input view you want to perform reduction on.</param>
+        /// <param name="shape">shape of input view you want to perform reduction on.</param>
         /// <param name="startValue">Value for initializing operation / neutral element for operation. Eg 0 for addition or 1 for multiplication.</param>
         /// <param name="reduceOperation">Input operation lambda function.</param>
         /// <param name="finalizer">Lambda function to be executed on *this before this is destructed. Needed for correct parallel reduction implementation.</param>
-        reduce_view(size_t width, size_t height, const T& startValue, const ReduceOperation& reduceOperation,
+        reduce_view(const Dimensions& shape, const T& startValue, const ReduceOperation& reduceOperation,
             std::function<void(const reduce_view& self)>&& finalizer)
             : _reduceOperation(reduceOperation)
-            , _width(width)
-            , _height(height)
+            , _shape(shape)
             , _startValue(startValue)
         {
             _sum = startValue;
@@ -130,43 +128,37 @@ namespace symd::views
 namespace symd::__internal__
 {
     template <typename T, typename ReduceOperation>
-    size_t getWidth(const views::reduce_view<T, ReduceOperation>& reductor)
+    Dimensions getShape(const views::reduce_view<T, ReduceOperation>& reductor)
     {
-        return reductor._width;
+        return reductor._shape;
     }
 
     template <typename T, typename ReduceOperation>
-    size_t getHeight(const views::reduce_view<T, ReduceOperation>& reductor)
+    Dimensions getPitch(const views::reduce_view<T, ReduceOperation>& reductor)
     {
-        return reductor._height;
-    }
-
-    template <typename T, typename ReduceOperation>
-    size_t getPitch(const views::reduce_view<T, ReduceOperation>& reductor)
-    {
-        return reductor._width;
+        return reductor._shape.native_pitch();
     }
 
     /*template <typename T, typename ReduceOperation>
-    auto fetchData(const views::reduce_view<T, ReduceOperation>& reductor, size_t row, size_t col)
+    auto fetchData(const views::reduce_view<T, ReduceOperation>& reductor, const Dimensions& coords)
     {
         static_assert(false, "Cannot fetch from Reductor");
     }
 
     template <typename T, typename ReduceOperation>
-    auto fetchVecData(const views::reduce_view<T, ReduceOperation>& reductor, size_t row, size_t col)
+    auto fetchVecData(const views::reduce_view<T, ReduceOperation>& reductor, const Dimensions& coords)
     {
         static_assert(false, "Cannot fetch from Reductor");
     }*/
 
     template <typename T, typename ReduceOperation>
-    void saveData(views::reduce_view<T, ReduceOperation>& reductor, const T& element, size_t row, size_t col)
+    void saveData(views::reduce_view<T, ReduceOperation>& reductor, const T& element, const Dimensions& coords)
     {
         reductor.append(element);
     }
 
     template <typename T, typename ReduceOperation>
-    void saveVecData(views::reduce_view<T, ReduceOperation>& reductor, const SymdRegister<T>& element, size_t row, size_t col)
+    void saveVecData(views::reduce_view<T, ReduceOperation>& reductor, const SymdRegister<T>& element, const Dimensions& coords)
     {
         reductor.append(element);
     }
@@ -190,7 +182,7 @@ namespace symd::__internal__
     auto sub_view(views::reduce_view<T, ReduceOperation>& reductor, const Region& region)
     {
         // sub_view from reduce_view is smaller reduce_view
-        return views::reduce_view<T, ReduceOperation>(region.width(), region.height(), reductor._startValue, reductor._reduceOperation,
+        return views::reduce_view<T, ReduceOperation>(region.getShape(), reductor._startValue, reductor._reduceOperation,
             [&](const views::reduce_view<T, ReduceOperation>& self)
             {
                 reductor.threadSafeAppend(self.getResult());

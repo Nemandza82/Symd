@@ -123,13 +123,11 @@ namespace symd::views
     /// Returns sub-view of underlying view. 
     /// </summary>
     /// <param name="view">Underlying view. </param>
-    /// <param name="startRow">Start row for sub-view.</param>
-    /// <param name="endRow">End row for sub-view.</param>
-    /// <param name="startCol">Start column for sub-view.</param>
-    /// <param name="endCol">End column for sub-view.</param>
+    /// <param name="startShape">Start shape for sub-view.</param>
+    /// <param name="endShape">End shape for sub-view.</param>
     template <typename View>
-    auto sub_view(View&& view, size_t startRow, size_t endRow, size_t startCol, size_t endCol)
+    auto sub_view(View&& view, const Dimensions& startShape, const Dimensions& endShape)
     {
-        return __internal__::sub_view(std::forward<View>(view), __internal__::Region(startRow, endRow, startCol, endCol));
+        return __internal__::sub_view(std::forward<View>(view), __internal__::Region(startShape, endShape));
     }
 }

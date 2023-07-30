@@ -15,7 +15,7 @@ namespace tests
 #ifdef _DEBUG
     constexpr int NUM_ITER = 1;
 #else
-    constexpr int NUM_ITER = 500;
+    constexpr int NUM_ITER = 400;
 #endif
 
     /////////////////////////////////////////////////////////////////////////////////////////
@@ -29,17 +29,23 @@ namespace tests
     static auto executionTimeMs(F&& func, int num_iter = NUM_ITER)
     {
         auto t1 = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double, std::milli> duration;
 
         for (int i = 0; i < num_iter; i++)
         {
             func();
+
+            auto t2 = std::chrono::high_resolution_clock::now();
+            duration = t2 - t1;
+
+            if (duration.count() > 1000.0)
+            {
+                duration = duration / (i + 1); 
+                return duration;
+            }
         }
 
-        auto t2 = std::chrono::high_resolution_clock::now();
-
-        std::chrono::duration<double, std::milli> duration = t2 - t1;
         duration = duration / num_iter;
-
         return duration;
     }
 
