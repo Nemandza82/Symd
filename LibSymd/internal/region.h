@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <utility>
+#include "../dimensions.h"
 
 
 namespace symd::__internal__
@@ -10,49 +11,35 @@ namespace symd::__internal__
     /// </summary>
     struct Region
     {
-        size_t startRow;
-        size_t endRow;
-        size_t startCol;
-        size_t endCol;
+        Dimensions startCoord;
+        Dimensions endCoord;
 
-        Region(size_t startR, size_t endR, size_t startC, size_t endC)
+        Region(const Dimensions& sc, const Dimensions& ec)
+            : startCoord(sc)
+            , endCoord(ec)
         {
-            startRow = startR;
-            endRow = endR;
-            startCol = startC;
-            endCol = endC;
         }
 
-        Region(size_t width, size_t height)
+        Region(const Dimensions& shape)
         {
-            startRow = 0;
-            endRow = height - 1;
-            startCol = 0;
-            endCol = width - 1;
+            startCoord = shape.zeros_like();
+            endCoord = shape - 1;
         }
 
         /// <summary>
-        /// Width of Region
+        /// Shape of Region
         /// </summary>
-        size_t width() const
+        Dimensions getShape() const
         {
-            return endCol - startCol + 1;
-        }
-
-        /// <summary>
-        /// Height of Region
-        /// </summary>
-        size_t height() const
-        {
-            return endRow - startRow + 1;
+            return endCoord - startCoord + 1;
         }
 
         /// <summary>
         /// Number of elements in Region
         /// </summary>
-        size_t count() const
+        int64_t count() const
         {
-            return width() * height();
+            return getShape().num_elements();
         }
 
         /// <summary>
@@ -64,21 +51,31 @@ namespace symd::__internal__
             if (count() < 100000)
             {
                 result.push_back(*this);
+                return;
             }
-            else if (height() > 1)
-            {
-                size_t mid = height() / 2;
 
-                Region(startRow, startRow + mid - 1, startCol, endCol).split(result);
-                Region(startRow + mid, endRow, startCol, endCol).split(result);
-            }
-            else // height() == 1
-            {
-                size_t mid = width() / 2;
+            auto shape = this->getShape();
 
-                Region(startRow, endRow, startCol, startCol + mid - 1).split(result);
-                Region(startRow, endRow, startCol + mid, endCol).split(result);
+            for (int i = 0; i < shape.count(); i++)
+            {
+                if (shape[i] > 1)
+                {
+                    int64_t mid = shape[i] / 2;
+                    
+                    Region(startCoord, endCoord.with_i(i, startCoord[i] + mid  - 1)).split(result);
+                    Region(startCoord.with_i(i, startCoord[i] + mid), endCoord).split(result);
+                }
             }
+        }
+
+        Region align_with_symd_len(int64_t symd_len) const
+        {
+            auto last_dim_ind = endCoord.count() - 1;
+
+            auto width = endCoord[last_dim_ind] - startCoord[last_dim_ind] + 1;
+            auto new_last_dim = endCoord[last_dim_ind] - (width % symd_len);
+
+            return Region(startCoord, endCoord.with_i(last_dim_ind, new_last_dim));
         }
     };
 }

@@ -1,5 +1,7 @@
 #pragma once
 #include "symd_register.h"
+#include "../dimensions.h"
+
 
 namespace symd
 {
@@ -21,62 +23,19 @@ namespace symd::__internal__
     struct Stencil
     {
         View _underlyingView;
-        const int _width;
-        const int _height;
+        Dimensions _border;
 
         Border _borderHandling;
         C _borderConstant;
 
-        Stencil(View&& view, int width, int height, Border borderHandling = Border::mirror, C borderConstant = C(0))
+        Stencil(View&& view, const Dimensions& borderSize, Border borderHandling = Border::mirror, C borderConstant = C(0))
             : _underlyingView(std::forward<View>(view))
-            , _width(width)
-            , _height(height)
+            , _border(borderSize)
         {
             _borderHandling = borderHandling;
             _borderConstant = borderConstant;
         }
     };
-
-    static size_t mirrorCoords(int64_t x, size_t low, size_t high)
-    {
-        if (x < (int64_t)low)
-            return size_t(2 * low + std::abs(x));
-        else if (x >= (int64_t)high)
-            return size_t(2 * high - std::abs(x));
-        else
-            return size_t(x);
-    }
-
-    static size_t replicateCoords(int64_t x, size_t low, size_t high)
-    {
-        if (x < (int64_t)low)
-            return low;
-        else if (x >= (int64_t)high)
-            return high;
-        else
-            return size_t(x);
-    }
-
-    static size_t replicateMirrorCoords(int64_t x, size_t low, size_t high)
-    {
-        // Only the border next to anchor is replicated, rest is mirrored.
-
-        if (x < (int64_t)low)
-        {
-            if (std::abs(x - (int64_t)low) > 1)
-                return size_t(2 * low + std::abs(x) - 1);
-            return low;
-        }
-        else if (x >= (int64_t)high)
-        {
-            if (std::abs(x - (int64_t)high) > 1)
-                return size_t(2 * high - std::abs(x) + 1);
-            return high;
-        }
-        else
-            return size_t(x);
-    }
-
 
     /// <summary>
     /// Object to access stencil around specified data location (row, col)
@@ -85,67 +44,49 @@ namespace symd::__internal__
     class StencilPix
     {
         const View& _underlyingView;
-        const size_t _row;
-        const size_t _col;
+        const Dimensions& _coords;
 
-        size_t _underlyingWidth;
-        size_t _underlyingHeight;
+        Dimensions _underlyingShape;
 
         Border _borderHandling;
         C _borderConstant;
 
     public:
-        using UnderlyingDataType = std::decay_t<decltype(fetchData(_underlyingView, 0, 0))>;
+        using UnderlyingDataType = std::decay_t<decltype(fetchData(_underlyingView, _coords))>;
 
-        StencilPix(const View& view, size_t row, size_t col, Border borderHandling, C borderConstant)
+        StencilPix(const View& view, const Dimensions& coords, Border borderHandling, C borderConstant)
             : _underlyingView(view)
-            , _row(row)
-            , _col(col)
+            , _coords(coords)
         {
-            _underlyingWidth = getWidth(_underlyingView);
-            _underlyingHeight = getHeight(_underlyingView);
-
+            _underlyingShape = getShape(_underlyingView);
             _borderHandling = borderHandling;            
             _borderConstant = borderConstant;
         }
 
-        UnderlyingDataType operator()(int dr, int dc) const
+        UnderlyingDataType operator()(const Dimensions& dcoords) const
         {
-            auto row = (int64_t)_row + dr;
-            auto col = (int64_t)_col + dc;
-
-            const auto heightLimit = (int64_t)(_underlyingHeight) - 1;
-            const auto widthLimit = (int64_t)(_underlyingWidth) - 1;
+            auto coords = _coords + dcoords;
 
             switch (_borderHandling)
             {
                 case Border::constant:
                     {
-                        if (row < 0 || row > heightLimit || col < 0 || col > widthLimit)
+                        if (_underlyingShape.are_outside(coords))
                             return _borderConstant;
                         else 
-                            return fetchData(_underlyingView, row, col);
+                            return fetchData(_underlyingView, coords);
                     }
                 case Border::mirror:
                     {
-                        row = mirrorCoords(row, 0, heightLimit);
-                        col = mirrorCoords(col, 0, widthLimit);
-
-                        return fetchData(_underlyingView, row, col);
+                        return fetchData(_underlyingView, _underlyingShape.mirrorCoords(coords));
                     }
                 case Border::replicate:
                     {
-                        row = replicateCoords(row, 0, heightLimit);
-                        col = replicateCoords(col, 0, widthLimit);
-
-                        return fetchData(_underlyingView, row, col);
+                        return fetchData(_underlyingView, _underlyingShape.replicateCoords(coords));
                     }
                 case Border::mirror_replicate:
                     {
-                        row = replicateMirrorCoords(row, 0, heightLimit);
-                        col = replicateMirrorCoords(col, 0, widthLimit);
-
-                        return fetchData(_underlyingView, row, col);
+                        return fetchData(_underlyingView, _underlyingShape.replicateMirrorCoords(coords));
                     }
                 default:
                     // Can't happen
@@ -158,35 +99,27 @@ namespace symd::__internal__
     class StencilVec
     {
         const View& _underlyingView;
-        const size_t _row;
-        const size_t _col;
+        const Dimensions& _coords;
 
     public:
         using UnderlyingDataType = std::decay_t<decltype(fetchData(_underlyingView, 0, 0))>;
 
-        StencilVec(const View& view, size_t row, size_t col)
+        StencilVec(const View& view, const Dimensions& coords)
             : _underlyingView(view)
-            , _row(row)
-            , _col(col)
+            , _coords(coords)
         {
         }
 
-        SymdRegister<UnderlyingDataType> operator()(int dr, int dc) const
+        SymdRegister<UnderlyingDataType> operator()(const Dimensions& dcoords) const
         {
-            return fetchVecData(_underlyingView, _row + dr, _col + dc);
+            return fetchVecData(_underlyingView, _coords + dcoords);
         }
     };
 
     template <typename View, typename C>
-    size_t getWidth(const Stencil<View, C>& x)
+    size_t getShape(const Stencil<View, C>& x)
     {
-        return getWidth(x._underlyingView);
-    }
-
-    template <typename View, typename C>
-    size_t getHeight(const Stencil<View, C>& x)
-    {
-        return getHeight(x._underlyingView);
+        return getShape(x._underlyingView);
     }
 
     template <typename View, typename C>
@@ -196,27 +129,21 @@ namespace symd::__internal__
     }
 
     template <typename View, typename C>
-    auto fetchData(const Stencil<View, C>& x, size_t row, size_t col)
+    auto fetchData(const Stencil<View, C>& x, const Dimensions& coords)
     {
-        return StencilPix(x._underlyingView, row, col, x._borderHandling, x._borderConstant);
+        return StencilPix(x._underlyingView, coords, x._borderHandling, x._borderConstant);
     }
 
     template <typename View, typename C>
-    auto fetchVecData(const Stencil<View, C>& st, size_t row, size_t col)
+    auto fetchVecData(const Stencil<View, C>& st, const Dimensions& coords)
     {
-        return StencilVec(st._underlyingView, row, col);
+        return StencilVec(st._underlyingView, coords);
     }
 
     template <typename View, typename C>
-    size_t horisontalBorder(const Stencil<View, C>& st)
+    Dimensions getBorder(const Stencil<View, C>& st)
     {
-        return (st._width / 2) + horisontalBorder(st._underlyingView);
-    }
-
-    template <typename View, typename C>
-    size_t verticalBorder(const Stencil<View, C>& st)
-    {
-        return (st._height / 2) + verticalBorder(st._underlyingView);
+        return st._border + getBorder(st._underlyingView);
     }
 }
 
@@ -226,25 +153,23 @@ namespace symd::views
     /// Creates stencil view from input view, so you can access nearby elements inside kernel.
     /// </summary>
     /// <param name="view">Underlying view.</param>
-    /// <param name="width">Width of the stencil window.</param>
-    /// <param name="height">Height of the stencil window.</param>
+    /// <param name="borders">borders of the stencil window.</param>
     template <typename View>
-    auto stencil(View&& view, int width, int height)
+    auto stencil(View&& view, const Dimensions& borders)
     {
-        return __internal__::Stencil<View, int>(std::forward<View>(view), width, height, Border::mirror, 0);
+        return __internal__::Stencil<View, int>(std::forward<View>(view), borders, Border::mirror, 0);
     }
 
     /// <summary>
     /// Creates stencil view from input view, so you can access nearby elements inside kernel.
     /// </summary>
     /// <param name="view">Underlying view.</param>
-    /// <param name="width">Width of the stencil window.</param>
-    /// <param name="height">Height of the stencil window.</param>
+    /// <param name="borders">borders of the stencil window.</param>
     /// <param name="borderHandling">Specify how accesses outside of underlying view are handled. Can be constant, replicate, mirror...</param>
     template <typename View>
-    auto stencil(View&& view, int width, int height, Border borderHandling)
+    auto stencil(View&& view, const Dimensions& borders, Border borderHandling)
     {
-        return __internal__::Stencil<View, int>(std::forward<View>(view), width, height, borderHandling, 0);
+        return __internal__::Stencil<View, int>(std::forward<View>(view), borders, borderHandling, 0);
     }
 
     /// <summary>
@@ -256,9 +181,9 @@ namespace symd::views
     /// <param name="borderHandling">Specify how accesses outside of underlying view are handled. Can be constant, replicate, mirror...</param>
     /// <param name="borderConstant">Constant that replaces value when kernel accesses ourside of underlying view.</param>
     template <typename View, typename C>
-    auto stencil(View&& view, int width, int height, Border borderHandling, C borderConstant)
+    auto stencil(View&& view, const Dimensions& borders, Border borderHandling, C borderConstant)
     {
-        return __internal__::Stencil<View, C>(std::forward<View>(view), width, height, borderHandling, borderConstant);
+        return __internal__::Stencil<View, C>(std::forward<View>(view), borders, borderHandling, borderConstant);
     }
 }
 
@@ -270,6 +195,6 @@ namespace symd::__internal__
     template<typename View, typename C>
     auto sub_view(const Stencil<View, C>& st, const Region& region)
     {
-        return stencil(sub_view(st._underlyingView, region), st._width, st._height);
+        return stencil(sub_view(st._underlyingView, region), st._borders);
     }
 }

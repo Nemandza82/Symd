@@ -1,4 +1,5 @@
 #pragma once
+#include "../dimensions.h"
 
 
 namespace symd::views
@@ -15,15 +16,15 @@ namespace symd::views
     struct data_view<T, 1>
     {
         T* data;
-        size_t width;
-        size_t height;
+        int64_t width;
+        int64_t height;
 
         /// <summary>
         /// Contructs 1D data_view of input memory buffer.
         /// </summary>
         /// <param name="ptr">Pointer to underlying memory buffer.</param>
         /// <param name="length_">Pointer to underlying memory in elements (not bytes).</param>
-        data_view(T* ptr, size_t length_)
+        data_view(T* ptr, int64_t length_)
         {
             data = ptr;
             width = length_;
@@ -39,9 +40,9 @@ namespace symd::views
     {
         T* data;
 
-        size_t width;
-        size_t height;
-        size_t pitch;
+        int64_t width;
+        int64_t height;
+        int64_t pitch;
 
         /// <summary>
         /// Contructs 1D data_view of input memory buffer.
@@ -50,7 +51,7 @@ namespace symd::views
         /// <param name="width_">Width of data_view.</param>
         /// <param name="height_">Width of data_view.</param>
         /// <param name="pitch_">Pitch of data_view. Length of one line in elements.</param>
-        data_view(T* ptr, size_t width_, size_t height_, size_t pitch_)
+        data_view(T* ptr, int64_t width_, int64_t height_, int64_t pitch_)
         {
             data = ptr;
             width = width_;
@@ -58,7 +59,7 @@ namespace symd::views
             pitch = pitch_;
         }
 
-        T readPix(size_t y, size_t x) const
+        T readPix(int64_t y, int64_t x) const
         {
             return data[y * pitch + x];
         }
@@ -71,60 +72,65 @@ namespace symd::__internal__
     // Access the data
     /////////////////////////////////////////////////////////////////////////////////////////////////
 
-    template <typename T, int dim>
-    size_t getWidth(const views::data_view<T, dim>& dw)
+    template <typename T>
+    Dimensions getShape(const views::data_view<T, 1>& dw)
     {
-        return dw.width;
-    }
-
-    template <typename T, int dim>
-    size_t getHeight(const views::data_view<T, dim>& dw)
-    {
-        return dw.height;
+        return Dimensions({ dw.width });
     }
 
     template <typename T>
-    size_t getPitch(const views::data_view<T, 1>& x)
+    Dimensions getShape(const views::data_view<T, 2>& dw)
     {
-        return getWidth(x);
+        return Dimensions({ dw.height, dw.width });
     }
 
     template <typename T>
-    size_t getPitch(const views::data_view<T, 2>& x)
+    Dimensions getPitch(const views::data_view<T, 1>& dw)
     {
-        return x.pitch;
+        return Dimensions({ 1 });
     }
 
     template <typename T>
-    T* getDataPtr(views::data_view<T, 1>& dw, size_t row, size_t col)
+    Dimensions getPitch(const views::data_view<T, 2>& dw)
     {
-        assert(row < dw.width);
-        return dw.data + row;
+        return Dimensions({ dw.pitch, 1 });
     }
 
     template <typename T>
-    const T* getDataPtr(const views::data_view<T, 1>& dw, size_t row, size_t col)
+    T* getDataPtr(views::data_view<T, 1>& dw, const Dimensions& coords)
     {
-        assert(row < dw.width);
-        return dw.data + row;
+        assert(coords.count() == 1)
+        assert(coords[0] < dw.width);
+
+        return dw.data + coords[0];
     }
 
     template <typename T>
-    T* getDataPtr(views::data_view<T, 2>& dw, size_t row, size_t col)
+    const T* getDataPtr(const views::data_view<T, 1>& dw, const Dimensions& coords)
     {
-        assert(row < dw.height);
-        assert(col < dw.width);
+        assert(coords.count() == 1)
+        assert(coords[0] < dw.width);
 
-        return dw.data + row * dw.pitch + col;
+        return dw.data + coords[0];
     }
 
     template <typename T>
-    const T* getDataPtr(const views::data_view<T, 2>& dw, size_t row, size_t col)
+    T* getDataPtr(views::data_view<T, 2>& dw, const Dimensions& coords)
     {
-        assert(row < dw.height);
-        assert(col < dw.width);
+        assert(coords.count() == 2)
+        assert(coords[0] < dw.height);
+        assert(coords[1] < dw.width);
 
-        return dw.data + row * dw.pitch + col;
+        return dw.data + coords[0] * dw.pitch + coords[1];
+    }
+
+    template <typename T>
+    const T* getDataPtr(const views::data_view<T, 2>& dw, const Dimensions& coords)
+    {
+        assert(coords.count() == 2)
+        assert(coords[0] < dw.height);
+        assert(coords[1] < dw.width);
+
+        return dw.data + coords[0] * dw.pitch + coords[1];
     }
 }
-
