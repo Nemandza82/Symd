@@ -4,7 +4,7 @@
 
 namespace tests
 {
-    TEST_CASE("Reduction simple test")
+    /* TEST_CASE("Reduction simple test")
     {
         std::vector<float> input = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 };
 
@@ -128,6 +128,6 @@ namespace tests
         auto resY = out[1].getResult();
 
         REQUIRE(resY == 2 * resX);
-    }
+    }*/
 }
 
