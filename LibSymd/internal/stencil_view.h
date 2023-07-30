@@ -1,5 +1,5 @@
 #pragma once
-#include "symd_register.h"
+#include "basic_views.h"
 #include "../dimensions.h"
 
 
@@ -63,10 +63,38 @@ namespace symd::__internal__
             _borderConstant = borderConstant;
         }
 
-        UnderlyingDataType operator()(const Dimensions& dcoords) const
+        UnderlyingDataType operator()(int64_t d0) const
         {
-            auto coords = _coords + dcoords;
+            assert(_coords.num_dims() == 1);
+            return handleBorders(_coords.add(d0));
+        }
 
+        UnderlyingDataType operator()(int64_t d0, int64_t d1) const
+        {
+            assert(_coords.num_dims() == 2);
+            return handleBorders(_coords.add(d0, d1));
+        }
+
+        UnderlyingDataType operator()(int64_t d0, int64_t d1, int64_t d2) const
+        {
+            assert(_coords.num_dims() == 3);
+            return handleBorders(_coords.add(d0, d1, d2));
+        }
+
+        UnderlyingDataType operator()(int64_t d0, int64_t d1, int64_t d2, int64_t d3) const
+        {
+            assert(_coords.num_dims() == 4);
+            return handleBorders(_coords.add(d0, d1, d2, d3));
+        }
+
+        UnderlyingDataType operator()(int64_t d0, int64_t d1, int64_t d2, int64_t d3, int64_t d4) const
+        {
+            assert(_coords.num_dims() == 5);
+            return handleBorders(_coords.add(d0, d1, d2, d3, d4));
+        }
+
+        UnderlyingDataType handleBorders(const Dimensions& coords) const
+        {
             switch (_borderHandling)
             {
                 case Border::constant:
@@ -102,7 +130,7 @@ namespace symd::__internal__
         const Dimensions& _coords;
 
     public:
-        using UnderlyingDataType = std::decay_t<decltype(fetchData(_underlyingView, 0, 0))>;
+        using UnderlyingDataType = std::decay_t<decltype(fetchData(_underlyingView, _coords))>;
 
         StencilVec(const View& view, const Dimensions& coords)
             : _underlyingView(view)
@@ -110,14 +138,39 @@ namespace symd::__internal__
         {
         }
 
-        SymdRegister<UnderlyingDataType> operator()(const Dimensions& dcoords) const
+        SymdRegister<UnderlyingDataType> operator()(int64_t d0) const
         {
-            return fetchVecData(_underlyingView, _coords + dcoords);
+            assert(_coords.num_dims() == 1);
+            return fetchVecData(_underlyingView, _coords.add(d0));
+        }
+
+        SymdRegister<UnderlyingDataType> operator()(int64_t d0, int64_t d1) const
+        {
+            assert(_coords.num_dims() == 2);
+            return fetchVecData(_underlyingView, _coords.add(d0, d1));
+        }
+
+        SymdRegister<UnderlyingDataType> operator()(int64_t d0, int64_t d1, int64_t d2) const
+        {
+            assert(_coords.num_dims() == 3);
+            return fetchVecData(_underlyingView, _coords.add(d0, d1, d2));
+        }
+
+        SymdRegister<UnderlyingDataType> operator()(int64_t d0, int64_t d1, int64_t d2, int64_t d3) const
+        {
+            assert(_coords.num_dims() == 4);
+            return fetchVecData(_underlyingView, _coords.add(d0, d1, d2, d3));
+        }
+
+        SymdRegister<UnderlyingDataType> operator()(int64_t d0, int64_t d1, int64_t d2, int64_t d3, int64_t d4) const
+        {
+            assert(_coords.num_dims() == 5);
+            return fetchVecData(_underlyingView, _coords.add(d0, d1, d2, d3, d4));
         }
     };
 
     template <typename View, typename C>
-    size_t getShape(const Stencil<View, C>& x)
+    Dimensions getShape(const Stencil<View, C>& x)
     {
         return getShape(x._underlyingView);
     }

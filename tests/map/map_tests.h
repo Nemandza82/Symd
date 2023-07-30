@@ -125,7 +125,7 @@ namespace tests
     }
 
     // Measure execution time
-    /* TEST_CASE("Mapping 3 - exec time")
+    TEST_CASE("Mapping 3 - exec time")
     {
         std::vector<float> input0(1024*1024);
         std::vector<float> input1(1024*1024);
@@ -144,7 +144,7 @@ namespace tests
                     {
                         return (x + y) * (z - w);
                     }, input0, input1, input2, input3);
-            }
+            }, 100
         );
 
         std::cout << "Map (x + y) * (z - w); (float) - symd_single_core : " << durationSymdSingleCore.count() << " ms" << std::endl;
@@ -155,7 +155,7 @@ namespace tests
                     {
                         return (x + y) * (z - w);
                     }, input0, input1, input2, input3);
-            }, 10000
+            }, 100
         );
 
         std::cout << "Map (x + y) * (z - w); (float) - symd_multi_core  : " << durationSymd.count() << " ms" << std::endl;        
@@ -165,7 +165,7 @@ namespace tests
             {
                 for (size_t i = 0; i < input3.size(); i++)
                     output[i] = (input0[i] + input1[i]) * (input2[i] - input3[i]);
-            }
+            }, 100
         );
 
         std::cout << "Map (x + y) * (z - w); (float) - Loop             : " << durationLoop.count() << " ms" << std::endl;
@@ -321,56 +321,6 @@ namespace tests
         requireNear(B_mc, B_loop, 0.03f);
     }
 
-    TEST_CASE("Mapping - blocking input YUV444 to RGB")
-    {
-        size_t width = 1920;
-        size_t height = 1080;
-
-        // https://www.flir.com/support-center/iis/machine-vision/knowledge-base/understanding-yuv-data-formats/
-        std::vector<float> YUV444(width * height * 3);
-        randomizeData(YUV444);
-
-        // Simple loop -------------------------------------------------------------------
-        std::vector<float> RGB24_loop(YUV444.size());
-
-        auto durationLoop = executionTimeMs([&]()
-            {
-                for (int i = 0; i < YUV444.size(); i += 3)
-                {
-                    auto rgb = yuvToRgbKernel(
-                        YUV444[i + 1],
-                        YUV444[i + 0],
-                        YUV444[i + 2]);
-
-                    RGB24_loop[i + 0] = rgb[0];
-                    RGB24_loop[i + 1] = rgb[1];
-                    RGB24_loop[i + 2] = rgb[2];
-                }
-            });
-
-        std::cout << "Mapping YUV444 to RGB - Loop             : " << durationLoop.count() << " ms" << std::endl;
-
-
-        // Multi core  -------------------------------------------------------------------
-        std::vector<float> RGB24_mc(YUV444.size());
-
-        auto duration = executionTimeMs([&]()
-            {
-                symd::map(symd::views::block_view<3,1>(RGB24_mc), [](auto yuv)
-                    {
-                        return yuvToRgbKernel(yuv[1], yuv[0], v[2]);
-
-                    }, symd::views::block_view<3,1>(YUV444));
-            }
-        );
-
-        std::cout << "Mapping YUV444 to RGB - symd_multi_core  : " << duration.count() << " ms" << std::endl << std::endl;
-
-        // Correctness test
-        requireNear(RGB24_loop, RGB24_mc, 0.03f);
-    }
-
-
     TEST_CASE("Mapping - Basic Stencil")
     {
         std::vector<float> input = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 };
@@ -378,13 +328,12 @@ namespace tests
 
         symd::map_single_core(output, [](const auto& x)
             {
-                return (x(0,-1) + x(0,0) + x(0,1)) / 3;
+                return (x(-1) + x(0) + x(1)) / 3;
 
-            }, symd::views::stencil(input, symd::Dimensions({1, 0})));
+            }, symd::views::stencil(input, symd::Dimensions({1})));
 
         requireEqual(output, { 5.f / 3, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, (2*17.f + 18)/3 });
     }
-
 
     TEST_CASE("Mapping - simple 2d view example")
     {
@@ -421,8 +370,9 @@ namespace tests
 
     TEST_CASE("Mapping - Convolucion 3x3")
     {
-        size_t width = 1920;
-        size_t height = 1080;
+        int64_t width = 1920;
+        int64_t height = 1080;
+        auto shape = symd::Dimensions({height, width});
 
         std::vector<float> input(width * height);
         randomizeData(input);
@@ -473,12 +423,9 @@ namespace tests
 
         auto readMirror = [&](int i, int j)
         {
-            
-
-            auto ii = symd::__internal__::mirrorCoords(i, 0, height - 1);
-            auto jj = symd::__internal__::mirrorCoords(j, 0, width - 1);
-
-            return input_2d.readPix(ii, jj);
+            auto coords = symd::Dimensions({i, j});
+            shape.mirrorCoords(coords);
+            return input_2d.readPix(shape.mirrorCoords(coords));
         };
 
         auto durationLoop = executionTimeMs([&]()
@@ -513,6 +460,5 @@ namespace tests
         std::cout << "Convolution 3x3 - Loop             : " << durationLoop.count() << " ms" << std::endl;
         std::cout << "Convolution 3x3 - symd_single_core : " << durationSingleCore.count() << " ms" << std::endl;
         std::cout << "Convolution 3x3 - symd_multi_core  : " << duration.count() << " ms" << std::endl << std::endl;
-    }*/
+    }
 }
-

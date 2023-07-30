@@ -44,6 +44,8 @@ namespace symd
             return _dims[ind];
         }
 
+
+
         void set_ith_dim(int i, int64_t new_val)
         {
             _dims[i] = new_val;
@@ -53,6 +55,65 @@ namespace symd
         {
             Dimensions res = *this;
             res._dims[i] = new_val;
+            return res;
+        }
+
+        Dimensions add(int64_t d0) const
+        {
+            assert(_ndims == 1);
+            Dimensions res = *this;
+
+            res._dims[0] += d0;
+            return res;
+        }
+
+        Dimensions add(int64_t d0, int64_t d1) const
+        {
+            assert(_ndims == 2);
+            Dimensions res = *this;
+
+            res._dims[0] += d0;
+            res._dims[1] += d1;
+            
+            return res;
+        }
+
+        Dimensions add(int64_t d0, int64_t d1, int64_t d2) const
+        {
+            assert(_ndims == 3);
+            Dimensions res = *this;
+
+            res._dims[0] += d0;
+            res._dims[1] += d1;
+            res._dims[2] += d2;
+            
+            return res;
+        }
+
+        Dimensions add(int64_t d0, int64_t d1, int64_t d2, int64_t d3) const
+        {
+            assert(_ndims == 4);
+            Dimensions res = *this;
+
+            res._dims[0] += d0;
+            res._dims[1] += d1;
+            res._dims[2] += d2;
+            res._dims[3] += d3;
+            
+            return res;
+        }
+
+        Dimensions add(int64_t d0, int64_t d1, int64_t d2, int64_t d3, int64_t d4) const
+        {
+            assert(_ndims == 5);
+            Dimensions res = *this;
+
+            res._dims[0] += d0;
+            res._dims[1] += d1;
+            res._dims[2] += d2;
+            res._dims[3] += d3;
+            res._dims[4] += d4;
+            
             return res;
         }
 
@@ -223,7 +284,7 @@ namespace symd
             return result;
         }
 
-        int count() const
+        int num_dims() const
         {
             return _ndims;
         }

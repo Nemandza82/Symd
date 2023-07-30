@@ -15,7 +15,7 @@ namespace tests
 #ifdef _DEBUG
     constexpr int NUM_ITER = 1;
 #else
-    constexpr int NUM_ITER = 500;
+    constexpr int NUM_ITER = 400;
 #endif
 
     /////////////////////////////////////////////////////////////////////////////////////////

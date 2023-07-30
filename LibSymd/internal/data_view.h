@@ -59,9 +59,10 @@ namespace symd::views
             pitch = pitch_;
         }
 
-        T readPix(int64_t y, int64_t x) const
+        T readPix(const Dimensions& coords) const
         {
-            return data[y * pitch + x];
+            assert(coords.num_dims() == 2);
+            return data[coords[0] * pitch + coords[1]];
         }
     };
 }
@@ -99,7 +100,7 @@ namespace symd::__internal__
     template <typename T>
     T* getDataPtr(views::data_view<T, 1>& dw, const Dimensions& coords)
     {
-        assert(coords.count() == 1)
+        assert(coords.num_dims() == 1);
         assert(coords[0] < dw.width);
 
         return dw.data + coords[0];
@@ -108,7 +109,7 @@ namespace symd::__internal__
     template <typename T>
     const T* getDataPtr(const views::data_view<T, 1>& dw, const Dimensions& coords)
     {
-        assert(coords.count() == 1)
+        assert(coords.num_dims() == 1);
         assert(coords[0] < dw.width);
 
         return dw.data + coords[0];
@@ -117,7 +118,7 @@ namespace symd::__internal__
     template <typename T>
     T* getDataPtr(views::data_view<T, 2>& dw, const Dimensions& coords)
     {
-        assert(coords.count() == 2)
+        assert(coords.num_dims() == 2);
         assert(coords[0] < dw.height);
         assert(coords[1] < dw.width);
 
@@ -127,7 +128,7 @@ namespace symd::__internal__
     template <typename T>
     const T* getDataPtr(const views::data_view<T, 2>& dw, const Dimensions& coords)
     {
-        assert(coords.count() == 2)
+        assert(coords.num_dims() == 2);
         assert(coords[0] < dw.height);
         assert(coords[1] < dw.width);
 

@@ -21,7 +21,7 @@ namespace symd::__internal__
     template <typename T, std::size_t N>
     T* getDataPtr(std::array<T, N>& x, const Dimensions& coords, typename std::enable_if<std::is_fundamental<T>::value, T>::type* = 0)
     {
-        assert(coords.count() == 1);
+        assert(coords.num_dims() == 1);
         assert(coords[0] < N);
 
         return x.data() + coords[0];
@@ -30,7 +30,7 @@ namespace symd::__internal__
     template <typename T, std::size_t N>
     const T* getDataPtr(const std::array<T, N>& x, const Dimensions& coords, typename std::enable_if<std::is_fundamental<T>::value, T>::type* = 0)
     {
-        assert(coords.count() == 1);
+        assert(coords.num_dims() == 1);
         assert(coords[0] < N);
 
         return x.data() + coords[0];

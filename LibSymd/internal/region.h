@@ -37,7 +37,7 @@ namespace symd::__internal__
         /// <summary>
         /// Number of elements in Region
         /// </summary>
-        int64_t count() const
+        int64_t num_elements() const
         {
             return getShape().num_elements();
         }
@@ -48,7 +48,7 @@ namespace symd::__internal__
         /// <returns>Two disjoint regions with cover the source region.</returns>
         void split(std::vector<Region>& result) const
         {
-            if (count() < 100000)
+            if (this->num_elements() < 100000)
             {
                 result.push_back(*this);
                 return;
@@ -56,7 +56,7 @@ namespace symd::__internal__
 
             auto shape = this->getShape();
 
-            for (int i = 0; i < shape.count(); i++)
+            for (int i = 0; i < shape.num_dims(); i++)
             {
                 if (shape[i] > 1)
                 {
@@ -70,7 +70,7 @@ namespace symd::__internal__
 
         Region align_with_symd_len(int64_t symd_len) const
         {
-            auto last_dim_ind = endCoord.count() - 1;
+            auto last_dim_ind = endCoord.num_dims() - 1;
 
             auto width = endCoord[last_dim_ind] - startCoord[last_dim_ind] + 1;
             auto new_last_dim = endCoord[last_dim_ind] - (width % symd_len);

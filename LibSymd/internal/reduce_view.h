@@ -56,8 +56,7 @@ namespace symd::views
         /// <summary>
         /// Constructs reduce_view given reduce operation and finalizer - DO NOT USE, FOR INTERNAL USE ONLY.
         /// </summary>
-        /// <param name="width">Width of input view you want to perform reduction on.</param>
-        /// <param name="height">Height of input view you want to perform reduction on.</param>
+        /// <param name="shape">shape of input view you want to perform reduction on.</param>
         /// <param name="startValue">Value for initializing operation / neutral element for operation. Eg 0 for addition or 1 for multiplication.</param>
         /// <param name="reduceOperation">Input operation lambda function.</param>
         /// <param name="finalizer">Lambda function to be executed on *this before this is destructed. Needed for correct parallel reduction implementation.</param>

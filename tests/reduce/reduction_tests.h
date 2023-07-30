@@ -4,14 +4,15 @@
 
 namespace tests
 {
-    /* TEST_CASE("Reduction simple test")
+    TEST_CASE("Reduction simple test")
     {
         std::vector<float> input = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 };
+        auto input_shape = symd::Dimensions({ (int64_t)input.size() });
 
         // Create reduce view which is enabling us to perform reduction.
         // Reduce view size must be equal to input size
         // Reduction operation is summing in this case
-        auto sum = symd::views::reduce_view(input.size(), 1, 0.0f, [](auto x, auto y)
+        auto sum = symd::views::reduce_view(input_shape, 0.0f, [](auto x, auto y)
             {
                 return x + y;
             });
@@ -25,10 +26,10 @@ namespace tests
         REQUIRE(res ==  342);
     }
 
-    TEST_CASE("Reduction - many elements")
+    /* TEST_CASE("Reduction - many elements")
     {
-        size_t width = 1920;
-        size_t height = 1080;
+        int64_t width = 1920;
+        int64_t height = 1080;
 
         std::vector<int> input(width * height);
         randomizeData(input);

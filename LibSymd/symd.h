@@ -5,13 +5,9 @@
 #include  <iostream>
 #include "dimensions.h"
 #include "internal/basic_views.h"
-#include "internal/std_vector_view.h"
-#include "internal/std_array_view.h"
-#include "internal/data_view.h"
-#include "internal/reduce_view.h"
-#include "internal/multi_output.h"
 #include "internal/sub_view.h"
 #include "internal/stencil_view.h"
+#include "internal/multi_output.h"
 
 #ifdef SYMD_USE_TBB
     #include "tbb/parallel_for_each.h"
@@ -19,132 +15,98 @@
     #include <execution>
 #endif
 
+
+namespace symd::__internal__
+{ 
+    template <typename Func, typename FirstInput, typename... Inputs>
+    auto applyToFirstInput(Func&& func, const FirstInput& firstInput, const Inputs&... inputs)
+    {
+        return func(firstInput);
+    }
+
+    template <typename FirstInput, typename... Inputs>
+    Region vectorRegion(const FirstInput& firstInput, const Inputs&... inputs)
+    {
+        std::vector<Dimensions> borders{ getBorder(inputs)... };
+        auto maxBorders = getBorder(firstInput);
+
+        for (const auto& border : borders)
+            maxBorders = maxBorders.eltwise_max(border);
+
+        auto shape = getShape(firstInput);
+        auto startShape = shape.zeros_like() + maxBorders;
+        auto endShape = shape - maxBorders - 1;
+
+        Region region(startShape, endShape);
+        return region.align_with_symd_len(SYMD_LEN);
+    }
+
+    template <typename Output, typename Operation, typename... Inputs>
+    void map_single_core_impl(
+        Output& result, 
+        Operation&& operation, 
+        Dimensions shape, 
+        Region vecRegion,
+        Dimensions proc_coord,
+        int proc_dim,
+        bool inside_vec_region,
+        Inputs&&... inputs)
+    {
+        // Last dim
+        if (proc_dim == shape.num_dims() - 1)
+        {
+            int64_t i = 0;
+
+            for (; i < vecRegion.startCoord[proc_dim]; ++i)
+            {
+                proc_coord.set_ith_dim(proc_dim, i);
+                auto pix = operation(__internal__::fetchData(inputs, proc_coord)...);
+                __internal__::saveData(result, pix, proc_coord);
+            }
+
+            if (inside_vec_region)
+            {
+                for (; (i + __internal__::SYMD_LEN - 1) <= vecRegion.endCoord[proc_dim]; i += __internal__::SYMD_LEN)
+                {
+                    proc_coord.set_ith_dim(proc_dim, i);
+                    auto vecRes = operation(__internal__::fetchVecData(inputs, proc_coord)...);
+                    __internal__::saveVecData(result, vecRes, proc_coord);
+                }
+            }
+
+            for (; i < shape[proc_dim]; ++i)
+            {
+                proc_coord.set_ith_dim(proc_dim, i);
+                auto pix = operation(__internal__::fetchData(inputs, proc_coord)...);
+                __internal__::saveData(result, pix, proc_coord);
+            }
+        }
+        else
+        {
+            for (size_t i = 0; i < shape[proc_dim]; ++i)
+            {
+                proc_coord.set_ith_dim(proc_dim, i);
+
+                bool is_inside_vec_region = inside_vec_region &&
+                    (i >= vecRegion.startCoord[proc_dim]) &&
+                    (i <= vecRegion.endCoord[proc_dim]);
+
+                map_single_core_impl(
+                    result,
+                    std::forward<Operation>(operation),
+                    shape,
+                    vecRegion,
+                    proc_coord,
+                    proc_dim + 1,
+                    is_inside_vec_region,
+                    std::forward<Inputs>(inputs)... );
+            }
+        }
+    }
+} // symd::__internal__
+
 namespace symd
 {
-    namespace __internal__
-    {
-        template <typename View>
-        auto fetchData(const View& view, const Dimensions& coords)
-        {
-            auto ptr = getDataPtr(view, coords);
-            return *ptr;
-        }
-
-        template <typename View>
-        auto fetchVecData(const View& view, const Dimensions& coords)
-        {
-            auto* ptr = getDataPtr(view, coords);
-            return SymdRegister<std::decay_t<decltype(*ptr)>>(ptr);
-        }
-
-
-        template <typename View, typename DataType>
-        void saveData(View& outView, const DataType& element, const Dimensions& coords)
-        {
-            auto* ptr = getDataPtr(outView, coords);
-            *ptr = element;
-        }
-
-        template <typename View, typename DataType>
-        void saveVecData(View& outView, const SymdRegister<DataType>& element, const Dimensions& coords)
-        {
-            auto* ptr = getDataPtr(outView, coords);
-            element.store(ptr);
-        }
-
-        template <typename View>
-        Dimensions getBorder(const View& input)
-        {
-            return getShape(input).native_border();
-        }
-        
-        template <typename Func, typename FirstInput, typename... Inputs>
-        auto applyToFirstInput(Func&& func, const FirstInput& firstInput, const Inputs&... inputs)
-        {
-            return func(firstInput);
-        }
-
-        template <typename FirstInput, typename... Inputs>
-        Region vectorRegion(const FirstInput& firstInput, const Inputs&... inputs)
-        {
-            std::vector<Dimensions> borders{ getBorder(inputs)... };
-            auto maxBorders = getBorder(firstInput);
-
-            for (const auto& border : borders)
-                maxBorders = maxBorders.eltwise_max(border);
-
-            auto shape = getShape(firstInput);
-            auto startShape = shape.zeros_like() + maxBorders;
-            auto endShape = shape - maxBorders - 1;
-
-            Region region(startShape, endShape);
-            return region.align_with_symd_len(SYMD_LEN);
-        }
-
-        template <typename Output, typename Operation, typename... Inputs>
-        void map_single_core_impl(
-            Output& result, 
-            Operation&& operation, 
-            Dimensions shape, 
-            Region vecRegion,
-            Dimensions proc_coord,
-            int proc_dim,
-            bool inside_vec_region,
-            Inputs&&... inputs)
-        {
-            // Last dim
-            if (proc_dim == shape.count() - 1)
-            {
-                int64_t i = 0;
-
-                for (; i < vecRegion.startCoord[proc_dim]; ++i)
-                {
-                    proc_coord.set_ith_dim(proc_dim, i);
-                    auto pix = operation(__internal__::fetchData(inputs, proc_coord)...);
-                    __internal__::saveData(result, pix, proc_coord);
-                }
-
-                if (inside_vec_region)
-                {
-                    for (; (i + __internal__::SYMD_LEN - 1) <= vecRegion.endCoord[proc_dim]; i += __internal__::SYMD_LEN)
-                    {
-                        proc_coord.set_ith_dim(proc_dim, i);
-                        auto vecRes = operation(__internal__::fetchVecData(inputs, proc_coord)...);
-                        __internal__::saveVecData(result, vecRes, proc_coord);
-                    }
-                }
-
-                for (; i < shape[proc_dim]; ++i)
-                {
-                    proc_coord.set_ith_dim(proc_dim, i);
-                    auto pix = operation(__internal__::fetchData(inputs, proc_coord)...);
-                    __internal__::saveData(result, pix, proc_coord);
-                }
-            }
-            else
-            {
-                for (size_t i = 0; i < shape[proc_dim]; ++i)
-                {
-                    proc_coord.set_ith_dim(proc_dim, i);
-
-                    bool is_inside_vec_region = inside_vec_region &&
-                        (i >= vecRegion.startCoord[proc_dim]) &&
-                        (i <= vecRegion.endCoord[proc_dim]);
-
-                    map_single_core_impl(
-                        result,
-                        std::forward<Operation>(operation),
-                        shape,
-                        vecRegion,
-                        proc_coord,
-                        proc_dim + 1,
-                        is_inside_vec_region,
-                        std::forward<Inputs>(inputs)... );
-                }
-            }
-        }
-    } // __internal__
-
     /// <summary>
     /// Maps inputs to result using operation. Performs operation on single thread/core.
     /// </summary>
@@ -198,4 +160,4 @@ namespace symd
         map_single_core(result, operation, inputs...);
 #endif
     }
-}
+} // namespace symd
