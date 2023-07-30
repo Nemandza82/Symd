@@ -268,7 +268,7 @@ namespace tests
                     G_loop[i] = rgb[1];
                     B_loop[i] = rgb[2];
                 }
-            }
+            }, 50
         );
 
         std::cout << "Mapping YUV444 planar to RGB planar - Loop             : " << durationLoop.count() << " ms" << std::endl;
@@ -403,6 +403,8 @@ namespace tests
             }
         );
 
+        std::cout << "Convolution 3x3 - symd_multi_core  : " << duration.count() << " ms" << std::endl;
+
         std::vector<float> output_sc(input.size());
         symd::views::data_view<float, 2> output_2d_sc(output_sc.data(), width, height, width);
 
@@ -419,6 +421,7 @@ namespace tests
             }
         );
 
+        std::cout << "Convolution 3x3 - symd_single_core : " << durationSingleCore.count() << " ms" << std::endl;
         std::vector<float> output_loop(input.size());
 
         auto readMirror = [&](int i, int j)
@@ -453,12 +456,10 @@ namespace tests
             }
         );
 
+        std::cout << "Convolution 3x3 - Loop             : " << durationLoop.count() << " ms" << std::endl << std::endl;
+
         requireNear(output_sc, output_mc, 0.03f);
         requireNear(output_sc, output_loop, 0.03f);
         requireNear(output_mc, output_loop, 0.03f);
-
-        std::cout << "Convolution 3x3 - Loop             : " << durationLoop.count() << " ms" << std::endl;
-        std::cout << "Convolution 3x3 - symd_single_core : " << durationSingleCore.count() << " ms" << std::endl;
-        std::cout << "Convolution 3x3 - symd_multi_core  : " << duration.count() << " ms" << std::endl << std::endl;
     }
 }

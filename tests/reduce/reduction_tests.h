@@ -26,10 +26,11 @@ namespace tests
         REQUIRE(res ==  342);
     }
 
-    /* TEST_CASE("Reduction - many elements")
+    TEST_CASE("Reduction - many elements")
     {
         int64_t width = 1920;
         int64_t height = 1080;
+        auto shape = symd::Dimensions({ height, width });
 
         std::vector<int> input(width * height);
         randomizeData(input);
@@ -39,7 +40,7 @@ namespace tests
 
         auto durationMap = executionTimeMs([&]()
             {
-                auto sum = symd::views::reduce_view(width, height, (int)0, [](auto x, auto y)
+                auto sum = symd::views::reduce_view(shape, (int)0, [](auto x, auto y)
                     {
                         return x + y;
                     });
@@ -69,20 +70,21 @@ namespace tests
 
     TEST_CASE("Reduction - multiple outputs")
     {
-        size_t width = 1920;
-        size_t height = 1080;
+        int64_t width = 1920;
+        int64_t height = 1080;
+        auto shape = symd::Dimensions({ height, width });
 
         std::vector<int> input(width * height);
         randomizeData(input);
 
         symd::views::data_view<int, 2> input_2d(input.data(), width, height, width);
 
-        auto sumX = symd::views::reduce_view(width, height, (int)0, [](auto x, auto y)
+        auto sumX = symd::views::reduce_view(shape, (int)0, [](auto x, auto y)
             {
                 return x + y;
             });
 
-        auto sumY = symd::views::reduce_view(width, height, (int)0, [](auto x, auto y)
+        auto sumY = symd::views::reduce_view(shape, (int)0, [](auto x, auto y)
             {
                 return x + y;
             });
@@ -101,11 +103,11 @@ namespace tests
         REQUIRE(resY == 2 * resX);
     }
 
-
     TEST_CASE("Reduction - multiple outputs 2")
     {
-        size_t width = 1920;
-        size_t height = 1080;
+        int64_t width = 1920;
+        int64_t height = 1080;
+        auto shape = symd::Dimensions({ height, width });
 
         std::vector<int> input(width * height);
         randomizeData(input);
@@ -115,8 +117,8 @@ namespace tests
         auto reduceOpp = [](auto x, auto y) { return x + y; };
 
         auto out = std::array{ 
-            symd::views::reduce_view(width, height, (int)0, reduceOpp),
-            symd::views::reduce_view(width, height, (int)0, reduceOpp)
+            symd::views::reduce_view(shape, (int)0, reduceOpp),
+            symd::views::reduce_view(shape, (int)0, reduceOpp)
         };
 
         symd::map(out, [](auto x)
@@ -129,6 +131,5 @@ namespace tests
         auto resY = out[1].getResult();
 
         REQUIRE(resY == 2 * resX);
-    }*/
+    }
 }
-
