@@ -1,7 +1,6 @@
 #pragma once
 #include "../test_helpers.h"
 
-
 namespace tests
 {
     TEST_CASE("Mapping 1")

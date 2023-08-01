@@ -10,7 +10,7 @@ namespace symd::__internal__
     /// Gets the width of vector with fundamental data types.
     /// </summary>
     template <typename T>
-    Dimensions getShape(const std::vector<T>& x, typename std::enable_if<std::is_fundamental<T>::value, T>::type* = 0)
+    Dimensions getShape(const std::vector<T>& x)
     {
         return Dimensions({ (int64_t) x.size() });
     }
@@ -19,13 +19,13 @@ namespace symd::__internal__
     /// Gets the pitch of vector with fundamental data types.
     /// </summary>
     template <typename T>
-    Dimensions getPitch(const std::vector<T>& x, typename std::enable_if<std::is_fundamental<T>::value, T>::type* = 0)
+    Dimensions getPitch(const std::vector<T>& x)
     {
         return Dimensions({ 1 });
     }
 
     template <typename T>
-    T* getDataPtr(std::vector<T, std::allocator<T>>& x, const Dimensions& coords, typename std::enable_if<std::is_fundamental<T>::value, T>::type* = 0)
+    T* getDataPtr(std::vector<T, std::allocator<T>>& x, const Dimensions& coords)
     {
         assert(coords.num_dims() == 1);
         assert(coords[0] < x.size());
@@ -34,7 +34,7 @@ namespace symd::__internal__
     }
 
     template <typename T>
-    const T* getDataPtr(const std::vector<T, std::allocator<T>>& x, const Dimensions& coords, typename std::enable_if<std::is_fundamental<T>::value, T>::type* = 0)
+    const T* getDataPtr(const std::vector<T, std::allocator<T>>& x, const Dimensions& coords)
     {
         assert(coords.num_dims() == 1);
         assert(coords[0] < x.size());

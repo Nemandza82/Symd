@@ -2,6 +2,8 @@
 #include <type_traits>
 #include <limits>
 #include <array>
+#include "../bfloat16.h"
+
 
 namespace symd
 {
@@ -30,6 +32,7 @@ namespace symd
         public:
 
             typedef int Type;
+            typedef int DType;
 
             constexpr static bool is_supported_type()
             {
@@ -46,8 +49,10 @@ namespace symd
     #ifdef SYMD_SSE
             using Type = __m256;
     #elif defined SYMD_NEON
-            typedef Type = float32x4_t;
+            using Type = float32x4_t;
     #endif
+
+            using DType = float;
 
             constexpr static bool is_supported_type()
             {
@@ -55,6 +60,24 @@ namespace symd
             }
         };
 
+        template <>
+        class UnderlyingRegister<symd::bfloat16>
+        {
+        public:
+
+    #ifdef SYMD_SSE
+            using Type = __m256;
+    #elif defined SYMD_NEON
+            using Type = float32x4_t;
+    #endif
+
+            using DType = float;
+
+            constexpr static bool is_supported_type()
+            {
+                return true;
+            }
+        };
 
         template <>
         class UnderlyingRegister<int>
@@ -66,6 +89,8 @@ namespace symd
     #elif defined SYMD_NEON
             using Type = int32x4_t; // Neon has 4 elements
     #endif
+
+            using DType = int;
 
             constexpr static bool is_supported_type()
             {
@@ -84,6 +109,8 @@ namespace symd
             using Type = uint8x8_t; // Neon has 4 elements
     #endif
 
+            using DType = unsigned char;
+
             constexpr static bool is_supported_type()
             {
                 return true;
@@ -101,6 +128,8 @@ namespace symd
     #elif defined SYMD_NEON
             using Type = std::array<float64x2_t, 2>; // Neon has 4 elements
     #endif
+
+            using DType = double;
 
             constexpr static bool is_supported_type()
             {
@@ -127,7 +156,7 @@ namespace symd
             union
             {
                 typename UnderlyingRegister<T>::Type _reg;
-                T _ptrToData[SYMD_LEN];
+                typename UnderlyingRegister<T>::DType _ptrToData[SYMD_LEN];
             };
 
             // Constructs uninitialized register
@@ -174,6 +203,24 @@ namespace symd
                     _reg = vld1q_f32(ptr);
     #endif
                 }
+                else if constexpr (std::is_same_v<T, symd::bfloat16>)
+                {
+                    
+    #ifdef SYMD_SSE
+                    __m128i eight_shorts = _mm_loadu_si128((__m128i*)ptr);
+                    __m128i zeros = _mm_setzero_si128();
+
+                    __m128i lo = _mm_unpacklo_epi16(zeros, eight_shorts);
+                    __m128i hi = _mm_unpackhi_epi16(zeros, eight_shorts);
+
+                    _reg = _mm256_castsi256_ps(_mm256_set_m128i(hi, lo));
+
+    #elif defined SYMD_NEON
+                    assert(false);
+                    // std::array<float, 4> data4 = symd::bfloat16::load_4(ptr);
+                    // _reg = vld1q_f32(data4.data());
+    #endif
+                }
                 else if constexpr (std::is_same_v<T, int>)
                 {
     #ifdef SYMD_SSE
@@ -216,6 +263,14 @@ namespace symd
                     _reg = vdupq_n_f32(other);
     #endif
                 }
+                else if constexpr (std::is_same_v<T, symd::bfloat16>)
+                {
+    #ifdef SYMD_SSE
+                    _reg = _mm256_set1_ps(other.get_float());
+    #elif defined SYMD_NEON
+                    _reg = vld1q_f32(other.get_float());
+    #endif
+                }
                 else if constexpr (std::is_same_v<T, int>)
                 {
     #ifdef SYMD_SSE
@@ -253,7 +308,7 @@ namespace symd
             {
                 assert_supported_type<T>();
 
-                if constexpr (std::is_same_v<T, float>)
+                if constexpr (std::is_same_v<T, float> || std::is_same_v<T, symd::bfloat16>)
                 {
     #ifdef SYMD_SSE
                     return _mm256_add_ps(_reg, other._reg);
@@ -969,6 +1024,22 @@ namespace symd
                     vst1q_f32(dst, _reg);
     #endif
                 }
+                else if constexpr (std::is_same_v<T, symd::bfloat16>)
+                {
+    #ifdef SYMD_SSE
+                    __m256i int_reg = _mm256_castps_si256(_reg);
+                    __m256i shuffled_hi = _mm256_shufflehi_epi16(int_reg, 0b00001101);
+                    __m256i shuffled_16 = _mm256_shufflelo_epi16(shuffled_hi, 0b00001101);
+                    __m256i shuffled_32 = _mm256_shuffle_epi32(shuffled_16, 0b11111000);
+                    __m256i shuffled_64 = _mm256_permute4x64_epi64(shuffled_32, 0b11111000);
+
+                    __m128i final_data = _mm256_extracti128_si256(shuffled_64, 0);
+                    _mm_store_si128((__m128i*)dst, final_data);
+
+    #elif defined SYMD_NEON
+                    assert(false);
+    #endif
+                }
                 else if constexpr (std::is_same_v<T, int>)
                 {
     #ifdef SYMD_SSE
@@ -998,7 +1069,7 @@ namespace symd
                 }
             }
 
-            T operator[](size_t ind) const
+            typename UnderlyingRegister<T>::DType operator[](size_t ind) const
             {
                 return _ptrToData[ind];
             }
