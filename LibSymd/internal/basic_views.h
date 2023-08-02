@@ -1,6 +1,7 @@
 #pragma once
 #include <cassert>
 #include "symd_register.h"
+#include "../kernel_ops.h"
 #include "../dimensions.h"
 #include "std_vector_view.h"
 #include "std_array_view.h"

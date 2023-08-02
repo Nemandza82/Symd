@@ -31,9 +31,6 @@ namespace symd
         {
         public:
 
-            typedef int Type;
-            typedef int DType;
-
             constexpr static bool is_supported_type()
             {
                 return false;
@@ -266,9 +263,9 @@ namespace symd
                 else if constexpr (std::is_same_v<T, symd::bfloat16>)
                 {
     #ifdef SYMD_SSE
-                    _reg = _mm256_set1_ps(other.get_float());
+                    _reg = _mm256_set1_ps((float)other);
     #elif defined SYMD_NEON
-                    _reg = vld1q_f32(other.get_float());
+                    _reg = vld1q_f32((float)other);
     #endif
                 }
                 else if constexpr (std::is_same_v<T, int>)
@@ -350,7 +347,7 @@ namespace symd
 
             SymdRegister operator-(const SymdRegister<T>& other) const
             {
-                if constexpr (std::is_same_v<T, float>)
+                if constexpr (std::is_same_v<T, float> || std::is_same_v<T, symd::bfloat16>)
                 {
     #ifdef SYMD_SSE
                     return _mm256_sub_ps(_reg, other._reg);
@@ -394,7 +391,7 @@ namespace symd
             {
                 static_assert(!std::is_same_v<T, unsigned char>, "Multiplication not supported for unsigned char. Convert to other type.");
 
-                if constexpr (std::is_same_v<T, float>)
+                if constexpr (std::is_same_v<T, float> || std::is_same_v<T, symd::bfloat16>)
                 {
     #ifdef SYMD_SSE
                     return _mm256_mul_ps(_reg, other._reg);
@@ -431,7 +428,7 @@ namespace symd
                 static_assert(!std::is_same_v<T, int>, "Division not supported for int. Convert to other type.");
                 static_assert(!std::is_same_v<T, unsigned char>, "Division not supported for unsigned char. Convert to other type.");
 
-                if constexpr (std::is_same_v<T, float>)
+                if constexpr (std::is_same_v<T, float> || std::is_same_v<T, symd::bfloat16>)
                 {
     #ifdef SYMD_SSE
                     return _mm256_div_ps(_reg, other._reg);
@@ -455,7 +452,7 @@ namespace symd
 
             SymdRegister operator&(const SymdRegister<T>& other) const
             {
-                if constexpr (std::is_same_v<T, float>)
+                if constexpr (std::is_same_v<T, float> || std::is_same_v<T, symd::bfloat16>)
                 {
     #ifdef SYMD_SSE
                     return _mm256_and_ps(_reg, other._reg);
@@ -497,7 +494,7 @@ namespace symd
 
             SymdRegister operator|(const SymdRegister<T>& other) const
             {
-                if constexpr (std::is_same_v<T, float>)
+                if constexpr (std::is_same_v<T, float> || std::is_same_v<T, symd::bfloat16>)
                 {
     #ifdef SYMD_SSE
                     return _mm256_or_ps(_reg, other._reg);
@@ -539,7 +536,7 @@ namespace symd
 
             SymdRegister operator^(const SymdRegister<T>& other) const
             {
-                if constexpr (std::is_same_v<T, float>)
+                if constexpr (std::is_same_v<T, float> || std::is_same_v<T, symd::bfloat16>)
                 {
     #ifdef SYMD_SSE
                     return _mm256_xor_ps(_reg, other._reg);
@@ -581,7 +578,7 @@ namespace symd
 
             SymdRegister operator~() const
             {
-                if constexpr (std::is_same_v<T, float>)
+                if constexpr (std::is_same_v<T, float> || std::is_same_v<T, symd::bfloat16>)
                 {
     #ifdef SYMD_SSE
                     auto mask = _mm256_castsi256_ps(_mm256_set1_epi32(-1));
@@ -642,7 +639,7 @@ namespace symd
 
             SymdRegister operator==(const SymdRegister<T>& other) const
             {
-                if constexpr (std::is_same_v<T, float>)
+                if constexpr (std::is_same_v<T, float> || std::is_same_v<T, symd::bfloat16>)
                 {
     #ifdef SYMD_SSE
                     return _mm256_cmp_ps(_reg, other._reg, _CMP_EQ_OQ);
@@ -689,7 +686,7 @@ namespace symd
     #endif
 
     #ifdef SYMD_SSE
-                if constexpr (std::is_same_v<T, float>)
+                if constexpr (std::is_same_v<T, float> || std::is_same_v<T, symd::bfloat16>)
                 {
                     return _mm256_cmp_ps(_reg, other._reg, _CMP_NEQ_OQ);
                 }
@@ -715,7 +712,7 @@ namespace symd
             {
                 static_assert(!std::is_same_v<T, unsigned char>, "Comparison not supported for unsigned char. Convert to other type.");
 
-                if constexpr (std::is_same_v<T, float>)
+                if constexpr (std::is_same_v<T, float> || std::is_same_v<T, symd::bfloat16>)
                 {
     #ifdef SYMD_SSE
                     return _mm256_cmp_ps(_reg, other._reg, _CMP_LT_OQ);
@@ -751,7 +748,7 @@ namespace symd
             {
                 static_assert(!std::is_same_v<T, unsigned char>, "Comparison not supported for unsigned char. Convert to other type.");
 
-                if constexpr (std::is_same_v<T, float>)
+                if constexpr (std::is_same_v<T, float> || std::is_same_v<T, symd::bfloat16>)
                 {
     #ifdef SYMD_SSE
                     return _mm256_cmp_ps(_reg, other._reg, _CMP_GT_OQ);
@@ -787,7 +784,7 @@ namespace symd
             {
                 static_assert(!std::is_same_v<T, unsigned char>, "Comparison not supported for unsigned char. Convert to other type.");
 
-                if constexpr (std::is_same_v<T, float>)
+                if constexpr (std::is_same_v<T, float> || std::is_same_v<T, symd::bfloat16>)
                 {
     #ifdef SYMD_SSE
                     return _mm256_cmp_ps(_reg, other._reg, _CMP_LE_OQ);
@@ -817,7 +814,7 @@ namespace symd
             {
                 static_assert(!std::is_same_v<T, unsigned char>, "Comparison not supported for unsigned char. Convert to other type.");
 
-                if constexpr (std::is_same_v<T, float>)
+                if constexpr (std::is_same_v<T, float> || std::is_same_v<T, symd::bfloat16>)
                 {
     #ifdef SYMD_SSE
                     return _mm256_cmp_ps(_reg, other._reg, _CMP_GE_OQ);
@@ -850,7 +847,7 @@ namespace symd
 
             SymdRegister min(const SymdRegister<T>& other) const
             {
-                if constexpr (std::is_same_v<T, float>)
+                if constexpr (std::is_same_v<T, float> || std::is_same_v<T, symd::bfloat16>)
                 {
     #ifdef SYMD_SSE
                     return _mm256_min_ps(_reg, other._reg);
@@ -892,7 +889,7 @@ namespace symd
 
             SymdRegister max(const SymdRegister<T>& other) const
             {
-                if constexpr (std::is_same_v<T, float>)
+                if constexpr (std::is_same_v<T, float> || std::is_same_v<T, symd::bfloat16>)
                 {
     #ifdef SYMD_SSE
                     return _mm256_max_ps(_reg, other._reg);
@@ -934,7 +931,7 @@ namespace symd
 
             SymdRegister blend(const SymdRegister<T>& first, const SymdRegister<T>& sec) const
             {
-                if constexpr (std::is_same_v<T, float>)
+                if constexpr (std::is_same_v<T, float> || std::is_same_v<T, symd::bfloat16>)
                 {
     #ifdef SYMD_SSE
                     return _mm256_blendv_ps(sec._reg, first._reg, _reg);
@@ -977,7 +974,7 @@ namespace symd
 
             SymdRegister abs() const
             {
-                if constexpr (std::is_same_v<T, float>)
+                if constexpr (std::is_same_v<T, float> || std::is_same_v<T, symd::bfloat16>)
                 {
     #ifdef SYMD_SSE
                     return this->max(-*this);
@@ -1082,9 +1079,20 @@ namespace symd
             template <typename R>
             SymdRegister<R> convert_to() const
             {
-                if constexpr (std::is_same_v<T, float> && std::is_same_v<R, int>)
+                if constexpr (std::is_same_v<T, float> && std::is_same_v<R, symd::bfloat16>)
                 {
-                    // Float -> int ------------------------------------------------------------
+                    // Float -> bfloat16 ------------------------------------------------------------
+                    return _reg;
+                }
+                else if constexpr (std::is_same_v<T, symd::bfloat16> && std::is_same_v<R, float>)
+                {
+                    // bfloat16 -> Float ------------------------------------------------------------
+                    return _reg;
+                }
+                else if constexpr ((std::is_same_v<T, float> || std::is_same_v<T, symd::bfloat16>) 
+                    && std::is_same_v<R, int>)
+                {
+                    // Float,bfloat16 -> int ------------------------------------------------------------
     #ifdef SYMD_SSE
                     __m256i eightInts = _mm256_cvtps_epi32(_reg);
 
@@ -1096,14 +1104,16 @@ namespace symd
                     return vcvtq_s32_f32(_reg);
     #endif
                 }
-                else if constexpr (std::is_same_v<T, float> && std::is_same_v<R, unsigned char>)
+                else if constexpr ((std::is_same_v<T, float> || std::is_same_v<T, symd::bfloat16>) 
+                    && std::is_same_v<R, unsigned char>)
                 {
-                    // Float -> unsigned char ------------------------------------------------------------
+                    // Float,bfloat16 -> unsigned char ------------------------------------------------------------
                     return this->convert_to<int>().template convert_to<unsigned char>();
                 }
-                else if constexpr (std::is_same_v<T, float> && std::is_same_v<R, double>)
+                else if constexpr ((std::is_same_v<T, float> || std::is_same_v<T, symd::bfloat16>) 
+                    && std::is_same_v<R, double>)
                 {
-                    // Float -> Double ------------------------------------------------------------
+                    // Float,bfloat16 -> Double ------------------------------------------------------------
     #ifdef SYMD_SSE
                     __m128 hi = _mm256_extractf128_ps(_reg, 1);
                     __m128 lo = _mm256_castps256_ps128(_reg);
@@ -1117,9 +1127,10 @@ namespace symd
                     return typename UnderlyingRegister<double>::Type{ lo, hi };
     #endif
                 }
-                else if constexpr (std::is_same_v<T, double> && std::is_same_v<R, float>)
+                else if constexpr (std::is_same_v<T, double> && 
+                    (std::is_same_v<R, float> || std::is_same_v<R, symd::bfloat16>))
                 {
-                    // Double -> Float ------------------------------------------------------------
+                    // Double -> Float,bfloat16 ------------------------------------------------------------
     #ifdef SYMD_SSE
                     return _mm256_set_m128(_mm256_cvtpd_ps(_reg[1]), _mm256_cvtpd_ps(_reg[0]));
     #elif defined SYMD_NEON
@@ -1148,9 +1159,10 @@ namespace symd
                     // double -> unsigned char ------------------------------------------------------------
                     return this->convert_to<int>().template convert_to<unsigned char>();
                 }
-                else if constexpr (std::is_same_v<T, int> && std::is_same_v<R, float>)
+                else if constexpr (std::is_same_v<T, int> && 
+                    (std::is_same_v<R, float> || std::is_same_v<R, symd::bfloat16>))
                 {
-                    // Int -> float ------------------------------------------------------------
+                    // Int -> float,bfloat16 ------------------------------------------------------------
     #ifdef SYMD_SSE
                     __m256i fusedInt = _mm256_set_m128i(_reg[1], _reg[0]);
                     return _mm256_cvtepi32_ps(fusedInt);
@@ -1183,10 +1195,11 @@ namespace symd
     #endif
                     };
                 }
-                else if constexpr (std::is_same_v<T, unsigned char> && std::is_same_v<R, float>)
+                else if constexpr (std::is_same_v<T, unsigned char> && 
+                    (std::is_same_v<R, float> || std::is_same_v<R, symd::bfloat16>))
                 {
-                    // unsigned char -> float ------------------------------------------------------------
-                    return this->convert_to<int>().template convert_to<float>();
+                    // unsigned char -> float,bfloat16 ------------------------------------------------------------
+                    return this->convert_to<int>().template convert_to<float>()._reg;
                 }
                 else if constexpr (std::is_same_v<T, unsigned char> && std::is_same_v<R, int>)
                 {
@@ -1401,76 +1414,6 @@ namespace symd
             return SymdRegister<T>(first) != sec;
         }
     } // __internal__
-
-    namespace kernel
-    {
-        ///////////////////////////////////////////////////////////////////////////////////////////////////
-        // Blend functions
-        ///////////////////////////////////////////////////////////////////////////////////////////////////
-
-        /// <summary>
-        /// According to selector blends first and second parameters. Similar to ternary operator.
-        /// </summary>
-        template <typename T>
-        inline __internal__::SymdRegister<T> blend(
-            const __internal__::SymdRegister<T>& selector,
-            const __internal__::SymdRegister<T>& first,
-            const __internal__::SymdRegister<T>& second)
-        {
-            return selector.blend(first, second);
-        }
-
-
-        /// <summary>
-        /// According to selector chooses first or second parameters (ternary oprator).
-        /// </summary>
-        template <typename T>
-        inline T blend(bool selector, const T& first, const T& second)
-        {
-            static_assert(std::is_fundamental<T>(), "Here fundamental type is required");
-            return selector ? first : second;
-        }
-
-
-        ///////////////////////////////////////////////////////////////////////////////////////////////////
-        // Conversions
-        ///////////////////////////////////////////////////////////////////////////////////////////////////
-
-        /// <summary>
-        /// Converts data from one scalar format to another (float -> int).
-        /// </summary>
-        template <typename R, typename T>
-        R convert_to(T x)
-        {
-            // This overload is required to comply to SIMD standard to clamp when converting...
-
-            static_assert(std::is_fundamental<T>(), "Here fundamental type is required");
-            static_assert(std::is_fundamental<R>(), "Here fundamental type is required");
-
-            if (x > std::numeric_limits<R>::max())
-            {
-                return std::numeric_limits<R>::max();
-            }
-            else if (x < std::numeric_limits<R>::min())
-            {
-                return std::numeric_limits<R>::min();
-            }
-            else
-            {
-                return (R)x;
-            }
-        }
-
-        /// <summary>
-        /// Converts data in vector register from one scalar format to another (float -> int)
-        /// Returns new register with converted data.
-        /// </summary>
-        template <typename R, typename T>
-        __internal__::SymdRegister<R> convert_to(const __internal__::SymdRegister<T>& in)
-        {
-            return in.template convert_to<R>();
-        }
-    } // kernel
 } // symd
 
 

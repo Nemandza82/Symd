@@ -1,12 +1,14 @@
 #pragma once
-#include <array>
+
 
 namespace symd
 {
-    // #pragma pack (1)
     struct bfloat16
     {
+    private:
         short data;
+
+    public:        
 
         bfloat16()
         {
@@ -17,7 +19,7 @@ namespace symd
             data = ((short*)(&x))[1];
         }
 
-        float get_float() const
+        operator float() const
         {
             float res = 0.0f;
             ((short*)(&res))[1] = data;
@@ -26,7 +28,22 @@ namespace symd
 
         bfloat16 operator+(const bfloat16& other) const
         {
-            return bfloat16(this->get_float() + other.get_float());
+            return (float)(*this) + (float)other;
+        }
+
+        bfloat16 operator-(const bfloat16& other) const
+        {
+            return (float)(*this) - (float)other;
+        }
+
+        bfloat16 operator*(const bfloat16& other) const
+        {
+            return (float)(*this) * (float)other;
+        }
+
+        bfloat16 operator/(const bfloat16& other) const
+        {
+            return (float)(*this) / (float)other;
         }
     };
 }

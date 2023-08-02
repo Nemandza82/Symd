@@ -8,5 +8,6 @@
 #include "symd_register/symd_register_int_tests.h"
 #include "symd_register/symd_register_bfloat16_tests.h"
 #include "stencil_borders/stencil_borders_tests.h"
+#include "map/conversion_tests.h"
 #include "map/map_tests.h"
 #include "reduce/reduction_tests.h"
