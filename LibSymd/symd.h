@@ -5,6 +5,7 @@
 #include  <iostream>
 #include "dimensions.h"
 #include "internal/basic_views.h"
+#include "kernel/all_ops.h"
 #include "internal/sub_view.h"
 #include "internal/stencil_view.h"
 #include "internal/multi_output.h"

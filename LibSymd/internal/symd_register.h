@@ -929,6 +929,84 @@ namespace symd
                 }
             }
 
+            // Gets exponnent part of fp number
+            SymdRegister<int> fp_exp() const
+            {
+                if constexpr (std::is_same_v<T, float> || std::is_same_v<T, symd::bfloat16>)
+                {
+    #ifdef SYMD_SSE
+                    __m256i integer_repr = _mm256_castps_si256(_reg); // Cast to integer so we can use bit ops
+                    integer_repr = _mm256_slli_epi32(integer_repr, 1); // Shift left by one bit to align exp...
+                    integer_repr = _mm256_srli_epi32(integer_repr, 24); // Shift right by 24 bits to align exp to right...
+
+                    __m128i lo = _mm256_extractf128_si256(integer_repr, 0);
+                    __m128i hi = _mm256_extractf128_si256(integer_repr, 1);
+
+                    return SymdRegister<int>(typename UnderlyingRegister<int>::Type{ lo, hi }) - 126;
+
+    #elif defined SYMD_NEON
+                    static_assert(false, "fp_exp not implemented for neon.");
+    #endif
+                }
+    //             else if constexpr (std::is_same_v<T, double>)
+    //             {
+    // #ifdef SYMD_SSE
+    //                 static_assert(false, "fp_exp is not implemented for double");
+    //                 // __m256i integer_repr = _mm256_castps_si256(_reg); // Cast to integer so we can use bit ops
+    //                 // integer_repr = _mm256_sll_epi32(integer_repr, 1); // Shift left by one bit to align exp...
+    //                 // integer_repr = _mm256_srli_epi32(integer_repr, 24); // Shift right by 24 bits to align exp to right...
+
+    //                 // return SymdRegister<int>(integer_repr) - 127;
+    // #elif defined SYMD_NEON
+    //                     static_assert(false, "fp_exp not implemented for neon.");
+    // #endif
+    //             }
+    //             else
+    //             {
+    //                 static_assert(false, "fp_exp is not supported for integral types.");
+    //             }
+            }
+
+            SymdRegister<T> fp_2_pow_exp() const
+            {
+                if constexpr (std::is_same_v<T, float> || std::is_same_v<T, symd::bfloat16>)
+                {
+    #ifdef SYMD_SSE
+                    __m256i integer_repr = _mm256_castps_si256(_reg); // Cast to integer so we can use bit ops
+                    integer_repr = _mm256_srli_epi32(integer_repr, 23); // Shift right by 24 bits to align exp to right...
+                    integer_repr = _mm256_add_epi32(integer_repr, _mm256_set1_epi32(1)); // Add 1
+                    integer_repr = _mm256_slli_epi32(integer_repr, 23); 
+                    
+                    __m256 back_to_float = _mm256_castsi256_ps(integer_repr);
+                    // back_to_float = _mm256_mul_ps(back_to_float, _mm256_set1_ps(0.5));
+
+                    return back_to_float;
+
+
+    #elif defined SYMD_NEON
+                    static_assert(false, "fp_exp not implemented for neon.");
+    #endif
+                }
+    //             else if constexpr (std::is_same_v<T, double>)
+    //             {
+    // #ifdef SYMD_SSE
+    //                 static_assert(false, "fp_exp is not implemented for double");
+    //                 // __m256i integer_repr = _mm256_castps_si256(_reg); // Cast to integer so we can use bit ops
+    //                 // integer_repr = _mm256_sll_epi32(integer_repr, 1); // Shift left by one bit to align exp...
+    //                 // integer_repr = _mm256_srli_epi32(integer_repr, 24); // Shift right by 24 bits to align exp to right...
+
+    //                 // return SymdRegister<int>(integer_repr) - 127;
+    // #elif defined SYMD_NEON
+    //                     static_assert(false, "fp_exp not implemented for neon.");
+    // #endif
+    //             }
+    //             else
+    //             {
+    //                 static_assert(false, "fp_exp is not supported for integral types.");
+    //             }
+            }
+
+
             SymdRegister blend(const SymdRegister<T>& first, const SymdRegister<T>& sec) const
             {
                 if constexpr (std::is_same_v<T, float> || std::is_same_v<T, symd::bfloat16>)
@@ -1413,6 +1491,20 @@ namespace symd
         {
             return SymdRegister<T>(first) != sec;
         }
+
+        // Shifts 
+
+        // SymdRegister<int> operator<<(const SymdRegister<int>& first, int sec)
+        // {
+        //     return first << SymdRegister<T>(sec);
+        // }
+
+        // SymdRegister<int> operator>>(const SymdRegister<int>& first, int sec)
+        // {
+        //     return first >> SymdRegister<T>(sec);
+        // }
+
+
     } // __internal__
 } // symd
 
