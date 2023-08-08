@@ -942,7 +942,7 @@ namespace symd
                     __m128i lo = _mm256_extractf128_si256(integer_repr, 0);
                     __m128i hi = _mm256_extractf128_si256(integer_repr, 1);
 
-                    return SymdRegister<int>(typename UnderlyingRegister<int>::Type{ lo, hi }) - 126;
+                    return SymdRegister<int>(typename UnderlyingRegister<int>::Type{ lo, hi }) - 127;
 
     #elif defined SYMD_NEON
                     static_assert(false, "fp_exp not implemented for neon.");
@@ -974,7 +974,7 @@ namespace symd
     #ifdef SYMD_SSE
                     __m256i integer_repr = _mm256_castps_si256(_reg); // Cast to integer so we can use bit ops
                     integer_repr = _mm256_srli_epi32(integer_repr, 23); // Shift right by 24 bits to align exp to right...
-                    integer_repr = _mm256_add_epi32(integer_repr, _mm256_set1_epi32(1)); // Add 1
+                    //integer_repr = _mm256_add_epi32(integer_repr, _mm256_set1_epi32(1)); // Add 1
                     integer_repr = _mm256_slli_epi32(integer_repr, 23); 
                     
                     __m256 back_to_float = _mm256_castsi256_ps(integer_repr);

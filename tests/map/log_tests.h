@@ -29,7 +29,7 @@ namespace tests
         {
             int int_exp;
             frexp(input[i], &int_exp);
-            float std_result = pow(2, int_exp);
+            float std_result = pow(2, int_exp-1);
 
             if (input[i] == 0)
                 std_result = 0;
@@ -60,11 +60,12 @@ namespace tests
         {
             int int_exp;
             frexp(input[i], &int_exp);
+            int_exp -= 1;
 
             if (input[i] == 0)
             {
-                REQUIRE(output[i] == -126);
-                REQUIRE(symd::kernel::fp_exp(input[i]) == -126);
+                REQUIRE(output[i] == -127);
+                REQUIRE(symd::kernel::fp_exp(input[i]) == -127);
             }
             else
             {
@@ -77,7 +78,7 @@ namespace tests
 
     TEST_CASE("Mapping log")
     {
-        std::vector<float> input = { 0, 1e-38, 1e-37, 1e-36, 
+        std::vector<float> input = { 0, 1e-45, 1e-44, 1e-43, 1e-42, 1e-41, 1e-40, 1e-39, 1e-38, 1e-37, 1e-36, 
             0.1, 0.2, 0.5, 1, 2, 4, 8, 16, 32, 33, 63.1, 64, 127, 128, 129, 1e25, 1e36 };
 
         std::vector<float> output(input.size());
@@ -109,12 +110,18 @@ namespace tests
             else
             {
                 auto std_result = logf(input[i]);
+
+                // std::cout << "input: " << input[i] 
+                //     << ", fp_2_pow_exp " << symd::kernel::fp_2_pow_exp(input[i])
+                //     << ", fp_exp " << symd::kernel::fp_exp(input[i])
+                //     << ", symd out: " << output[i]
+                //     << ", std_result: " << std_result << std::endl;
                 
                 // Results need to be close
-                REQUIRE(std::abs(output[i] - std_result) <= 2e-4);
+                REQUIRE(std::abs(output[i] - std_result) <= 1e-4);
 
                 // Results need to be close
-                REQUIRE(std::abs(symd_scalar_result - std_result) <= 2e-4);
+                REQUIRE(std::abs(symd_scalar_result - std_result) <= 1e-4);
             }
         }
     }

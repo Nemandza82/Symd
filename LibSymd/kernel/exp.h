@@ -27,7 +27,7 @@ namespace symd::kernel
     int fp_exp(float x)
     {
         unsigned int as_int = *((unsigned int*)(&x));
-        return ((as_int << 1) >> 24) - 126;
+        return ((as_int << 1) >> 24) - 127;
     }
 
     __internal__::SymdRegister<int> fp_exp(const __internal__::SymdRegister<float>& x)
@@ -41,7 +41,7 @@ namespace symd::kernel
             return 0;
 
         unsigned int as_int = *((unsigned int*)(&x));
-        as_int = (as_int >> 23) + 1;
+        as_int = (as_int >> 23);
         as_int = as_int << 23;
 
         return *((float*)(&as_int));
