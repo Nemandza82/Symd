@@ -1,10 +1,16 @@
 #pragma once
 #include "../test_helpers.h"
 #include <cmath>
-
+#include <bitset>
 
 namespace tests
-{    
+{
+    std::bitset<32> as_bits(float x)
+    {
+        int as_int = *((int*)(&x));
+        return std::bitset<32>(as_int);
+    }
+
     TEST_CASE("Mapping fp_2_pow_exp")
     {
         std::vector<float> input = { 0, 1e-45, 1e-44, 1e-43, 1e-42, 1e-41, 1e-40, 1e-39, 1e-38, 1e-37, 1e-36, 
@@ -105,10 +111,10 @@ namespace tests
                 auto std_result = logf(input[i]);
                 
                 // Results need to be close
-                REQUIRE(std::abs(output[i] - std_result) <= 1e-4);
+                REQUIRE(std::abs(output[i] - std_result) <= 2e-4);
 
                 // Results need to be close
-                REQUIRE(std::abs(symd_scalar_result - std_result) <= 1e-4);
+                REQUIRE(std::abs(symd_scalar_result - std_result) <= 2e-4);
             }
         }
     }

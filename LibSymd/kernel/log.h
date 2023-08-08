@@ -8,7 +8,7 @@ namespace symd::kernel
     // log(2) = 0.30102999566
     // a in range [0, 1]
     // z in range [-1, 0]
-    // log(1 + z) = z - z^2/2 + z^3/3
+    // log(1 + z) = z - z^2/2 + z^3/3 ...
     template <typename T> 
     T log(T x)
     {
@@ -17,21 +17,32 @@ namespace symd::kernel
         auto a = x / two_to_n;
         auto z = a - 1;
 
-        auto z2 = z * z;
-        auto z3 = z2 * z;
-        auto z4 = z2 * z2;
-        auto z5 = z4 * z;
+        auto zp = z;
+        auto log_1_plus_z = zp;
 
-        auto log_1_plus_z = z 
-            - (z2 / 2)
-            + (z3 / 3)
-            - (z4 / 4) 
-            + (z4 * z) / 5
-            - (z4 * z2) / 6
-            + (z4 * z3) / 7
-            - (z4 * z4) / 8
-            + (z5 * z4) / 9
-            - (z5 * z5) / 10;
+        zp *= z;
+        log_1_plus_z -= zp * 0.5f;
+
+        zp *= z;
+        log_1_plus_z += zp * 0.333333333f;
+
+        zp *= z;
+        log_1_plus_z -= zp * 0.25f;
+
+        zp *= z;
+        log_1_plus_z += zp * 0.2f;
+
+        zp *= z;
+        log_1_plus_z -= zp * 0.16666666666f;
+
+        zp *= z;
+        log_1_plus_z += zp * 0.14285714285f;
+
+        zp *= z;
+        log_1_plus_z -= zp * 0.125f;
+
+        zp *= z;
+        log_1_plus_z += zp * 0.11111111111f;
 
         auto result = log_1_plus_z + convert_to<float>(n) * 0.69314718056f;
         return blend(x == 1.0f, 0.0f, result);
