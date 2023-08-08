@@ -88,17 +88,32 @@ namespace symd::kernel
         }
 
         // Calculates 2^n with integer exponent by bit ops to set exponent field of float.
-        float fastpow2(int n)
+        template <typename T>
+        T fastpow2(int n)
         {
-            n = (n + 127) << 23; // Move exponnent to right place
-            float as_float = *((float*)(&n));
-            return as_float;
+            if constexpr (std::is_same_v<T, float>)
+            {
+                n = (n + 127) << 23; // Move exponnent to right place
+                float as_float = *((float*)(&n));
+                return as_float;
+            }
+            else if constexpr (std::is_same_v<T, symd::bfloat16>)
+            {
+                return fastpow2<float>(n);
+            }
+            else if constexpr (std::is_same_v<T, double>)
+            {
+                int64_t n64 = n + 1023; // Add bias to exponent
+                n64 = n64 << 52; // Move exponnent to right place
+                return *((double*)(&n64));
+            }
         }
 
         // Calculates 2^n with integer exponent by bit ops to set exponent field of float.
-        __internal__::SymdRegister<float> fastpow2(const __internal__::SymdRegister<int>& n)
+        template <typename T>
+        __internal__::SymdRegister<T> fastpow2(const __internal__::SymdRegister<int>& n)
         {
-            return __internal__::SymdRegister<float>::fastpow2(n);
+            return __internal__::SymdRegister<T>::fastpow2(n);
         }
 
         template<typename T>
@@ -111,7 +126,7 @@ namespace symd::kernel
             auto diff = x - convert_to<float>(n);
 
             // 2^x = 2^(n+diff) = 2^n * 2^diff = 2^n * e^(diff * 0.69314718056)
-            return fastpow2(n) * exp_teylor(diff * 0.69314718056f);
+            return fastpow2<float>(n) * exp_teylor(diff * 0.69314718056f);
         }
     }
 

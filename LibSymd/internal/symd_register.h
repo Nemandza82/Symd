@@ -984,13 +984,32 @@ namespace symd
             // Calculates 2^n with bit ops. By setting exp to float in bits.
             static SymdRegister<T> fastpow2(const SymdRegister<int>& n)
             {
-                static_assert(std::is_same_v<T, float> || std::is_same_v<T, symd::bfloat16>,
-                   "fastpow2 is only supported for float and bfloat16 for now.");
+                static_assert(
+                    std::is_same_v<T, float> || 
+                    std::is_same_v<T, symd::bfloat16> ||
+                    std::is_same_v<T, double>,
+                   "fastpow2 is only supported for floating point type.");
 
                 if constexpr (std::is_same_v<T, float> || std::is_same_v<T, symd::bfloat16>)
                 {
                     SymdRegister<int> integer_exp = (n + 127) << 23;
                     return _mm256_castsi256_ps(integer_exp._reg);
+                }
+                else if constexpr (std::is_same_v<T, double>)
+                {
+                    // https://en.wikipedia.org/wiki/Double-precision_floating-point_format
+                    SymdRegister<int> integer_exp = n + 1023;
+
+                    __m256i lo_64 = _mm256_cvtepi32_epi64(_mm256_extracti128_si256(integer_exp._reg, 0));
+                    __m256i hi_64 = _mm256_cvtepi32_epi64(_mm256_extracti128_si256(integer_exp._reg, 1));
+
+                    lo_64 = _mm256_slli_epi64(lo_64, 52); // Shift to right by 52 to allign exp to right place in double format
+                    hi_64 = _mm256_slli_epi64(hi_64, 52); // Shift to right by 52 to allign exp to right place in double format
+
+                    return typename UnderlyingRegister<T>::Type{
+                        _mm256_castsi256_pd(lo_64),
+                        _mm256_castsi256_pd(hi_64)
+                    };
                 }
             }
 
