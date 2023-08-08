@@ -115,7 +115,8 @@ namespace tests
                 //     << ", fp_2_pow_exp " << symd::kernel::fp_2_pow_exp(input[i])
                 //     << ", fp_exp " << symd::kernel::fp_exp(input[i])
                 //     << ", symd out: " << output[i]
-                //     << ", std_result: " << std_result << std::endl;
+                //     << ", std_result: " << std_result
+                //     << ", err: " <<  std::abs(output[i] - std_result) << std::endl;
                 
                 // Results need to be close
                 REQUIRE(std::abs(output[i] - std_result) <= 1e-4);
