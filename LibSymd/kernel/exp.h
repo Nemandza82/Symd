@@ -58,28 +58,28 @@ namespace symd::kernel
             return __internal_exp::pow_int<T, N>(1.0f + x / (float)N);
         }
 
-        template <typename T>
+        template<typename DType, typename T>
         T exp_teylor(T x)
         {
             auto term = x;
         
-            auto eValue = term + 1.0f;
-            term = term * x * 0.5f;
+            auto eValue = term + (DType)1.0;
+            term = term * x * (DType)0.5;
 
             eValue += term;
-            term = term * x * 0.33333333333f;
+            term = term * x * (DType)0.33333333333;
 
             eValue += term;
-            term = term * x * 0.25f;
+            term = term * x * (DType)0.25;
 
             eValue += term;
-            term = term * x * 0.2f;
+            term = term * x * (DType)0.2;
 
             eValue += term;
-            term = term * x * 0.16666666666f;
+            term = term * x * (DType)0.16666666666;
 
             eValue += term;
-            term = term * x * 0.14285714285f;
+            term = term * x * (DType)0.14285714285;
 
             // eValue += term;
             // term = term * x / 8;
@@ -116,17 +116,29 @@ namespace symd::kernel
             return __internal__::SymdRegister<T>::fastpow2(n);
         }
 
-        template<typename T>
-        T fastpow2f(T x)
+        template<typename DType, typename T>
+        T fastpow2f_impl(T x)
         {
             // Convert to int to calculate integer part of input x
             auto n = convert_to<int>(x);
             
             // Calculate difference 
-            auto diff = x - convert_to<float>(n);
+            auto diff = x - convert_to<DType>(n);
 
             // 2^x = 2^(n+diff) = 2^n * 2^diff = 2^n * e^(diff * 0.69314718056)
-            return fastpow2<float>(n) * exp_teylor(diff * 0.69314718056f);
+            return fastpow2<DType>(n) * exp_teylor<DType>(diff * (DType)0.69314718056);
+        }
+
+        template<typename T>
+        T fastpow2f(T x)
+        {
+            return fastpow2f_impl<T, T>(x);
+        }
+
+        template <typename T>
+        __internal__::SymdRegister<T> fastpow2f(const __internal__::SymdRegister<T>& x)
+        {
+            return fastpow2f_impl<T, __internal__::SymdRegister<T>>(x);
         }
     }
 

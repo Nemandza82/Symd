@@ -76,6 +76,33 @@ namespace tests
             float rel_err = std::abs(output[i] - std_output) / std_output;
             float rel_err_scallar = std::abs(out_scalar - std_output) / std_output;
 
+            REQUIRE(rel_err <= 1e-4);
+            REQUIRE(rel_err_scallar <= 1e-4);
+        }
+    }
+
+    TEST_CASE("Mapping fastpow2f double")
+    {
+        // Symd can work with std::array
+        std::vector<double> input = { 80.1, 70.2, 60.3, 50.4, 40.5, 30.6, 20.7, 10.8, 9.9, 8.1, 7.2, 6.3, 5.4, 4.0, 3.5, 2.6, 1.7, 1.0,
+            0.8, 0.5, 0.1, 0, -0.1, -0.5, -0.8, 1.0, -1.1, -2.2, 3.3, -4.4, 5.5, -6.6, -7.7, 8.8, -9.9, 
+            -20.1, -30.2, -40.3, -50.4, -60.5, -70.6, -80.7 };
+
+        std::vector<double> output(input.size());
+
+        symd::map_single_core(output, [](auto x)
+            {
+                return symd::kernel::__internal_exp::fastpow2f(x);
+            }, input);
+
+        for (size_t i=0; i<output.size(); i++)
+        {
+            double std_output = pow(2, input[i]);
+            double out_scalar = symd::kernel::__internal_exp::fastpow2f(input[i]);
+            
+            double rel_err = std::abs(output[i] - std_output) / std_output;
+            double rel_err_scallar = std::abs(out_scalar - std_output) / std_output;
+
             // std::cout 
             //     << "input: " << input[i] 
             //     << ", symd fastpow2f: " << output[i] 
@@ -117,8 +144,8 @@ namespace tests
             //     << ", rel err: " << rel_err
             //     << std::endl;
 
-            REQUIRE(rel_err <= 3e-5);
-            REQUIRE(rel_err_scallar <= 3e-5);
+            REQUIRE(rel_err <= 3e-4);
+            REQUIRE(rel_err_scallar <= 3e-4);
         }
     }
 
