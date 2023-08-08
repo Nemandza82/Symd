@@ -82,7 +82,7 @@ namespace symd
         public:
 
     #ifdef SYMD_SSE
-            using Type = std::array<__m128i, 2>;
+            using Type = __m256i;
     #elif defined SYMD_NEON
             using Type = int32x4_t; // Neon has 4 elements
     #endif
@@ -172,15 +172,6 @@ namespace symd
                     _reg[0] = other[0];
                     _reg[1] = other[1];
                 }
-                else if constexpr (std::is_same_v<T, int>)
-                {
-    #ifdef SYMD_SSE
-                    _reg[0] = other[0];
-                    _reg[1] = other[1];
-    #elif defined SYMD_NEON
-                    _reg = other;
-    #endif
-                }
                 else
                 {
                     _reg = other;
@@ -221,8 +212,7 @@ namespace symd
                 else if constexpr (std::is_same_v<T, int>)
                 {
     #ifdef SYMD_SSE
-                    _reg[0] = _mm_loadu_si128((__m128i*)ptr);
-                    _reg[1] = _mm_loadu_si128((__m128i*)(ptr + 4));
+                    _reg = _mm256_loadu_si256((__m256i*)ptr);
     #elif defined SYMD_NEON
                     _reg = vld1q_s32(ptr);
     #endif
@@ -271,8 +261,7 @@ namespace symd
                 else if constexpr (std::is_same_v<T, int>)
                 {
     #ifdef SYMD_SSE
-                    _reg[0] = _mm_set1_epi32(other);
-                    _reg[1] = _mm_set1_epi32(other);
+                    _reg = _mm256_set1_epi32(other);
     #elif defined SYMD_NEON
                     _reg = vdupq_n_s32(x);
     #endif
@@ -316,9 +305,7 @@ namespace symd
                 else if constexpr (std::is_same_v<T, int>)
                 {
     #ifdef SYMD_SSE
-                    return SymdRegister(typename UnderlyingRegister<T>::Type {
-                        _mm_add_epi32(_reg[0], other._reg[0]),
-                        _mm_add_epi32(_reg[1], other._reg[1]) });
+                    return _mm256_add_epi32(_reg, other._reg);
     #elif defined SYMD_NEON
                     return SymdRegister(vaddq_s32(_reg, other._reg));
     #endif
@@ -358,9 +345,7 @@ namespace symd
                 else if constexpr (std::is_same_v<T, int>)
                 {
     #ifdef SYMD_SSE
-                    return typename UnderlyingRegister<T>::Type{
-                        _mm_sub_epi32(_reg[0], other._reg[0]),
-                        _mm_sub_epi32(_reg[1], other._reg[1]) };
+                    return _mm256_sub_epi32(_reg, other._reg);
     #elif defined SYMD_NEON
                     return vsubq_s32(_reg, other._reg);
     #endif
@@ -402,9 +387,7 @@ namespace symd
                 else if constexpr (std::is_same_v<T, int>)
                 {
     #ifdef SYMD_SSE
-                    return typename UnderlyingRegister<T>::Type {
-                        _mm_mullo_epi32(_reg[0], other._reg[0]),
-                        _mm_mullo_epi32(_reg[1], other._reg[1]) };
+                    return _mm256_mullo_epi32(_reg, other._reg);
     #elif defined SYMD_NEON
                     return vmulq_s32(_reg, other._reg);
     #endif
@@ -463,9 +446,7 @@ namespace symd
                 else if constexpr (std::is_same_v<T, int>)
                 {
     #ifdef SYMD_SSE
-                    return typename UnderlyingRegister<T>::Type{
-                        _mm_and_si128(_reg[0], other._reg[0]),
-                        _mm_and_si128(_reg[1], other._reg[1]) };
+                    return _mm256_and_si256(_reg, other._reg);
     #elif defined SYMD_NEON
                     return vandq_s32(_reg, other._reg),
     #endif
@@ -505,9 +486,7 @@ namespace symd
                 else if constexpr (std::is_same_v<T, int>)
                 {
     #ifdef SYMD_SSE
-                    return typename UnderlyingRegister<T>::Type{
-                        _mm_or_si128(_reg[0], other._reg[0]),
-                        _mm_or_si128(_reg[1], other._reg[1]) };
+                    return _mm256_or_si256(_reg, other._reg);
     #elif defined SYMD_NEON
                     return vorrq_s32(_reg, other._reg);
     #endif
@@ -547,9 +526,7 @@ namespace symd
                 else if constexpr (std::is_same_v<T, int>)
                 {
     #ifdef SYMD_SSE
-                    return typename UnderlyingRegister<T>::Type {
-                        _mm_xor_si128(_reg[0], other._reg[0]),
-                        _mm_xor_si128(_reg[1], other._reg[1]) };
+                    return _mm256_xor_si256(_reg, other._reg);
     #elif defined SYMD_NEON
                     return veorq_s32(_reg, other._reg);
     #endif
@@ -590,9 +567,7 @@ namespace symd
                 else if constexpr (std::is_same_v<T, int>)
                 {
     #ifdef SYMD_SSE
-                    return typename UnderlyingRegister<T>::Type {
-                        _mm_andnot_si128(_reg[0], _mm_set1_epi32(-1)),
-                        _mm_andnot_si128(_reg[1], _mm_set1_epi32(-1)) };
+                    return _mm256_andnot_si256(_reg, _mm256_set1_epi32(-1));
     #elif defined SYMD_NEON
                     return vmvnq_s32(_reg);
     #endif
@@ -631,9 +606,7 @@ namespace symd
                 if constexpr (std::is_same_v<T, int>)
                 {
     #ifdef SYMD_SSE
-                    return typename UnderlyingRegister<T>::Type {
-                        _mm_srli_epi32(_reg[0], num_bits),
-                        _mm_srli_epi32(_reg[1], num_bits) };
+                    return _mm256_srli_epi32(_reg, num_bits);
     #elif defined SYMD_NEON
     #endif
                 }
@@ -648,9 +621,7 @@ namespace symd
                 if constexpr (std::is_same_v<T, int>)
                 {
     #ifdef SYMD_SSE
-                    return typename UnderlyingRegister<T>::Type {
-                        _mm_slli_epi32(_reg[0], num_bits),
-                        _mm_slli_epi32(_reg[1], num_bits) };
+                    return _mm256_slli_epi32(_reg, num_bits);
     #elif defined SYMD_NEON
     #endif
                 }
@@ -684,9 +655,7 @@ namespace symd
                 else if constexpr (std::is_same_v<T, int>)
                 {
     #ifdef SYMD_SSE
-                    return typename UnderlyingRegister<T>::Type {
-                        _mm_cmpeq_epi32(_reg[0], other._reg[0]),
-                        _mm_cmpeq_epi32(_reg[1], other._reg[1]) };
+                    return _mm256_cmpeq_epi32(_reg, other._reg);
     #elif defined SYMD_NEON
                     return vreinterpretq_s32_u32(vceqq_s32(_reg, other._reg));
     #endif
@@ -757,9 +726,7 @@ namespace symd
                 else if constexpr (std::is_same_v<T, int>)
                 {
     #ifdef SYMD_SSE
-                    return typename UnderlyingRegister<T>::Type {
-                        _mm_cmplt_epi32(_reg[0], other._reg[0]),
-                        _mm_cmplt_epi32(_reg[1], other._reg[1]) };
+                    return _mm256_cmpgt_epi32(other._reg, _reg);
     #elif defined SYMD_NEON
                     return vreinterpretq_s32_u32(vcltq_s32(_reg, other._reg));
     #endif
@@ -793,9 +760,7 @@ namespace symd
                 else if constexpr (std::is_same_v<T, int>)
                 {
     #ifdef SYMD_SSE
-                    return typename UnderlyingRegister<T>::Type {
-                        _mm_cmpgt_epi32(_reg[0], other._reg[0]),
-                        _mm_cmpgt_epi32(_reg[1], other._reg[1]) };
+                    return _mm256_cmpgt_epi32(_reg, other._reg);
     #elif defined SYMD_NEON
                     return vreinterpretq_s32_u32(vcgtq_s32(_reg, other._reg));
     #endif
@@ -892,9 +857,7 @@ namespace symd
                 else if constexpr (std::is_same_v<T, int>)
                 {
     #ifdef SYMD_SSE
-                    return typename UnderlyingRegister<T>::Type {
-                        _mm_min_epi32(_reg[0], other._reg[0]),
-                        _mm_min_epi32(_reg[1], other._reg[1]) };
+                    return _mm256_min_epi32(_reg, other._reg);
     #elif defined SYMD_NEON
                     return vminq_s32(_reg, other._reg);
     #endif
@@ -934,9 +897,7 @@ namespace symd
                 else if constexpr (std::is_same_v<T, int>)
                 {
     #ifdef SYMD_SSE
-                    return typename UnderlyingRegister<T>::Type {
-                        _mm_max_epi32(_reg[0], other._reg[0]),
-                        _mm_max_epi32(_reg[1], other._reg[1]) };
+                    return _mm256_max_epi32(_reg, other._reg);
     #elif defined SYMD_NEON
                     return vmaxq_s32(_reg, other._reg);
     #endif
@@ -975,11 +936,8 @@ namespace symd
                     __m256i integer_repr = _mm256_castps_si256(_reg); // Cast to integer so we can use bit ops
                     integer_repr = _mm256_slli_epi32(integer_repr, 1); // Shift left by one bit to align exp...
                     integer_repr = _mm256_srli_epi32(integer_repr, 24); // Shift right by 24 bits to align exp to right...
-
-                    __m128i lo = _mm256_extractf128_si256(integer_repr, 0);
-                    __m128i hi = _mm256_extractf128_si256(integer_repr, 1);
-
-                    return SymdRegister<int>(typename UnderlyingRegister<int>::Type{ lo, hi }) - 127;
+                    integer_repr = _mm256_sub_epi32(integer_repr, _mm256_set1_epi32(127));
+                    return integer_repr;
 
     #elif defined SYMD_NEON
                     static_assert(false, "fp_exp not implemented for neon.");
@@ -1032,8 +990,7 @@ namespace symd
                 if constexpr (std::is_same_v<T, float> || std::is_same_v<T, symd::bfloat16>)
                 {
                     SymdRegister<int> integer_exp = (n + 127) << 23;
-                    __m256i merged_int = _mm256_set_m128i(integer_exp._reg[1], integer_exp._reg[0]);
-                    return _mm256_castsi256_ps(merged_int);
+                    return _mm256_castsi256_ps(integer_exp._reg);
                 }
             }
 
@@ -1051,9 +1008,7 @@ namespace symd
                 else if constexpr (std::is_same_v<T, int>)
                 {
     #ifdef SYMD_SSE
-                    return typename UnderlyingRegister<T>::Type {
-                        _mm_blendv_epi8(sec._reg[0], first._reg[0], _reg[0]),
-                        _mm_blendv_epi8(sec._reg[1], first._reg[1], _reg[1]) };
+                    return _mm256_blendv_epi8(sec._reg, first._reg, _reg);
     #elif defined SYMD_NEON
                     return vbslq_s32(vreinterpretq_u32_s32(_reg[0]), first._reg[0], sec._reg[0]);
     #endif
@@ -1094,10 +1049,7 @@ namespace symd
                 else if constexpr (std::is_same_v<T, int>)
                 {
     #ifdef SYMD_SSE
-                    return typename UnderlyingRegister<T>::Type{
-                        _mm_abs_epi32(_reg[0]),
-                        _mm_abs_epi32(_reg[1]),
-                    };
+                    return _mm256_abs_epi32(_reg);
     #elif defined SYMD_NEON
                     return vabsq_s32(_reg);
     #endif
@@ -1149,8 +1101,7 @@ namespace symd
                 else if constexpr (std::is_same_v<T, int>)
                 {
     #ifdef SYMD_SSE
-                    _mm_storeu_si128((__m128i*)dst + 0, _reg[0]);
-                    _mm_storeu_si128((__m128i*)dst + 1, _reg[1]);
+                    _mm256_storeu_si256((__m256i*)dst, _reg);
     #elif defined SYMD_NEON
                     vst1q_s32(dst, _reg);
     #endif
@@ -1203,12 +1154,7 @@ namespace symd
                 {
                     // Float,bfloat16 -> int ------------------------------------------------------------
     #ifdef SYMD_SSE
-                    __m256i eightInts = _mm256_cvtps_epi32(_reg);
-
-                    __m128i lo = _mm256_extractf128_si256(eightInts, 0);
-                    __m128i hi = _mm256_extractf128_si256(eightInts, 1);
-
-                    return typename UnderlyingRegister<int>::Type{ lo, hi };
+                    return _mm256_cvtps_epi32(_reg);
     #elif defined SYMD_NEON
                     return vcvtq_s32_f32(_reg);
     #endif
@@ -1251,10 +1197,10 @@ namespace symd
                 {
                     // Double -> int ------------------------------------------------------------
     #ifdef SYMD_SSE
-                    return typename UnderlyingRegister<double>::Type{
-                        _mm256_cvtpd_epi32(_reg[0]),
-                        _mm256_cvtpd_epi32(_reg[1])
-                    };
+                    __m128i lo = _mm256_cvtpd_epi32(_reg[0]);
+                    __m128i hi = _mm256_cvtpd_epi32(_reg[1]);
+
+                    return _mm256_set_m128i(hi, lo);
     #elif defined SYMD_NEON
 
                     auto lo = vcvt_s32_f32(vcvt_f32_f64(_reg[0]));
@@ -1273,8 +1219,7 @@ namespace symd
                 {
                     // Int -> float,bfloat16 ------------------------------------------------------------
     #ifdef SYMD_SSE
-                    __m256i fusedInt = _mm256_set_m128i(_reg[1], _reg[0]);
-                    return _mm256_cvtepi32_ps(fusedInt);
+                    return _mm256_cvtepi32_ps(_reg);
     #elif defined SYMD_NEON
                     return  avcvtq_f32_s32(_reg);
     #endif
@@ -1283,7 +1228,10 @@ namespace symd
                 {
                     // Int -> unsigned char ------------------------------------------------------------
     #ifdef SYMD_SSE
-                    __m128i _8shorts = _mm_packs_epi32(_reg[0], _reg[1]);
+                    __m128i lo = _mm256_extractf128_si256(_reg, 0);
+                    __m128i hi = _mm256_extractf128_si256(_reg, 1);
+
+                    __m128i _8shorts = _mm_packs_epi32(lo, hi);
                     return _mm_packus_epi16(_8shorts, _8shorts);
     #elif defined SYMD_NEON
                     uint16x4_t hi = vqmovun_s32(_reg[0]);
@@ -1296,8 +1244,8 @@ namespace symd
                     // Int -> double ------------------------------------------------------------
                     return typename UnderlyingRegister<double>::Type {
     #ifdef SYMD_SSE
-                        _mm256_cvtepi32_pd(_reg[0]),
-                        _mm256_cvtepi32_pd(_reg[1])
+                        _mm256_cvtepi32_pd(_mm256_extractf128_si256(_reg, 0)),
+                        _mm256_cvtepi32_pd(_mm256_extractf128_si256(_reg, 1))
     #elif defined SYMD_NEON
                         vcvtq_f64_s64(vmovl_s32(vget_low_s32(_reg))),
                         vcvtq_f64_s64(vmovl_s32(vget_high_s32(_reg)))
@@ -1317,10 +1265,10 @@ namespace symd
                     __m128i zeros = _mm_setzero_si128();
                     __m128i shorts = _mm_cvtepu8_epi16(_reg);
 
-                    return typename UnderlyingRegister<int>::Type{
-                        _mm_unpacklo_epi16(shorts, zeros),
-                        _mm_unpackhi_epi16(shorts, zeros)
-                    };
+                    __m128i lo = _mm_unpacklo_epi16(shorts, zeros);
+                    __m128i hi = _mm_unpackhi_epi16(shorts, zeros);
+
+                    return _mm256_set_m128i(hi, lo);
     #elif defined SYMD_NEON
                     uint16x8_t shorts = vmovl_u8(_reg);
                     uint32x4_t ints = vmovl_u16(vget_low_u16(shorts));
