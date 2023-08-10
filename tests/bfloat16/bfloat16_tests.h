@@ -39,7 +39,7 @@ namespace tests
         REQUIRE(ptr1 - ptr0 == 2);
     }
 
-    TEST_CASE("Mapping bfloat 16")
+    TEST_CASE("Mapping bfloat16")
     {
         std::vector<symd::bfloat16> input_1 = { 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f };
         std::vector<symd::bfloat16> input_2 = { 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f };
@@ -58,6 +58,18 @@ namespace tests
         REQUIRE((float)output[7] == 16.0f);
 
         REQUIRE((float)output[8] == 18.0f);
+    }
+
+    TEST_CASE("Mapping bfloat16 abs")
+    {
+        std::vector<symd::bfloat16> input = { -5.0f, -1.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f };
+        std::vector<symd::bfloat16> output(input.size());
+
+        symd::map_single_core(output, [](auto x) { return std::abs(x); }, input);
+
+        for (size_t i = 0; i < input.size(); i++)
+            REQUIRE((float)output[i] == std::abs((float)input[i]));
+
     }
 
     TEST_CASE("Mapping exec time bfloat16")

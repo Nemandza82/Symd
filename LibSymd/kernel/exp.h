@@ -146,8 +146,6 @@ namespace symd::kernel
     T exp(T x)
     {
         // e^x = 2^(x / 0.69314718056f)
-        return __internal_exp::fastpow2f(x / 0.69314718056);
-
-        //return __internal_exp::exp_limes(x);
+        return __internal_exp::fastpow2f(x / (T)0.69314718056);
     }
 }

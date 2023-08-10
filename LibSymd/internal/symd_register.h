@@ -148,6 +148,54 @@ namespace symd
         template <typename T>
         class SymdRegister
         {
+            void construct_from_scalar(T other)
+            {
+                assert_supported_type<T>();
+
+                if constexpr (std::is_same_v<T, float>)
+                {
+    #ifdef SYMD_SSE
+                    _reg = _mm256_set1_ps(other);
+    #elif defined SYMD_NEON
+                    _reg = vdupq_n_f32(other);
+    #endif
+                }
+                else if constexpr (std::is_same_v<T, symd::bfloat16>)
+                {
+    #ifdef SYMD_SSE
+                    _reg = _mm256_set1_ps((float)other);
+    #elif defined SYMD_NEON
+                    _reg = vld1q_f32((float)other);
+    #endif
+                }
+                else if constexpr (std::is_same_v<T, int>)
+                {
+    #ifdef SYMD_SSE
+                    _reg = _mm256_set1_epi32(other);
+    #elif defined SYMD_NEON
+                    _reg = vdupq_n_s32(x);
+    #endif
+                }
+                else if constexpr (std::is_same_v<T, unsigned char>)
+                {
+    #ifdef SYMD_SSE
+                    _reg = _mm_set1_epi8(other);
+    #elif defined SYMD_NEON
+                    _reg = vdup_n_u8(other);
+    #endif
+                }
+                else if constexpr (std::is_same_v<T, double>)
+                {
+    #ifdef SYMD_SSE
+                    _reg[0] = _mm256_set1_pd(other);
+
+    #elif defined SYMD_NEON
+                    _reg[0] = vdupq_n_f64(other);
+    #endif
+                    _reg[1] = _reg[0];
+                }
+            }
+
         public:
 
             union
@@ -237,53 +285,34 @@ namespace symd
                 }
             }
 
-            // Costructs register with all elements equal to other
-            SymdRegister(T other)
+            // Constructs register with all elements equal to other
+            SymdRegister(float other)
             {
-                assert_supported_type<T>();
+                construct_from_scalar((T)other);
+            }
 
-                if constexpr (std::is_same_v<T, float>)
-                {
-    #ifdef SYMD_SSE
-                    _reg = _mm256_set1_ps(other);
-    #elif defined SYMD_NEON
-                    _reg = vdupq_n_f32(other);
-    #endif
-                }
-                else if constexpr (std::is_same_v<T, symd::bfloat16>)
-                {
-    #ifdef SYMD_SSE
-                    _reg = _mm256_set1_ps((float)other);
-    #elif defined SYMD_NEON
-                    _reg = vld1q_f32((float)other);
-    #endif
-                }
-                else if constexpr (std::is_same_v<T, int>)
-                {
-    #ifdef SYMD_SSE
-                    _reg = _mm256_set1_epi32(other);
-    #elif defined SYMD_NEON
-                    _reg = vdupq_n_s32(x);
-    #endif
-                }
-                else if constexpr (std::is_same_v<T, unsigned char>)
-                {
-    #ifdef SYMD_SSE
-                    _reg = _mm_set1_epi8(other);
-    #elif defined SYMD_NEON
-                    _reg = vdup_n_u8(other);
-    #endif
-                }
-                else if constexpr (std::is_same_v<T, double>)
-                {
-    #ifdef SYMD_SSE
-                    _reg[0] = _mm256_set1_pd(other);
+            // Constructs register with all elements equal to other
+            SymdRegister(bfloat16 other)
+            {
+                construct_from_scalar((T)other);
+            }
 
-    #elif defined SYMD_NEON
-                    _reg[0] = vdupq_n_f64(other);
-    #endif
-                    _reg[1] = _reg[0];
-                }
+            // Constructs register with all elements equal to other
+            SymdRegister(double other)
+            {
+                construct_from_scalar((T)other);
+            }
+
+            // Constructs register with all elements equal to other
+            SymdRegister(int other)
+            {
+                construct_from_scalar((T)other);
+            }
+
+            // Constructs register with all elements equal to other
+            SymdRegister(unsigned char other)
+            {
+                construct_from_scalar((T)other);
             }
 
             /////////////////////////////////////////////////////////////////////////////////////
@@ -988,7 +1017,7 @@ namespace symd
                     std::is_same_v<T, float> || 
                     std::is_same_v<T, symd::bfloat16> ||
                     std::is_same_v<T, double>,
-                   "fastpow2 is only supported for floating point type.");
+                   "fastpow2 is only supported for floating point types.");
 
                 if constexpr (std::is_same_v<T, float> || std::is_same_v<T, symd::bfloat16>)
                 {
@@ -1312,15 +1341,15 @@ namespace symd
         ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         template <typename T>
-        SymdRegister<T>& operator+(const SymdRegister<T>& x)
+        SymdRegister<T> operator+(const SymdRegister<T>& x)
         {
             return x;
         }
 
         template <typename T>
-        SymdRegister<T>& operator-(const SymdRegister<T>& x)
+        SymdRegister<T> operator-(const SymdRegister<T>& x)
         {
-            return SymdRegister<T>((T)0) - x;
+            return SymdRegister<T>((T)0.0f) - x;
         }
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1484,13 +1513,13 @@ namespace symd
 
 namespace std
 {
-    using namespace symd::__internal__;
-
     /// <summary>
     /// Returns SymdRegister containing minimum values from two input SymdRegisters.
     /// </summary>
     template <typename T>
-    inline SymdRegister<T> min(SymdRegister<T> first, SymdRegister<T> sec)
+    inline symd::__internal__::SymdRegister<T> min(
+        const symd::__internal__::SymdRegister<T>& first,
+        const symd::__internal__::SymdRegister<T>& sec)
     {
         return first.min(sec);
     }
@@ -1499,9 +1528,18 @@ namespace std
     /// Returns SymdRegister containing minimum values from input SymdRegister and constant.
     /// </summary>
     template <typename T>
-    inline SymdRegister<T> min(SymdRegister<T> first, T sec)
+    inline symd::__internal__::SymdRegister<T> min(const symd::__internal__::SymdRegister<T>& first, T sec)
     {
-        return first.min(SymdRegister<T>(sec));
+        return first.min(sec);
+    }
+
+    /// <summary>
+    /// Returns SymdRegister containing minimum values from input SymdRegister and constant.
+    /// </summary>
+    template <typename T>
+    inline symd::__internal__::SymdRegister<T> min(T first, const symd::__internal__::SymdRegister<T>& sec)
+    {
+        return sec.min(first);
     }
 
 
@@ -1513,7 +1551,9 @@ namespace std
     /// Returns SymdRegister containing maximum values from two input SymdRegisters.
     /// </summary>
     template <typename T>
-    inline SymdRegister<T> max(SymdRegister<T> first, SymdRegister<T> sec)
+    inline symd::__internal__::SymdRegister<T> max(
+        const symd::__internal__::SymdRegister<T>& first, 
+        const symd::__internal__::SymdRegister<T>& sec)
     {
         return first.max(sec);
     }
@@ -1522,9 +1562,18 @@ namespace std
     /// Returns SymdRegister containing maximum values from input SymdRegister and constant.
     /// </summary>
     template <typename T>
-    inline SymdRegister<T> max(SymdRegister<T> first, T sec)
+    inline symd::__internal__::SymdRegister<T> max(const symd::__internal__::SymdRegister<T>& first, T sec)
     {
-        return first.max(SymdRegister<T>(sec));
+        return first.max(sec);
+    }
+
+    /// <summary>
+    /// Returns SymdRegister containing maximum values from input SymdRegister and constant.
+    /// </summary>
+    template <typename T>
+    inline symd::__internal__::SymdRegister<T> max(T first, const symd::__internal__::SymdRegister<T>& sec)
+    {
+        return sec.max(first);
     }
 
 
@@ -1536,8 +1585,8 @@ namespace std
     /// Returns SymdRegister containing abs values from input SymdRegister.
     /// </summary>
     template <typename T>
-    SymdRegister<T> abs(SymdRegister<T> reg)
+    inline symd::__internal__::SymdRegister<T> abs(const symd::__internal__::SymdRegister<T>& reg)
     {
         return reg.abs();
     }
-}
+} // std

@@ -54,6 +54,32 @@ namespace tests
         }
     }
 
+    TEST_CASE("Mapping fastpow2 bfloat16")
+    {
+        // Symd can work with std::array
+        std::vector<int> input = { 80, 70, 60, 50, 40, 30, 20, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 
+            -1, -2, 3, -4, 5, -6, -7, 8, -9, -20, -30, -40, -50, -60, -70, -80 };
+
+        std::vector<symd::bfloat16> output(input.size());
+
+        symd::map_single_core(output, [](auto x)
+            {
+                return symd::kernel::__internal_exp::fastpow2<symd::bfloat16>(x);
+            }, input);
+
+        for (size_t i=0; i<output.size(); i++)
+        {
+            symd::bfloat16 std_output = (symd::bfloat16)pow(2, input[i]);
+            symd::bfloat16 out_scalar = symd::kernel::__internal_exp::fastpow2<symd::bfloat16>(input[i]);
+
+            double rel_err = std::abs(output[i] - std_output) / std_output;
+            double rel_err_scallar = std::abs(out_scalar - std_output) / std_output;
+
+            REQUIRE(rel_err <= 1e-5);
+            REQUIRE(rel_err_scallar <= 1e-5);
+        }
+    }
+
     TEST_CASE("Mapping fastpow2f float")
     {
         // Symd can work with std::array
@@ -103,6 +129,33 @@ namespace tests
             double rel_err = std::abs(output[i] - std_output) / std_output;
             double rel_err_scallar = std::abs(out_scalar - std_output) / std_output;
 
+            REQUIRE(rel_err <= 1e-4);
+            REQUIRE(rel_err_scallar <= 1e-4);
+        }
+    }
+
+    TEST_CASE("Mapping fastpow2f bfloat16")
+    {
+        // Symd can work with std::array
+        std::vector<symd::bfloat16> input = { 80.1, 70.2, 60.3, 50.4, 40.5, 30.6, 20.7, 10.8, 9.9, 8.1, 7.2, 6.3, 5.4, 4.0, 3.5, 2.6, 1.7, 1.0,
+            0.8, 0.5, 0.1, 0, -0.1, -0.5, -0.8, 1.0, -1.1, -2.2, 3.3, -4.4, 5.5, -6.6, -7.7, 8.8, -9.9, 
+            -20.1, -30.2, -40.3, -50.4, -60.5, -70.6, -80.7 };
+
+        std::vector<symd::bfloat16> output(input.size());
+
+        symd::map_single_core(output, [](auto x)
+            {
+                return symd::kernel::__internal_exp::fastpow2f(x);
+            }, input);
+
+        for (size_t i=0; i<output.size(); i++)
+        {
+            symd::bfloat16 std_output = (symd::bfloat16)pow(2, (float)input[i]);
+            symd::bfloat16 out_scalar = symd::kernel::__internal_exp::fastpow2f(input[i]);
+            
+            double rel_err = std::abs(output[i] - std_output) / std_output;
+            double rel_err_scallar = std::abs(out_scalar - std_output) / std_output;
+
             // std::cout 
             //     << "input: " << input[i] 
             //     << ", symd fastpow2f: " << output[i] 
@@ -111,12 +164,12 @@ namespace tests
             //     << ", rel err scalar: " << rel_err_scallar
             //     << std::endl;
 
-            REQUIRE(rel_err <= 1e-4);
-            REQUIRE(rel_err_scallar <= 1e-4);
+            REQUIRE(rel_err <= 2e-2);
+            REQUIRE(rel_err_scallar <= 2e-1);
         }
     }
 
-    TEST_CASE("Mapping exp")
+    TEST_CASE("Mapping exp float")
     {
         // Symd can work with std::array
         std::vector<float> input = { 80, 70, 60, 50, 40, 30, 20, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0.5, 0.1, 0, 
@@ -137,15 +190,41 @@ namespace tests
             float rel_err = std::abs(output[i]  - std_output) / std_output;
             float rel_err_scallar = std::abs(out_scalar - std_output) / std_output;
 
+            REQUIRE(rel_err <= 3e-4);
+            REQUIRE(rel_err_scallar <= 3e-4);
+        }
+    }
+
+    TEST_CASE("Mapping exp bfloat16")
+    {
+        // Symd can work with std::array
+        std::vector<symd::bfloat16> input = { /*80, 70, 60, 50, 40,*/ 30, 20, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0.5, 0.1, 0, 
+            -0.1, -0.5, -1, -2, 3, -4, 5, -6, -7, 8, -9, -20, -30, -40, /*-50, -60, -70, -80*/ };
+
+        std::vector<symd::bfloat16> output(input.size());
+
+        symd::map_single_core(output, [](auto x)
+            {
+                return symd::kernel::exp(x);
+            }, input);
+
+        for (size_t i=0; i<output.size(); i++)
+        {
+            symd::bfloat16 std_output = (symd::bfloat16)exp(input[i]);
+            symd::bfloat16 out_scalar = symd::kernel::exp(input[i]);
+
+            float rel_err = std::abs(output[i]  - std_output) / std_output;
+            float rel_err_scallar = std::abs(out_scalar - std_output) / std_output;
+
             // std::cout 
             //     << "input: " << input[i] 
             //     << ", symd exp: " << output[i] 
-            //     << ", std pow2: " << std_output
+            //     << ", std exp: " << std_output
             //     << ", rel err: " << rel_err
             //     << std::endl;
 
-            REQUIRE(rel_err <= 3e-4);
-            REQUIRE(rel_err_scallar <= 3e-4);
+            REQUIRE(rel_err <= 0.12);
+            REQUIRE(rel_err_scallar <= 0.12);
         }
     }
 
