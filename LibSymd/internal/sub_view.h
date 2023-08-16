@@ -1,5 +1,6 @@
 #pragma once
 #include "basic_views.h"
+#include "region.h"
 #include <algorithm>
 
 
@@ -19,94 +20,73 @@ namespace symd::__internal__
     };
 
     template <typename View>
-    size_t getWidth(const SubView<View>& subView)
+    Dimensions getShape(const SubView<View>& subView)
     {
-        return subView._region.width();
+        return subView._region.getShape();
     }
 
     template <typename View>
-    size_t getHeight(const SubView<View>& subView)
-    {
-        return subView._region.height();
-    }
-
-    template <typename View>
-    size_t getPitch(const SubView<View>& subView)
+    Dimensions getPitch(const SubView<View>& subView)
     {
         return getPitch(subView._underlyingView);
     }
 
     template <typename View>
-    auto fetchData(const SubView<View>& subView, size_t row, size_t col)
+    auto fetchData(const SubView<View>& subView, const Dimensions& coords)
     {
         return fetchData(
             subView._underlyingView,
-            subView._region.startRow + row,
-            subView._region.startCol + col);
+            subView._region.startCoord + coords);
     }
 
     template <typename View>
-    auto fetchVecData(const SubView<View>& subView, size_t row, size_t col)
+    auto fetchVecData(const SubView<View>& subView, const Dimensions& coords)
     {
         return fetchVecData(
             subView._underlyingView,
-            subView._region.startRow + row,
-            subView._region.startCol + col);
+            subView._region.startCoord + coords);
     }
 
     template <typename View, typename DataType>
-    void saveData(SubView<View>& subView, const DataType& element, size_t row, size_t col)
+    void saveData(SubView<View>& subView, const DataType& element, const Dimensions& coords)
     {
         saveData(
             subView._underlyingView,
             element,
-            subView._region.startRow + row,
-            subView._region.startCol + col);
+            subView._region.startCoord + coords);
     }
 
     template <typename View, typename DataType>
-    void saveVecData(SubView<View>& subView, const SymdRegister<DataType>& element, size_t row, size_t col)
+    void saveVecData(SubView<View>& subView, const SymdRegister<DataType>& element, const Dimensions& coords)
     {
         saveVecData(
             subView._underlyingView,
             element,
-            subView._region.startRow + row,
-            subView._region.startCol + col);
-    }
-
-
-    template <typename View>
-    size_t horisontalBorder(const SubView<View>& subView)
-    {
-        size_t underlyingBorder = horisontalBorder(subView._underlyingView);
-        size_t result = 0;
-
-        if (underlyingBorder > subView._region.startCol)
-            result = std::max(result, underlyingBorder - subView._region.startCol);
-
-        size_t leftDistance = getWidth(subView._underlyingView) - subView._region.endCol - 1;
-
-        if (underlyingBorder > leftDistance)
-            result = std::max(result, underlyingBorder - leftDistance);
-
-        return result;
+            subView._region.startCoord + coords);
     }
 
     template <typename View>
-    size_t verticalBorder(const SubView<View>& subView)
+    Dimensions getBorder(const SubView<View>& subView)
     {
-        size_t underlyingBorder = verticalBorder(subView._underlyingView);
-        size_t result = 0;
+        auto underlyingShape = getShape(subView._underlyingView);
+        auto underlyingBorder = getBorder(subView._underlyingView);
 
-        if (underlyingBorder > subView._region.startRow)
-            result = std::max(result, underlyingBorder - subView._region.startRow);
+        return underlyingBorder;
 
-        size_t bottomDistance = getHeight(subView._underlyingView) - subView._region.endRow - 1;
+        // auto result = underlyingBorder.zeros_like();
 
-        if (underlyingBorder > bottomDistance)
-            result = std::max(result, underlyingBorder - bottomDistance);
+        // for (int i = 0; i < underlyingBorder.num_dims(); i++)
+        // {
+        //     if (underlyingBorder[i] > subView._region.startCoord[i])
+        //         result.set_ith_dim(i, std::max(result[i], underlyingBorder[i] - subView._region.startCoord[i]));
 
-        return result;
+        //     size_t rightDistance = underlyingShape[i] - subView._region.endCoord[i] - 1;
+
+        //     if (underlyingBorder[i] > rightDistance)
+        //         result.set_ith_dim(i, std::max(result[i], underlyingBorder[i] - rightDistance);
+        // }
+
+        // return result;
     }
 
     template <typename View>
