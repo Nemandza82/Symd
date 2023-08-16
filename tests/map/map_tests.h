@@ -343,9 +343,9 @@ namespace tests
         std::vector<float> input2(input1.size());
         std::vector<float> output(input1.size());
 
-        symd::views::data_view<float, 2> twoDInput1(input1.data(), width, height, width);
-        symd::views::data_view<float, 2> twoDInput2(input2.data(), width, height, width);
-        symd::views::data_view<float, 2> twoDOutput(output.data(), width, height, width);
+        auto twoDInput1 = symd::views::data_view_2d(input1.data(), width, height, width);
+        auto twoDInput2 = symd::views::data_view_2d(input2.data(), width, height, width);
+        auto twoDOutput = symd::views::data_view_2d(output.data(), width, height, width);
 
         symd::map(twoDOutput, [&](auto a, auto b) { return a + b; }, twoDInput1, twoDInput2);
     }
@@ -358,8 +358,8 @@ namespace tests
         std::vector<float> input(width * height);
         std::vector<float> output(input.size());
 
-        symd::views::data_view<float, 2> twoDInput(input.data(), width, height, width);
-        symd::views::data_view<float, 2> twoDOutput(output.data(), width, height, width);
+        auto twoDInput = symd::views::data_view_2d(input.data(), width, height, width);
+        auto twoDOutput = symd::views::data_view_2d(output.data(), width, height, width);
 
         auto stencil_radius = symd::Dimensions({1, 1});
 
@@ -384,10 +384,10 @@ namespace tests
         };
 
         // Prepare 2D view to data to do 2D convolution
-        symd::views::data_view<float, 2> input_2d(input.data(), width, height, width);
+        auto input_2d = symd::views::data_view_2d(input.data(), width, height, width);
 
         std::vector<float> output_mc(input.size());
-        symd::views::data_view<float, 2> output_2d_mc(output_mc.data(), width, height, width);
+        auto output_2d_mc = symd::views::data_view_2d(output_mc.data(), width, height, width);
 
         auto duration = executionTimeMs([&]()
             {
@@ -405,7 +405,7 @@ namespace tests
         std::cout << "Convolution 3x3 - symd_multi_core  : " << duration.count() << " ms" << std::endl;
 
         std::vector<float> output_sc(input.size());
-        symd::views::data_view<float, 2> output_2d_sc(output_sc.data(), width, height, width);
+        auto output_2d_sc = symd::views::data_view_2d(output_sc.data(), width, height, width);
 
         auto durationSingleCore = executionTimeMs([&]()
             {
@@ -427,7 +427,7 @@ namespace tests
         {
             auto coords = symd::Dimensions({i, j});
             shape.mirrorCoords(coords);
-            return input_2d.readPix(shape.mirrorCoords(coords));
+            return *symd::__internal__::getDataPtr(input_2d, shape.mirrorCoords(coords));
         };
 
         auto durationLoop = executionTimeMs([&]()

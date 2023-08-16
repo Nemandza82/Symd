@@ -1,5 +1,5 @@
 # Symd
-C++ header only template library designed to make it easier to write high-performance (vector, multi-threaded), image and data processing code on modern machines. It automatically generates vector (SIMD, SSE, AVX, NEON) code.
+C++ header only template library designed to make it easier to write high-performance (vector, multi-threaded), image and data processing code on modern machines. It automatically generates vector (SIMD, SSE, AVX, NEON) code. bfloat16 is supported.
 
 ## Requirements
 
@@ -7,28 +7,23 @@ C++17 is a requirement.
 
 ### Compiler
 
-Symd can be used with Visual Studio, g++, and Clang.
+Symd can be used with, g++ and Clang. Visual Studio should be supported but we do not test it for now.
 
-#### Compiling on Windows
+#### Compiling tests on Ubuntu - g++
 
-For development and testing we use Visual Studio 2019 (16.9.4), with /std:c++17 setting. 
-We ship Visual Studio solution file, so just load it.
-
-#### Compiling on Ubuntu - g++
-
-We tested with gcc version 9.3.0. To can compile tests with g++ run:
+To can compile tests with g++ go to tests folder and run:
 
 ```
-g++ test_symd.cpp test_symd_register.cpp test_stencil_borders.cpp -std=c++17 -march=ivybridge -O3 -o test_symd
+make
 ```
 
-#### Compiling on Ubuntu - Clang
+#### Compiling tests with Clang
 
-We tested with clang version 10.0.0. To can compile tests with Clang run:
+If you have Clang installed just got to tests folder and run ```make clang``.
 
-```
-clang++ test_symd.cpp test_symd_register.cpp test_stencil_borders.cpp -std=c++17 -mavx -O3 -o test_symd
-```
+#### Compiling tests with Visual Studio
+
+TBD
 
 #### TBB support
 
@@ -57,10 +52,9 @@ clang++ test_symd.cpp test_symd_register.cpp test_stencil_borders.cpp -std=c++17
 The easiest way to set up TBB on windows is by using the [vcpkg](https://github.com/microsoft/vcpkg) package manager, and then installing TBB library with it.
 This way no further changes to the build system need to be made in order to run the tests successfully.
 
-
 ### CPU
 
- * Intel or AMD x64 CPU with [AVX support](https://en.wikipedia.org/wiki/Advanced_Vector_Extensions). Roughly CPUs from 2011 and later.
+ * Intel or AMD x64 CPU with [AVX2 support](https://en.wikipedia.org/wiki/Advanced_Vector_Extensions). Roughly CPUs from 2011 and later.
  * ARM based CPUs with Neon support - still in beta phase.
 
 ## Usage
@@ -70,7 +64,7 @@ Symd is a header-only library. To use Symd in your project you need to:
  * Include symd.h
  * And you are ready to go
 
-Simple map example:
+### Simple map example:
 
 ```cpp
 #include <iostream>
@@ -95,7 +89,7 @@ Output:
 2, 4, 6, 8, 10, 12, 14, 16, 18,
 ```
 
-Operations on input vetor are performed using SSE, AVX (or Neon).
+Operations on input vetor are performed using SSE, AVX (or Neon TBD).
 
 ### Can I use 2D inputs?
 
@@ -109,51 +103,45 @@ std::vector<float> input1(width * height);
 std::vector<float> input2(input1.size());
 std::vector<float> output(input1.size());
 
-symd::views::data_view<float, 2> input1_2d(input1.data(), width, height, width);
-symd::views::data_view<float, 2> input2_2d(input2.data(), width, height, width);
-symd::views::data_view<float, 2> output_2d(output.data(), width, height, width);
+auto input1_2d = symd::views::data_view_2d(input1.data(), width, height, width);
+auto input2_2d = symd::views::data_view_2d(input2.data(), width, height, width);
+auto output_2d = symd::views::data_view_2d(output.data(), width, height, width);
 
 symd::map(output_2d, [&](auto a, auto b) { return a + b; }, input1_2d, input2_2d);
 ```
 
 symd::views::data_view is non-owning view of underlying data.
 
-### Can I use my own matrix class as input or output to Symd?
+### Can I use my own tensor or matrix class as input or output to Symd?
 
-Chances are that you will be using your own matrix/vector class or some third party class for storing data which are not natively supported by Symd (eg OpenCV matrix). 
-Using such classes as inputs or outputs with Symd is possible. You need to overload methods for getting size of data and accessing elements before including Symd. Example:
+Chances are that you will be using your own tensor/matrix/vector class or some third party class for storing data which are not natively supported by Symd (eg OpenCV matrix). 
+Using such classes as inputs or outputs with Symd is possible. You need to overload methods for getting size of data and accessing elements. Example:
 
 ```cpp
 namespace symd::__internal__
 {
     template <typename T>
-    size_t getWidth(const MyMatrix<T>& myMatrix)
+    Dimensions getShape(const MyMatrix<T>& myMatrix)
     {
-        return myMatrix.width();
+        return Dimensions({ myMatrix.height(), myMatrix.width() });
     }
 
     template <typename T>
-    size_t getHeight(const MyMatrix<T>& myMatrix)
+    Dimensions getPitch(const MyMatrix<T>& myMatrix)
     {
-        return myMatrix.height();
+        return  Dimensions({ myMatrix.pitch(), 1 });
     }
 
     template <typename T>
-    size_t getPitch(const MyMatrix<T>& myMatrix)
+    T* getDataPtr(MyMatrix<T>& myMatrix, const Dimensions& coords)
     {
-        return myMatrix.pitch();
+        return &myMatrix(coords[1], coords[0]);
     }
 
     template <typename T>
-    T* getDataPtr(MyMatrix<T>& myMatrix, size_t row, size_t col)
+    const T* getDataPtr(const MyMatrix<T>& myMatrix, const Dimensions& coords)
     {
-        return &myMatrix(row, col);
-    }
-
-    template <typename T>
-    const T* getDataPtr(const MyMatrix<T>& myMatrix, size_t row, size_t col)
-    {
-        return &myMatrix(row, col);
+        return &myMatrix(coords[1], coords[0]);
     }
 }
 
@@ -183,8 +171,8 @@ size_t height = 480;
 std::vector<float> input(width * height);
 std::vector<float> output(input.size());
 
-symd::views::data_view<float, 2> input_2d(input.data(), width, height, width);
-symd::views::data_view<float, 2> output_2d(output.data(), width, height, width);
+auto input_2d = symd::views::data_view_2d(input.data(), width, height, width);
+auto output_2d = symd::views::data_view_2d(output.data(), width, height, width);
 
 // Calculate image gradient. We also need 2D stencil view.
 symd::map(output_2d, [&](const auto& sv) { return sv(0, 1) - sv(0, -1); },

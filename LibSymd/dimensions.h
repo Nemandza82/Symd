@@ -44,8 +44,6 @@ namespace symd
             return _dims[ind];
         }
 
-
-
         void set_ith_dim(int i, int64_t new_val)
         {
             _dims[i] = new_val;

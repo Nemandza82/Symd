@@ -1,70 +1,67 @@
 #pragma once
 #include "../dimensions.h"
+#include <vector>
 
 
 namespace symd::views
 {
+    /// <summary>
+    /// Data view of underlying memory buffer. Can be passes to symd methods.
+    /// </summary>
     template <typename T, int dim>
     class data_view
     {
-    };
+        T* _data;
+        Dimensions _shape;
+        Dimensions _pitch;
 
-    /// <summary>
-    /// 1d view of underlying memory buffer. Can be passes to symd methods.
-    /// </summary>
-    template <typename T>
-    struct data_view<T, 1>
-    {
-        T* data;
-        int64_t width;
-        int64_t height;
-
+    public:
         /// <summary>
-        /// Contructs 1D data_view of input memory buffer.
+        /// Contructs data_view of input memory buffer.
         /// </summary>
         /// <param name="ptr">Pointer to underlying memory buffer.</param>
-        /// <param name="length_">Pointer to underlying memory in elements (not bytes).</param>
-        data_view(T* ptr, int64_t length_)
+        /// <param name="shape">Shape of underlying memory in elements (not bytes).</param>
+        /// <param name="pitch">Pitch of data_view. Length of one lines in elements.</param>
+        data_view(T* ptr, const Dimensions& shape, const Dimensions& pitch)
+            : _shape(shape)
+            , _pitch(pitch)
         {
-            data = ptr;
-            width = length_;
-            height = 1;
+            _data = ptr;
+        }
+
+        T* data()
+        {
+            return _data;
+        }
+
+        const T* data() const
+        {
+            return _data;
+        }
+
+
+        const Dimensions& shape() const
+        {
+            return _shape;
+        }
+
+        const Dimensions& pitch() const
+        {
+            return _pitch;
         }
     };
 
-    /// <summary>
-    /// 2d view of underlying memory buffer. Can be passes to symd methods.
-    /// </summary>
     template <typename T>
-    struct data_view<T, 2>
+    data_view<T, 1> data_view_1d(T* ptr, int64_t length)
     {
-        T* data;
+        return data_view<T, 1>(ptr, Dimensions({ length }), Dimensions({ 1 }));
+    }
 
-        int64_t width;
-        int64_t height;
-        int64_t pitch;
-
-        /// <summary>
-        /// Contructs 1D data_view of input memory buffer.
-        /// </summary>
-        /// <param name="ptr">Pointer to underlying memory buffer.</param>
-        /// <param name="width_">Width of data_view.</param>
-        /// <param name="height_">Width of data_view.</param>
-        /// <param name="pitch_">Pitch of data_view. Length of one line in elements.</param>
-        data_view(T* ptr, int64_t width_, int64_t height_, int64_t pitch_)
-        {
-            data = ptr;
-            width = width_;
-            height = height_;
-            pitch = pitch_;
-        }
-
-        T readPix(const Dimensions& coords) const
-        {
-            assert(coords.num_dims() == 2);
-            return data[coords[0] * pitch + coords[1]];
-        }
-    };
+    template <typename T>
+    data_view<T, 2> data_view_2d(T* ptr, int64_t width, int64_t height, int64_t pitch)
+    {
+        return data_view<T, 2>(ptr, Dimensions({ height, width }), Dimensions({ pitch, 1 }));
+    }
 }
 
 namespace symd::__internal__
@@ -73,65 +70,49 @@ namespace symd::__internal__
     // Access the data
     /////////////////////////////////////////////////////////////////////////////////////////////////
 
-    template <typename T>
-    Dimensions getShape(const views::data_view<T, 1>& dw)
+    template <typename T, int dim>
+    Dimensions getShape(const views::data_view<T, dim>& dw)
     {
-        return Dimensions({ dw.width });
+        return dw.shape();
     }
 
-    template <typename T>
-    Dimensions getShape(const views::data_view<T, 2>& dw)
+    template <typename T, int dim>
+    Dimensions getPitch(const views::data_view<T, dim>& dw)
     {
-        return Dimensions({ dw.height, dw.width });
+        return dw.pitch();
     }
 
-    template <typename T>
-    Dimensions getPitch(const views::data_view<T, 1>& dw)
+    template <typename T, int dim>
+    T* getDataPtr(views::data_view<T, dim>& dw, const Dimensions& coords)
     {
-        return Dimensions({ 1 });
+        assert(coords.num_dims() == dim);
+
+        T* dst = dw.data();
+        auto pitch = dw.pitch();
+
+        for (int i = 0; i < dim; i++)
+        {
+            assert(coords[i] < dw.shape()[i]);
+            dst += coords[i] * pitch[i];
+        }
+
+        return dst;
     }
 
-    template <typename T>
-    Dimensions getPitch(const views::data_view<T, 2>& dw)
+    template <typename T, int dim>
+    const T* getDataPtr(const views::data_view<T, dim>& dw, const Dimensions& coords)
     {
-        return Dimensions({ dw.pitch, 1 });
-    }
+        assert(coords.num_dims() == dim);
 
-    template <typename T>
-    T* getDataPtr(views::data_view<T, 1>& dw, const Dimensions& coords)
-    {
-        assert(coords.num_dims() == 1);
-        assert(coords[0] < dw.width);
+        const T* dst = dw.data();
+        auto pitch = dw.pitch();
 
-        return dw.data + coords[0];
-    }
+        for (int i = 0; i < dim; i++)
+        {
+            assert(coords[i] < dw.shape()[i]);
+            dst += coords[i] * pitch[i];
+        }
 
-    template <typename T>
-    const T* getDataPtr(const views::data_view<T, 1>& dw, const Dimensions& coords)
-    {
-        assert(coords.num_dims() == 1);
-        assert(coords[0] < dw.width);
-
-        return dw.data + coords[0];
-    }
-
-    template <typename T>
-    T* getDataPtr(views::data_view<T, 2>& dw, const Dimensions& coords)
-    {
-        assert(coords.num_dims() == 2);
-        assert(coords[0] < dw.height);
-        assert(coords[1] < dw.width);
-
-        return dw.data + coords[0] * dw.pitch + coords[1];
-    }
-
-    template <typename T>
-    const T* getDataPtr(const views::data_view<T, 2>& dw, const Dimensions& coords)
-    {
-        assert(coords.num_dims() == 2);
-        assert(coords[0] < dw.height);
-        assert(coords[1] < dw.width);
-
-        return dw.data + coords[0] * dw.pitch + coords[1];
+        return dst;
     }
 }

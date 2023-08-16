@@ -35,7 +35,7 @@ namespace tests
         std::vector<int> input(width * height);
         randomizeData(input);
 
-        symd::views::data_view<int, 2> input_2d(input.data(), width, height, width);
+        auto input_2d = symd::views::data_view_2d(input.data(), width, height, width);
         int res;
 
         auto durationMap = executionTimeMs([&]()
@@ -77,7 +77,7 @@ namespace tests
         std::vector<int> input(width * height);
         randomizeData(input);
 
-        symd::views::data_view<int, 2> input_2d(input.data(), width, height, width);
+        auto input_2d = symd::views::data_view_2d(input.data(), width, height, width);
 
         auto sumX = symd::views::reduce_view(shape, (int)0, [](auto x, auto y)
             {
@@ -112,7 +112,7 @@ namespace tests
         std::vector<int> input(width * height);
         randomizeData(input);
 
-        symd::views::data_view<int, 2> input_2d(input.data(), width, height, width);
+        auto input_2d = symd::views::data_view_2d(input.data(), width, height, width);
 
         auto reduceOpp = [](auto x, auto y) { return x + y; };
 
