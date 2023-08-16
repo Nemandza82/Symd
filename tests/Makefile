@@ -3,3 +3,6 @@ test_symd: all_tests.cpp
 
 clang: all_tests.cpp
 	clang++ all_tests.cpp -std=c++17 -mavx -O3 -o all_tests
+
+vc: all_tests.cpp
+	cl.exe /EHsc /O2 /std:c++17 .\all_tests.cpp
