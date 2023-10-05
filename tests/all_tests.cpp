@@ -11,5 +11,6 @@
 #include "map/conversion_tests.h"
 #include "map/exp_tests.h"
 #include "map/log_tests.h"
+#include "map/broadcast_tests.h"
 #include "map/map_tests.h"
 #include "reduce/reduction_tests.h"
