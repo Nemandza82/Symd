@@ -26,7 +26,7 @@ namespace tests
         REQUIRE(res ==  342);
     }
 
-    TEST_CASE("Reduction - many elements")
+    TEST_CASE("Reduction - many elements - int")
     {
         int64_t width = 1920;
         int64_t height = 1080;
@@ -45,7 +45,7 @@ namespace tests
                         return x + y;
                     });
 
-                symd::map(sum, [](auto x) { return x; }, input_2d);
+                symd::map_single_core(sum, [](auto x) { return x; }, input_2d);
 
                 res = sum.getResult();
             });

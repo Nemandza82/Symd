@@ -99,6 +99,7 @@ namespace symd::views
             {
                 std::lock_guard<std::mutex> guard(*_final_sum_mutex);
                 _sum = _reduceOperation(_sum, x);
+                // std::cout << "Bla " << x << std::endl;
             }
         }
 
@@ -176,16 +177,16 @@ namespace symd::__internal__
     /// <summary>
     /// Creates sub_view from underlying reduce_view.
     /// </summary>
-    /// <param name="reductor">Underlying reduce_view.</param>
+    /// <param name="view">Underlying reduce_view.</param>
     /// <param name="region">Subview region.</param>
     template<typename T, typename ReduceOperation>
-    auto sub_view(views::reduce_view<T, ReduceOperation>& reductor, const Region& region)
+    auto sub_view(views::reduce_view<T, ReduceOperation>& view, const Region& region)
     {
         // sub_view from reduce_view is smaller reduce_view
-        return views::reduce_view<T, ReduceOperation>(region.getShape(), reductor._startValue, reductor._reduceOperation,
+        return views::reduce_view<T, ReduceOperation>(region.getShape(), view._startValue, view._reduceOperation,
             [&](const views::reduce_view<T, ReduceOperation>& self)
             {
-                reductor.threadSafeAppend(self.getResult());
+                view.threadSafeAppend(self.getResult());
             });
     }
 }

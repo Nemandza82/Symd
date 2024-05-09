@@ -3,3 +3,6 @@ test_symd: test_symd_register.cpp
 
 clang: test_symd_register.cpp
 	clang++ test_symd_register.cpp -std=c++17 -mavx -O3 -o test_symd_register
+
+vc: test_symd_register.cpp
+	cl.exe /EHsc /O2 /std:c++17 .\test_symd_register.cpp

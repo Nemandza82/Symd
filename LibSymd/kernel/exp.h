@@ -36,28 +36,6 @@ namespace symd::kernel
     namespace __internal_exp
     { 
         // http://spfrnd.de/posts/2018-03-10-fast-exponential.html
-        template <typename T, int N>
-        T pow_int(T x)
-        {
-            if constexpr (N == 1)
-            {
-                return x;
-            }
-            else
-            {
-                auto y = pow_int<T, N/2>(x);
-                return y * y;
-            }
-        }
-
-        // exp(x) = lim (1 + x /n)^n
-        template <typename T>
-        T exp_limes(T x)
-        {
-            constexpr int N = 32 * 1024;
-            return __internal_exp::pow_int<T, N>(1.0f + x / (float)N);
-        }
-
         template<typename DType, typename T>
         T exp_teylor(T x)
         {

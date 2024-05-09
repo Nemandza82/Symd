@@ -19,11 +19,13 @@ make
 
 #### Compiling tests with Clang
 
-If you have Clang installed just got to tests folder and run ```make clang``.
+If you have Clang installed just got to tests folder and run `make clang`.
 
 #### Compiling tests with Visual Studio
 
-TBD
+ * Start `Developer Command Prompt for VS` which should come installed with Visual Studio.
+ * Navigate to location of Symd project and to tests subfolder.
+ * Run `make vc`.
 
 #### TBB support
 
