@@ -5,9 +5,13 @@
 
 namespace symd::kernel
 {
+    // Function to extract the exponent from a single-precision floating-point number in IEEE 754 format.
     int fp_exp(float x)
     {
+        // Reinterpret the float bits as an unsigned int
         unsigned int as_int = *((unsigned int*)(&x));
+
+        // Extract the exponent bits (bits 23 to 30) by shifting left then right
         return ((as_int << 1) >> 24) - 127;
     }
 
@@ -16,21 +20,23 @@ namespace symd::kernel
         return x.fp_exp();
     }
 
-    float fp_2_pow_exp(float x)
+    // Returns 2 raised to the power of x using bit manipulation.
+    float exp2(float x)
     {
         if (x == 0)
             return 0;
 
         unsigned int as_int = *((unsigned int*)(&x));
+
         as_int = (as_int >> 23);
         as_int = as_int << 23;
 
         return *((float*)(&as_int));
     }
 
-    __internal__::SymdRegister<float> fp_2_pow_exp(const __internal__::SymdRegister<float>& x)
+    __internal__::SymdRegister<float> exp2(const __internal__::SymdRegister<float>& x)
     {
-        return blend(x == 0.0f, __internal__::SymdRegister<float>(0.0f), x.fp_2_pow_exp());
+        return blend(x == 0.0f, __internal__::SymdRegister<float>(0.0f), x.exp2());
     }
     
     namespace __internal_exp

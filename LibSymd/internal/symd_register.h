@@ -953,7 +953,7 @@ namespace symd
                 }
             }
 
-            // Gets exponnent part of fp number
+            // Function to extract the exponent from a single-precision floating-point number in IEEE 754 format.
             SymdRegister<int> fp_exp() const
             {
                 static_assert(std::is_same_v<T, float> || std::is_same_v<T, symd::bfloat16>,
@@ -965,6 +965,8 @@ namespace symd
                     __m256i integer_repr = _mm256_castps_si256(_reg); // Cast to integer so we can use bit ops
                     integer_repr = _mm256_slli_epi32(integer_repr, 1); // Shift left by one bit to align exp...
                     integer_repr = _mm256_srli_epi32(integer_repr, 24); // Shift right by 24 bits to align exp to right...
+
+                    // extract the exponent bits (bits 23 to 30) by shifting left then right
                     integer_repr = _mm256_sub_epi32(integer_repr, _mm256_set1_epi32(127));
                     return integer_repr;
 
@@ -982,11 +984,11 @@ namespace symd
     //             }
             }
 
-            // Extracts 2^exp from input , where exp is exponent of float value.
-            SymdRegister<T> fp_2_pow_exp() const
+            // Computes 2 raised to the given power. Very fast using IEEE 754 format by exponent manipulation.
+            SymdRegister<T> exp2() const
             {
                 static_assert(std::is_same_v<T, float> || std::is_same_v<T, symd::bfloat16>,
-                   "fp_2_pow_exp is only supported for float and bfloat16 for now.");
+                   "exp2 is only supported for float and bfloat16 for now.");
 
                 if constexpr (std::is_same_v<T, float> || std::is_same_v<T, symd::bfloat16>)
                 {
@@ -997,15 +999,15 @@ namespace symd
                     return _mm256_castsi256_ps(integer_repr);
 
     #elif defined SYMD_NEON
-                    static_assert(false, "fp_exp not implemented for neon.");
+                    static_assert(false, "exp2 not implemented for neon.");
     #endif
                 }
     //             else if constexpr (std::is_same_v<T, double>)
     //             {
     // #ifdef SYMD_SSE
-    //                 static_assert(false, "fp_exp is not implemented for double");
+    //                 static_assert(false, "exp2 is not implemented for double");
     // #elif defined SYMD_NEON
-    //                     static_assert(false, "fp_exp not implemented for neon.");
+    //                     static_assert(false, "exp2 not implemented for neon.");
     // #endif
     //             }
             }

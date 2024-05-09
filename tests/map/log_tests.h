@@ -11,7 +11,7 @@ namespace tests
         return std::bitset<32>(as_int);
     }
 
-    TEST_CASE("Mapping fp_2_pow_exp")
+    TEST_CASE("Mapping exp2")
     {
         std::vector<float> input = { 0, 1e-45, 1e-44, 1e-43, 1e-42, 1e-41, 1e-40, 1e-39, 1e-38, 1e-37, 1e-36, 
             0.1, 0.2, 0.5,1, 2, 4, 8, 16, 32, 33, 63.1, 64, 127, 128, 129, 1e25, 1e36 };
@@ -20,10 +20,10 @@ namespace tests
 
         symd::map_single_core(output, [](auto x)
             {
-                return symd::kernel::fp_2_pow_exp(x);
+                return symd::kernel::exp2(x);
             }, input);
 
-        REQUIRE(symd::kernel::fp_2_pow_exp(0) == 0);
+        REQUIRE(symd::kernel::exp2(0) == 0);
 
         for (size_t i=0; i<input.size(); i++)
         {
@@ -38,7 +38,7 @@ namespace tests
             REQUIRE(std::abs(output[i] - std_result) <= 1e-37);
 
             // Results need to be close
-            REQUIRE(std::abs(symd::kernel::fp_2_pow_exp(input[i]) - std_result) <= 1e-37);
+            REQUIRE(std::abs(symd::kernel::exp2(input[i]) - std_result) <= 1e-37);
         }
 
         std::cout << std::endl;
@@ -110,13 +110,6 @@ namespace tests
             else
             {
                 auto std_result = logf(input[i]);
-
-                // std::cout << "input: " << input[i] 
-                //     << ", fp_2_pow_exp " << symd::kernel::fp_2_pow_exp(input[i])
-                //     << ", fp_exp " << symd::kernel::fp_exp(input[i])
-                //     << ", symd out: " << output[i]
-                //     << ", std_result: " << std_result
-                //     << ", err: " <<  std::abs(output[i] - std_result) << std::endl;
                 
                 // Results need to be close
                 REQUIRE(std::abs(output[i] - std_result) <= 1e-4);
