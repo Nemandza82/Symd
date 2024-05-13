@@ -20,8 +20,10 @@ namespace symd::kernel
         return x.fp_exp();
     }
 
-    // Returns 2 raised to the power of x using bit manipulation.
-    float exp2(float x)
+    // Returns 2 raised to the power of exponent from given float number x
+    // Operation is performed using bit operations so it is very fast.
+    // This is equivivalent to masking out mantisa from float number.
+    float exp_part_of_float(float x)
     {
         if (x == 0)
             return 0;
@@ -34,9 +36,9 @@ namespace symd::kernel
         return *((float*)(&as_int));
     }
 
-    __internal__::SymdRegister<float> exp2(const __internal__::SymdRegister<float>& x)
+    __internal__::SymdRegister<float> exp_part_of_float(const __internal__::SymdRegister<float>& x)
     {
-        return blend(x == 0.0f, __internal__::SymdRegister<float>(0.0f), x.exp2());
+        return blend(x == 0.0f, __internal__::SymdRegister<float>(0.0f), x.exp_part_of_float());
     }
     
     namespace __internal_exp

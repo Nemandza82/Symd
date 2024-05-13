@@ -984,11 +984,13 @@ namespace symd
     //             }
             }
 
-            // Computes 2 raised to the given power. Very fast using IEEE 754 format by exponent manipulation.
-            SymdRegister<T> exp2() const
+            // Returns 2 raised to the power of exponent from given float number x
+            // Operation is performed using bit operations so it is very fast.
+            // This is equivivalent to masking out mantisa from float number.
+            SymdRegister<T> exp_part_of_float() const
             {
                 static_assert(std::is_same_v<T, float> || std::is_same_v<T, symd::bfloat16>,
-                   "exp2 is only supported for float and bfloat16 for now.");
+                   "exp_part_of_float is only supported for float and bfloat16 for now.");
 
                 if constexpr (std::is_same_v<T, float> || std::is_same_v<T, symd::bfloat16>)
                 {
@@ -999,15 +1001,15 @@ namespace symd
                     return _mm256_castsi256_ps(integer_repr);
 
     #elif defined SYMD_NEON
-                    static_assert(false, "exp2 not implemented for neon.");
+                    static_assert(false, "exp_part_of_float not implemented for neon.");
     #endif
                 }
     //             else if constexpr (std::is_same_v<T, double>)
     //             {
     // #ifdef SYMD_SSE
-    //                 static_assert(false, "exp2 is not implemented for double");
+    //                 static_assert(false, "exp_part_of_float is not implemented for double");
     // #elif defined SYMD_NEON
-    //                     static_assert(false, "exp2 not implemented for neon.");
+    //                     static_assert(false, "exp_part_of_float not implemented for neon.");
     // #endif
     //             }
             }

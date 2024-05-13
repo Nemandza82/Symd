@@ -16,7 +16,7 @@ namespace symd::kernel
         // Multiply up subnormals to go into narmal range
         auto y = blend(x < 1e-37, x*100000000.0f, x);
         
-        auto two_to_n = exp2(y);
+        auto two_to_n = exp_part_of_float(y);
         auto n = convert_to<float>(fp_exp(y)) * 0.69314718056f;
         auto a = y / two_to_n;
 
