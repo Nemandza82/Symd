@@ -26,7 +26,7 @@ namespace tests::helpers
     /// Executes input function for number of times and returns average execution time in ms.
     /// </summary>
     template <typename F>
-    static auto executionTimeMs(F&& func, int num_iter = NUM_ITER)
+    static auto measure_execution_time_ms(F&& func, int num_iter = NUM_ITER)
     {
         auto t1 = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double, std::milli> duration;

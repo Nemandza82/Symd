@@ -38,7 +38,7 @@ namespace tests
         auto input_2d = symd::views::data_view_2d(input.data(), width, height, width);
         int res;
 
-        auto durationMap = helpers::executionTimeMs([&]()
+        auto durationMap = helpers::measure_execution_time_ms([&]()
             {
                 auto sum = symd::views::reduce_view(shape, (int)0, [](auto x, auto y)
                     {
@@ -52,7 +52,7 @@ namespace tests
 
         int resLoop = 0;
 
-        auto durationLoop = helpers::executionTimeMs([&]()
+        auto durationLoop = helpers::measure_execution_time_ms([&]()
             {
                 // Simple loop
                 resLoop = 0;

@@ -79,7 +79,7 @@ namespace tests
         //symd::map_single_core(input, [](){ return 1; });
 
         // Pass computation to measure time function. It fill execute it multiple times to measure time correctly.
-        auto durationSymdSingleCore = helpers::executionTimeMs([&]()
+        auto durationSymdSingleCore = helpers::measure_execution_time_ms([&]()
             {
                 symd::map_single_core(output, [](const auto& x)
                     {
@@ -88,7 +88,7 @@ namespace tests
             }
         );
 
-        auto durationSymd = helpers::executionTimeMs([&]()
+        auto durationSymd = helpers::measure_execution_time_ms([&]()
             {
                 symd::map(output, [](const auto& x)
                     {
@@ -98,7 +98,7 @@ namespace tests
         );
 
         // Measure time for simple for loop
-        auto durationLoop = helpers::executionTimeMs([&]()
+        auto durationLoop = helpers::measure_execution_time_ms([&]()
             {
                 for (size_t i = 0; i < input.size(); i++)
                     output[i] = 2.f * input[i];
@@ -108,7 +108,7 @@ namespace tests
         std::vector<double> inputD(2000000);
         std::vector<double> outputD(input.size());
 
-        auto durationSymdDouble = helpers::executionTimeMs([&]()
+        auto durationSymdDouble = helpers::measure_execution_time_ms([&]()
             {
                 symd::map(outputD, [](const auto& x)
                     {
@@ -137,7 +137,7 @@ namespace tests
         //symd::map_single_core(input, [](){ return 1; });
 
         // Pass computation to measure time function. It fill execute it multiple times to measure time correctly.
-        auto durationSymdSingleCore = helpers::executionTimeMs([&]()
+        auto durationSymdSingleCore = helpers::measure_execution_time_ms([&]()
             {
                 symd::map_single_core(output, [](const auto& x, const auto& y, const auto& z, const auto& w)
                     {
@@ -148,7 +148,7 @@ namespace tests
 
         std::cout << "Map (x + y) * (z - w); (float) - symd_single_core : " << durationSymdSingleCore.count() << " ms" << std::endl;
 
-        auto durationSymd = helpers::executionTimeMs([&]()
+        auto durationSymd = helpers::measure_execution_time_ms([&]()
             {
                 symd::map(output, [](const auto& x, const auto& y, const auto& z, const auto& w)
                     {
@@ -160,7 +160,7 @@ namespace tests
         std::cout << "Map (x + y) * (z - w); (float) - symd_multi_core  : " << durationSymd.count() << " ms" << std::endl;        
 
         // Measure time for simple for loop
-        auto durationLoop = helpers::executionTimeMs([&]()
+        auto durationLoop = helpers::measure_execution_time_ms([&]()
             {
                 for (size_t i = 0; i < input3.size(); i++)
                     output[i] = (input0[i] + input1[i]) * (input2[i] - input3[i]);
@@ -257,7 +257,7 @@ namespace tests
         std::vector<float> G_loop(Y.size());
         std::vector<float> B_loop(Y.size());
 
-        auto durationLoop = helpers::executionTimeMs([&]()
+        auto durationLoop = helpers::measure_execution_time_ms([&]()
             {
                 for (int i = 0; i < Y.size(); i++)
                 {
@@ -280,7 +280,7 @@ namespace tests
 
         auto outTuple_sc = std::tie(R_sc, G_sc, B_sc);
 
-        auto durationSingleCore = helpers::executionTimeMs([&]()
+        auto durationSingleCore = helpers::measure_execution_time_ms([&]()
             {
                 symd::map_single_core(outTuple_sc, [](auto y, auto u, auto v)
                     {
@@ -299,7 +299,7 @@ namespace tests
 
         auto outTuple_mc = std::tie(R_mc, G_mc, B_mc);
 
-        auto duration = helpers::executionTimeMs([&]()
+        auto duration = helpers::measure_execution_time_ms([&]()
             {
                 symd::map(outTuple_mc, [](auto y, auto u, auto v)
                     {
@@ -398,7 +398,7 @@ namespace tests
         std::vector<float> output_mc(input.size());
         auto output_2d_mc = symd::views::data_view_2d(output_mc.data(), width, height, width);
 
-        auto duration = helpers::executionTimeMs([&]()
+        auto duration = helpers::measure_execution_time_ms([&]()
             {
                 auto stencil_radius = symd::Dimensions({1, 1});
 
@@ -416,7 +416,7 @@ namespace tests
         std::vector<float> output_sc(input.size());
         auto output_2d_sc = symd::views::data_view_2d(output_sc.data(), width, height, width);
 
-        auto durationSingleCore = helpers::executionTimeMs([&]()
+        auto durationSingleCore = helpers::measure_execution_time_ms([&]()
             {
                 auto stencil_radius = symd::Dimensions({1, 1});
 
@@ -439,7 +439,7 @@ namespace tests
             return *symd::__internal__::getDataPtr(input_2d, shape.mirrorCoords(coords));
         };
 
-        auto durationLoop = helpers::executionTimeMs([&]()
+        auto durationLoop = helpers::measure_execution_time_ms([&]()
             {
                 for (int i = 0; i < height; i++)
                 {
