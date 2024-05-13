@@ -50,10 +50,10 @@ namespace tests::helpers
     }
 
 
-    template <typename T, typename Operation>
-    std::vector<T> apply_unary_op_to_vector(const std::vector<T>& in, Operation&& op)
+    template <typename U, typename T, typename Operation>
+    std::vector<U> apply_unary_op_to_vector(const std::vector<T>& in, Operation&& op)
     {
-        std::vector<T> reference(in.size());
+        std::vector<U> reference(in.size());
 
         for (size_t i = 0; i < in.size(); i++)
             reference[i] = op(in[i]);
@@ -252,6 +252,7 @@ namespace tests::helpers
         REQUIRE(valid);
     }
 
+
     /// <summary>
     /// Fills input vector with random floats in range 0-255
     /// </summary>
@@ -263,6 +264,7 @@ namespace tests::helpers
         for (auto& x : data)
             x = distribution(generator);
     }
+
 
     /// <summary>
     /// Fills input vector with random ints in range 0-255

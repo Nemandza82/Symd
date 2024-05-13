@@ -132,6 +132,17 @@ namespace symd::kernel
         }
     }
 
+
+    /// Computes 2 to the power of x.
+    /// Very fast implementation is acheived by manipulating bits of IEEE float 754 representation.
+    template <typename T>
+    T pow2(T x)
+    {
+        return __internal_exp::fastpow2f(x);
+    }
+
+
+    /// Computes e (Euler's number) raised to the power of x.
     template <typename T>
     T exp(T x)
     {

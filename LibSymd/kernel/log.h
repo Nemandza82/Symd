@@ -4,15 +4,20 @@
 
 namespace symd::kernel
 {
-    // Move input to 1-2 range and approximate with polynomial using remez algorithm
-    // log(x) = log(a*2^n) = log(a) + n*log(2)
-    // log(2) = 0.69314718056f
-    // a in range [1, 2]
-    // log(a) = -1.49278+(2.11263+(-0.729104+0.10969*a)*a)*a // 3rd order poly
-    // log(a) = −1.7417939+(2.8212026+(−1.4699568+(0.44717955−0.056570851 * a)a)a)a // 4th order poly
+    
+    /// Computes the natural (base e) logarithm of x.
+    /// Fast implementation is done by moving input to 1-2 range and then approximating logarithm with polynomial.
     template <typename T> 
     T log(T x)
     {
+        /// Implemetation algorithm
+        // Move input to 1-2 range and approximate with polynomial using remez algorithm
+        // log(x) = log(a*2^n) = log(a) + n*log(2)
+        // log(2) = 0.69314718056f
+        // a in range [1, 2]
+        // log(a) = -1.49278+(2.11263+(-0.729104+0.10969*a)*a)*a // 3rd order poly
+        // log(a) = −1.7417939+(2.8212026+(−1.4699568+(0.44717955−0.056570851 * a)a)a)a // 4th order poly
+
         // Multiply up subnormals to go into narmal range
         auto y = blend(x < 1e-37, x*100000000.0f, x);
         
