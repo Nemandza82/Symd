@@ -30,8 +30,8 @@ namespace tests
     TEMPLATE_TEST_CASE("Int addition", "[integer][operators]", int)
     {
         const auto [inData1, inData2] = getIntTestData<TestType>();
-        checkOperationResult(inData1, std::plus(), inData2);
-        checkOperationResult(inData2, std::plus(), inData1);
+        helpers::check_binary_op_result(inData1, std::plus(), inData2);
+        helpers::check_binary_op_result(inData2, std::plus(), inData1);
     }
 
 
@@ -39,8 +39,8 @@ namespace tests
     {
         const auto [inData1, inData2] = getIntTestData<TestType>();
 
-        checkOperationResult(inData1, std::minus(), inData2);
-        checkOperationResult(inData2, std::minus(), inData1);
+        helpers::check_binary_op_result(inData1, std::minus(), inData2);
+        helpers::check_binary_op_result(inData2, std::minus(), inData1);
     }
 
 
@@ -48,23 +48,23 @@ namespace tests
     {
         const auto [inData1, inData2] = getIntTestData<TestType>();
 
-        checkOperationResult(inData1, std::multiplies(), inData2);
-        checkOperationResult(inData2, std::multiplies(), inData1);
+        helpers::check_binary_op_result(inData1, std::multiplies(), inData2);
+        helpers::check_binary_op_result(inData2, std::multiplies(), inData1);
     }
 
 
     TEMPLATE_TEST_CASE("Int division", "[integer][operators]", int, unsigned char)
     {
         // Division not supported for int. Convert to other type
-        //checkOperationResult(inData1, std::divides(), inData2);
+        //helpers::check_binary_op_result(inData1, std::divides(), inData2);
     }
 
     TEMPLATE_TEST_CASE("Int bit and", "[integer][operators]", int, unsigned char)
     {
         const auto [inData1, inData2] = getIntTestData<TestType>();
 
-        checkOperationResult(inData1, std::bit_and(), inData2);
-        checkOperationResult(inData2, std::bit_and(), inData1);
+        helpers::check_binary_op_result(inData1, std::bit_and(), inData2);
+        helpers::check_binary_op_result(inData2, std::bit_and(), inData1);
     }
 
 
@@ -72,8 +72,8 @@ namespace tests
     {
         const auto [inData1, inData2] = getIntTestData<TestType>();
 
-        checkOperationResult(inData1, std::bit_or(), inData2);
-        checkOperationResult(inData2, std::bit_or(), inData1);
+        helpers::check_binary_op_result(inData1, std::bit_or(), inData2);
+        helpers::check_binary_op_result(inData2, std::bit_or(), inData1);
     }
 
 
@@ -81,8 +81,8 @@ namespace tests
     {
         const auto [inData1, inData2] = getIntTestData<TestType>();
 
-        checkOperationResult(inData1, std::bit_xor(), inData2);
-        checkOperationResult(inData2, std::bit_xor(), inData1);
+        helpers::check_binary_op_result(inData1, std::bit_xor(), inData2);
+        helpers::check_binary_op_result(inData2, std::bit_xor(), inData1);
     }
 
 
@@ -90,8 +90,8 @@ namespace tests
     {
         const auto [inData1, inData2] = getIntTestData<TestType>();
 
-        checkUnaryOperationResult(std::bit_not(), inData1);
-        checkUnaryOperationResult(std::bit_not(), inData2);
+        helpers::check_unary_op_result(std::bit_not(), inData1);
+        helpers::check_unary_op_result(std::bit_not(), inData2);
     }
 
 
@@ -99,16 +99,16 @@ namespace tests
     {
         const auto [inData1, inData2] = getIntTestData<TestType>();
 
-        checkCmpOperationResult(inData1, std::equal_to(), inData2);
-        checkCmpOperationResult(inData2, std::equal_to(), inData1);
+        helpers::check_cmp_op_result(inData1, std::equal_to(), inData2);
+        helpers::check_cmp_op_result(inData2, std::equal_to(), inData1);
     }
 
     TEMPLATE_TEST_CASE("Int cmp not equal", "[integer][operators]", int)
     {
         const auto [inData1, inData2] = getIntTestData<TestType>();
 
-        checkCmpOperationResult(inData1, std::not_equal_to(), inData2);
-        checkCmpOperationResult(inData2, std::not_equal_to(), inData1);
+        helpers::check_cmp_op_result(inData1, std::not_equal_to(), inData2);
+        helpers::check_cmp_op_result(inData2, std::not_equal_to(), inData1);
     }
 
 
@@ -116,16 +116,16 @@ namespace tests
     {
         const auto [inData1, inData2] = getIntTestData<TestType>();
 
-        checkCmpOperationResult(inData1, std::greater_equal(), inData2);
-        checkCmpOperationResult(inData2, std::greater_equal(), inData1);
+        helpers::check_cmp_op_result(inData1, std::greater_equal(), inData2);
+        helpers::check_cmp_op_result(inData2, std::greater_equal(), inData1);
     }
 
     TEMPLATE_TEST_CASE("Int cmp less equal", "[integer][operators]", int)
     {
         const auto [inData1, inData2] = getIntTestData<TestType>();
 
-        checkCmpOperationResult(inData1, std::less_equal(), inData2);
-        checkCmpOperationResult(inData2, std::less_equal(), inData1);
+        helpers::check_cmp_op_result(inData1, std::less_equal(), inData2);
+        helpers::check_cmp_op_result(inData2, std::less_equal(), inData1);
     }
 
 
@@ -133,8 +133,8 @@ namespace tests
     {
         const auto [inData1, inData2] = getIntTestData<TestType>();
 
-        checkCmpOperationResult(inData1, std::greater(), inData2);
-        checkCmpOperationResult(inData2, std::greater(), inData1);
+        helpers::check_cmp_op_result(inData1, std::greater(), inData2);
+        helpers::check_cmp_op_result(inData2, std::greater(), inData1);
     }
 
 
@@ -142,8 +142,8 @@ namespace tests
     {
         const auto [inData1, inData2] = getIntTestData<TestType>();
 
-        checkCmpOperationResult(inData1, std::less(), inData2);
-        checkCmpOperationResult(inData2, std::less(), inData1);
+        helpers::check_cmp_op_result(inData1, std::less(), inData2);
+        helpers::check_cmp_op_result(inData2, std::less(), inData1);
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////
@@ -175,8 +175,8 @@ namespace tests
             }
         };
 
-        checkOperationResult(inData1bOf, ucPlusSat, inData2bOf);
-        checkOperationResult(inData2bOf, ucPlusSat, inData1bOf);
+        helpers::check_binary_op_result(inData1bOf, ucPlusSat, inData2bOf);
+        helpers::check_binary_op_result(inData2bOf, ucPlusSat, inData1bOf);
     }
 
 
@@ -201,7 +201,7 @@ namespace tests
             }
         };
 
-        checkOperationResult(inData1b, ucMinusSat, inData2b);
-        checkOperationResult(inData2b, ucMinusSat, inData1b);
+        helpers::check_binary_op_result(inData1b, ucMinusSat, inData2b);
+        helpers::check_binary_op_result(inData2b, ucMinusSat, inData1b);
     }
 }

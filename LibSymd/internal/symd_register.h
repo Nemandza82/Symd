@@ -995,9 +995,16 @@ namespace symd
                 if constexpr (std::is_same_v<T, float> || std::is_same_v<T, symd::bfloat16>)
                 {
     #ifdef SYMD_SSE
-                    __m256i integer_repr = _mm256_castps_si256(_reg); // Cast to integer so we can use bit ops
-                    integer_repr = _mm256_srli_epi32(integer_repr, 23); // Shift right by 23 bits to align exp to right...
-                    integer_repr = _mm256_slli_epi32(integer_repr, 23); // Shifts back to the left to get back the float number
+                    // Interpret the memory location of the float as an unsigned integer to manipulate its bits directly.
+                    __m256i integer_repr = _mm256_castps_si256(_reg);
+
+                    // Shift the bits of the integer 23 places to the right to remove the significand (mantissa) part of the float.
+                    integer_repr = _mm256_srli_epi32(integer_repr, 23);
+
+                    // Shift the bits of the integer 23 places back to the left to put the exponent and sign bit back in their original position.
+                    integer_repr = _mm256_slli_epi32(integer_repr, 23);
+
+                    // Interpret the integer as a float again and return this value.
                     return _mm256_castsi256_ps(integer_repr);
 
     #elif defined SYMD_NEON

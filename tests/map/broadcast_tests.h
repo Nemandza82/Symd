@@ -13,6 +13,6 @@ namespace tests
         // symd::map_single_core(output, [](auto x) { return x * 2; }, input);
 
         // std::cout << "--------------------------> Done" << std::endl;
-        // // requireEqual(output, { 2, 4, 6, 8, 10, 12, 14, 16, 18 });
+        // // helpers::require_equal(output, { 2, 4, 6, 8, 10, 12, 14, 16, 18 });
     }
 }

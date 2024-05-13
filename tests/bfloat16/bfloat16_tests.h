@@ -79,7 +79,7 @@ namespace tests
         std::vector<float> output_float(input_1.size());
 
         // Pass computation to measure time function. It fill execute it multiple times to measure time correctly.
-        auto durationFloat = executionTimeMs([&]()
+        auto durationFloat = helpers::executionTimeMs([&]()
             {
                 symd::map_single_core(output_float, [](auto x, auto y)
                     {
@@ -95,7 +95,7 @@ namespace tests
         std::vector<symd::bfloat16> output_bf16(input_1.size());
         
         // Pass computation to measure time function. It fill execute it multiple times to measure time correctly.
-        auto durationBf16 = executionTimeMs([&]()
+        auto durationBf16 = helpers::executionTimeMs([&]()
             {
                 symd::map_single_core(output_bf16, [](auto x, auto y)
                     {

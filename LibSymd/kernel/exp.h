@@ -20,19 +20,23 @@ namespace symd::kernel
         return x.fp_exp();
     }
 
-    // Returns 2 raised to the power of exponent from given float number x
-    // Operation is performed using bit operations so it is very fast.
-    // This is equivivalent to masking out mantisa from float number.
+    // Returns a new float with the same exponent as the input float, but with a significant part of zero.
+    // This effectively extracts the exponent part of the input float.
     float exp_part_of_float(float x)
     {
         if (x == 0)
             return 0;
 
+        // Interpret the memory location of the float as an unsigned integer to manipulate its bits directly.
         unsigned int as_int = *((unsigned int*)(&x));
 
+        // Shift the bits of the integer 23 places to the right to remove the significant (mantissa) part of the float.
         as_int = (as_int >> 23);
+
+        // Shift the bits of the integer 23 places back to the left to put the exponent and sign bit back in their original position.
         as_int = as_int << 23;
 
+        // Interpret the integer as a float again and return this value.
         return *((float*)(&as_int));
     }
 

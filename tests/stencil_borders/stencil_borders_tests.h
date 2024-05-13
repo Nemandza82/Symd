@@ -30,6 +30,17 @@ namespace tests
         std::vector<float> expected_output;
     };
 
+    template <typename StencilView, typename DataType>
+    auto conv5x5_kernel(const StencilView& sv, const DataType* kernel)
+    {
+        return
+            sv(-2, -2) * kernel[0] + sv(-2, -1) * kernel[1] + sv(-2, 0) * kernel[2] + sv(-2, 1) * kernel[3] + sv(-2, 2) * kernel[4] +
+            sv(-1, -2) * kernel[5] + sv(-1, -1) * kernel[6] + sv(-1, 0) * kernel[7] + sv(-1, 1) * kernel[8] + sv(-1, 2) * kernel[9] +
+            sv(0, -2) * kernel[10] + sv(0, -1) * kernel[11] + sv(0, 0) * kernel[12] + sv(0, 1) * kernel[13] + sv(0, 2) * kernel[14] +
+            sv(1, -2) * kernel[15] + sv(1, -1) * kernel[16] + sv(1, 0) * kernel[17] + sv(1, 1) * kernel[18] + sv(1, 2) * kernel[19] +
+            sv(2, -2) * kernel[20] + sv(2, -1) * kernel[21] + sv(2, 0) * kernel[22] + sv(2, 1) * kernel[23] + sv(2, 2) * kernel[24];
+    }
+
     TEST_CASE("Stencil - Border Types Test Cases")
     {
         auto [name, kernelSize, border, C, expected_output] = GENERATE(
@@ -61,7 +72,7 @@ namespace tests
             // Do the 3x3 convolution. We also need 2D stencil view
             symd::map(output_2d, [&](const auto& x)
                 {
-                    return conv3x3_Kernel(x, kernel3x3.data());
+                    return conv3x3_kernel(x, kernel3x3.data());
 
                 }, symd::views::stencil(input_2d, symd::Dimensions({1, 1}), border, C));
         }
@@ -70,12 +81,12 @@ namespace tests
             // Do the 5x5 convolution. We also need 2D stencil view
             symd::map(output_2d, [&](const auto& x)
                 {
-                    return conv5x5_Kernel(x, kernel5x5.data());
+                    return conv5x5_kernel(x, kernel5x5.data());
 
                 }, symd::views::stencil(input_2d, symd::Dimensions({2, 2}), border, C));
         }
 
         // Verify
-        requireNear(output, expected_output, 0.03f);
+        helpers::require_near(output, expected_output, 0.03f);
     }*/
 }
