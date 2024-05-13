@@ -49,7 +49,8 @@ namespace tests::helpers
         return duration;
     }
 
-
+    /// Applies a unary operation to each element of a vector and returns a new vector with the results.
+    /// The type of the output vector can be different from the type of the input vector.
     template <typename U, typename T, typename Operation>
     std::vector<U> apply_unary_op_to_vector(const std::vector<T>& in, Operation&& op)
     {
@@ -62,6 +63,7 @@ namespace tests::helpers
     }
 
 
+    /// Applies a binary operation to each element of a vector and a given value, and returns a new vector with the results.
     template <typename T, typename Operation>
     std::vector<T> apply_binary_op_to_vector(const std::vector<T>& in, Operation&& op, T x)
     {
@@ -74,6 +76,7 @@ namespace tests::helpers
     }
 
 
+    /// Applies a binary operation to a given value and each element of a vector, and returns a new vector with the results.
     template <typename T, typename Operation>
     std::vector<T> apply_binary_op_to_vector(T x, Operation&& op, const std::vector<T>& in)
     {
@@ -86,6 +89,7 @@ namespace tests::helpers
     }
 
 
+    /// Applies a binary operation to each element of two vectors, and returns a new vector with the results.
     template <typename T, typename Operation>
     std::vector<T> apply_binary_op_to_vector(const std::vector<T>& in1, Operation&& op, const std::vector<T>& in2)
     {
