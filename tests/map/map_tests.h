@@ -119,8 +119,8 @@ namespace tests
 
         std::cout << "Simple processing (float) - Loop             : " << durationLoop.count() << " ms" << std::endl;
         std::cout << "Simple processing (float) - symd_single_core : " << durationSymdSingleCore.count() << " ms" << std::endl;
-        std::cout << "Simple processing (float) - symd_multi_core  : " << durationSymd.count() << " ms" << std::endl;
-        std::cout << "Simple processing (double) - symd_multi_core : " << durationSymdDouble.count() << " ms" << std::endl << std::endl;
+        // std::cout << "Simple processing (float) - symd_multi_core  : " << durationSymd.count() << " ms" << std::endl;
+        // std::cout << "Simple processing (double) - symd_multi_core : " << durationSymdDouble.count() << " ms" << std::endl << std::endl;
     }
 
     // Measure execution time
@@ -157,7 +157,7 @@ namespace tests
             }, 100
         );
 
-        std::cout << "Map (x + y) * (z - w); (float) - symd_multi_core  : " << durationSymd.count() << " ms" << std::endl;        
+        // std::cout << "Map (x + y) * (z - w); (float) - symd_multi_core  : " << durationSymd.count() << " ms" << std::endl;        
 
         // Measure time for simple for loop
         auto durationLoop = helpers::measure_execution_time_ms([&]()
@@ -308,7 +308,7 @@ namespace tests
             }
         );
 
-        std::cout << "Mapping YUV444 planar to RGB planar - symd_multi_core  : " << duration.count() << " ms" << std::endl << std::endl;
+        // std::cout << "Mapping YUV444 planar to RGB planar - symd_multi_core  : " << duration.count() << " ms" << std::endl << std::endl;
 
 
         helpers::require_near(R_sc, R_loop, 0.03f);
@@ -411,7 +411,7 @@ namespace tests
             }
         );
 
-        std::cout << "Convolution 3x3 - symd_multi_core  : " << duration.count() << " ms" << std::endl;
+        // std::cout << "Convolution 3x3 - symd_multi_core  : " << duration.count() << " ms" << std::endl;
 
         std::vector<float> output_sc(input.size());
         auto output_2d_sc = symd::views::data_view_2d(output_sc.data(), width, height, width);

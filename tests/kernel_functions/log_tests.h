@@ -100,7 +100,7 @@ namespace tests
             }, input);
 
         auto fp_out = helpers::apply_unary_op_to_vector<float>(input, [](auto x) { return symd::kernel::log(x); });
-        auto reference_out = helpers::apply_unary_op_to_vector<float>(input, [](auto x){ return std::logf(x); });
+        auto reference_out = helpers::apply_unary_op_to_vector<float>(input, [](auto x){ return logf(x); });
 
         helpers::require_near(map_output, reference_out, 1e-4f);
         helpers::require_near(fp_out, reference_out, 1e-4f);
@@ -129,7 +129,7 @@ namespace tests
         auto durationLoop = helpers::measure_execution_time_ms([&]()
             {
                 for (size_t i = 0; i < input.size(); i++)
-                    output[i] = std::logf(input[i]);
+                    output[i] = logf(input[i]);
             }
         );
 
