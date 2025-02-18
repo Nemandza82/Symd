@@ -146,8 +146,6 @@ namespace tests
             }, 100
         );
 
-        std::cout << "Map (x + y) * (z - w); (float) - symd_single_core : " << durationSymdSingleCore.count() << " ms" << std::endl;
-
         auto durationSymd = helpers::measure_execution_time_ms([&]()
             {
                 symd::map(output, [](const auto& x, const auto& y, const auto& z, const auto& w)
@@ -168,6 +166,7 @@ namespace tests
         );
 
         std::cout << "Map (x + y) * (z - w); (float) - Loop             : " << durationLoop.count() << " ms" << std::endl;
+        std::cout << "Map (x + y) * (z - w); (float) - symd_single_core : " << durationSymdSingleCore.count() << " ms" << std::endl;
     }
 
     TEST_CASE("Mapping 2 - multi out")
@@ -429,7 +428,6 @@ namespace tests
             }
         );
 
-        std::cout << "Convolution 3x3 - symd_single_core : " << durationSingleCore.count() << " ms" << std::endl;
         std::vector<float> output_loop(input.size());
 
         auto readMirror = [&](int i, int j)
@@ -464,7 +462,8 @@ namespace tests
             }
         );
 
-        std::cout << "Convolution 3x3 - Loop             : " << durationLoop.count() << " ms" << std::endl << std::endl;
+        std::cout << "Convolution 3x3 - Loop             : " << durationLoop.count() << " ms" << std::endl;
+        std::cout << "Convolution 3x3 - symd_single_core : " << durationSingleCore.count() << " ms" << std::endl;
 
         helpers::require_near(output_sc, output_mc, 0.03f);
         helpers::require_near(output_sc, output_loop, 0.03f);
