@@ -21,6 +21,12 @@ make
 
 If you have Clang installed just got to tests folder and run `make clang`.
 
+or
+
+```bash
+clang-17 all_tests.cpp -std=c++17 -mavx -mavx2 -O2  -lstdc++ -lm -ldl -o all_tests
+```
+
 #### Compiling tests with Visual Studio
 
  * Start `Developer Command Prompt for VS` which should come installed with Visual Studio.
